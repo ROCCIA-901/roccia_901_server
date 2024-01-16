@@ -30,6 +30,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # 설치한 라이브러리
+    'rest_framework',
+    'rest_framework_simplejwt',
+
+    # 설치한 앱
     'account.apps.AccountConfig',
 ]
 
@@ -107,4 +112,4 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = "account.User"
+AUTH_USER_MODEL = 'accounts.User'
