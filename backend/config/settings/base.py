@@ -119,9 +119,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated', # 인증된 사용자만 접근
-        # 'rest_framework.permissions.IsAdminUser', # 관리자만 접근
-        'rest_framework.permissions.AllowAny',  # 누구나 접근
+        'rest_framework.permissions.IsAuthenticated',
     ),
-
 }
