@@ -51,7 +51,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if not any(char in special_characters for char in password):
             raise InvalidFieldException({"비밀번호에는 최소 1개 이상의 특수 문자가 포함되어야 합니다."})
 
-        pattern = re.compile(r'[가-힣]')
+        pattern = re.compile(r'[가-힣ㄱ-ㅎㅏ-ㅣ]')
         if pattern.search(password):
             raise InvalidFieldException("비밀번호에는 한글이 포함될 수 없습니다.")
 
