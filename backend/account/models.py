@@ -1,11 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
+from config.exceptions import InvalidFieldException
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
-            raise ValueError('사용자는 이메일을 가지고 있어야 합니다.')
+            raise InvalidFieldException('사용자는 이메일을 가지고 있어야 합니다.')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -21,9 +23,9 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
 
         if extra_fields.get('is_staff') is not True:
-            raise ValueError('슈퍼 유저의 is_staff 필드는 True여야 합니다.')
+            raise InvalidFieldException('슈퍼 유저의 is_staff 필드는 True여야 합니다.')
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError('슈퍼 유저의 is_superuser 필드는 True여야 합니다.')
+            raise InvalidFieldException('슈퍼 유저의 is_superuser 필드는 True여야 합니다.')
 
         return self.create_user(email, password, **extra_fields)
 
@@ -68,9 +70,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('11기', '11기'),
     )
 
-    email = models.EmailField(max_length=30, unique=True, null=False, blank=False, help_text='이메일')
+    email = models.EmailField(max_length=320, unique=True, null=False, blank=False, help_text='이메일')
     username = models.CharField(max_length=20, help_text='사용자 이름')
-    generation = models.CharField(max_length=10, help_text='기수', choices=GENERATION_CHOICES)
+    generation = models.CharField(max_length=10, choices=GENERATION_CHOICES, help_text='기수')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='부원', help_text='역할')
     workout_location = models.CharField(max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text='운동 지점')
     workout_level = models.CharField(max_length=100, choices=WORKOUT_LEVELS, help_text='운동 난이도')

@@ -11,12 +11,13 @@ class UserRegistrationAPIView(APIView):
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
-        serializer.is_valid()
+        serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
         token = TokenObtainPairSerializer.get_token(user)
-        refresh_token = str(token)
         access_token = str(token.access_token)
+        refresh_token = str(token)
+
         return Response(
             {
                 "message": "회원가입에 성공했습니다.",
@@ -28,5 +29,5 @@ class UserRegistrationAPIView(APIView):
                     },
                 }
             },
-            status=status.HTTP_200_OK,
+            status=status.HTTP_201_CREATED,
         )
