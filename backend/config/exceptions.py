@@ -8,6 +8,12 @@ class InvalidFieldException(APIException):
     default_code = "invalid_field"
 
 
+class EmptyFieldException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = {"message": "필수 필드값이 비어있습니다."}
+    default_code = "empty_field"
+
+
 class InvalidAccountException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = {"message": "유효하지 않은 계정입니다."}
