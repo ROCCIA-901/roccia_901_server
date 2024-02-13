@@ -1,8 +1,9 @@
 import re
 
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 
-from config.exceptions import InvalidFieldException
+from config.exceptions import InvalidFieldException, InvalidAccountException
 from .models import User
 
 
@@ -61,3 +62,23 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('password_confirmation', None)
         user = User.objects.create_user(**validated_data)
         return user
+
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True,
+                                   error_messages={"required": "이메일은 필수 입력 항목입니다.", "blank": "이메일은 비워 둘 수 없습니다."})
+    password = serializers.CharField(required=True,
+                                     error_messages={"required": "비밀번호는 필수 입력 항목입니다.", "blank": "비밀번호는 비워 둘 수 없습니다."})
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise InvalidAccountException({"message": "등록되지 않은 이메일입니다."})
+        return value
+
+    def validate(self, data):
+        user = authenticate(email=data["email"], password=data["password"])
+        if user is None:
+            raise InvalidFieldException({"message": "이메일 또는 비밀번호가 유효하지 않습니다."})
+
+        data["user"] = user
+        return data
