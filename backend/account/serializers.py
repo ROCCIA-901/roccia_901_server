@@ -28,6 +28,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     password_confirmation = serializers.CharField(write_only=True, required=True,
                                                   error_messages={"required": "비밀번호 확인은 필수 입력 항목입니다.", "blank": "비밀번호 확인은 비워 둘 수 없습니다."})
 
+    username_pattern = re.compile(r'^[가-힣]{2,4}$')
+
     class Meta:
         model = User
         fields = (
@@ -41,9 +43,37 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
-        pattern = r'^[가-힣]{2,4}$'
-        if not re.match(pattern, value):
+        if not self.username_pattern.match(value):
             raise InvalidFieldException({"message": "이름이 정확하지 않습니다."})
+        return value
+
+    def validate_generation(self, value):
+        generation = [choice[0] for choice in User.GENERATION_CHOICES]
+        if value not in generation:
+            raise InvalidFieldException({"message": "기수가 정확하지 않습니다."})
+        return value
+
+    def validate_role(self, value):
+        role = [choice[0] for choice in User.ROLE_CHOICES]
+        if value not in role:
+            raise InvalidFieldException({"message": "역할이 정확하지 않습니다."})
+        return value
+
+    def validate_workout_location(self, value):
+        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
+        if value not in workout_location:
+            raise InvalidFieldException({"message": "지점이 정확하지 않습니다."})
+        return value
+
+    def validate_workout_level(self, value):
+        workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
+        if value not in workout_level:
+            raise InvalidFieldException({"message": "난이도가 정확하지 않습니다."})
+        return value
+
+    def validate_profile_number(self, value):
+        if value not in range(1, 9):
+            raise InvalidFieldException({"message": "프로필 번호가 정확하지 않습니다."})
         return value
 
     def validate(self, data):
