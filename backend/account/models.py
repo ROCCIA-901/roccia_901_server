@@ -37,10 +37,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     WORKOUT_LOCATION_CHOICES = (
-        ('일산', '일산'),
-        ('연남', '연남'),
-        ('양재', '양재'),
-        ('신림', '신림'),
+        ('더클라임 일산', '더클라임 일산'),
+        ('더클라임 연남', '더클라임 연남'),
+        ('더클라임 양재', '더클라임 양재'),
+        ('더클라임 신림', '더클라임 신림'),
     )
 
     WORKOUT_LEVELS = (
