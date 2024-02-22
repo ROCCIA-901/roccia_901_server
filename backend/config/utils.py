@@ -13,7 +13,7 @@ def custom_exception_handler(exc, context):
             else:
                 error_messages.append(messages)
 
-        combined_message = ' '.join(error_messages)
+        combined_message = " ".join(error_messages)
 
         response.data = {"message": combined_message}
 
