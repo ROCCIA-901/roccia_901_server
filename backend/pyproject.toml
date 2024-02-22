@@ -1,0 +1,13 @@
+[tool.black]
+line-length = 120
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+skip = ["__init__.py", "migrations/*"]
+multi_line_output = 3
+include_trailing_comma = true
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
