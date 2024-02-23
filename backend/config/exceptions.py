@@ -20,6 +20,12 @@ class InvalidAccountException(APIException):
     default_code = "invalid_account"
 
 
+class PermissionFailedException(APIException):
+    status_code = status.HTTP_403_FORBIDDEN
+    default_detail = {"message": "이 작업을 수행할 권한이 없습니다."}
+    default_code = "permission_failed"
+
+
 class InternalServerException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = {"message": "서버 내부에서 발생한 오류입니다."}
