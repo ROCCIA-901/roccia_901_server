@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     # 설치한 앱
     "account.apps.AccountConfig",
+    "attendance.apps.AttendanceConfig",
 ]
 
 MIDDLEWARE = [
