@@ -38,3 +38,21 @@ class Attendance(models.Model):
 
     class Meta:
         db_table = "attendance"
+
+
+class UnavailableDate(models.Model):
+    WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
+        ("더클라임 일산", "더클라임 일산"),
+        ("더클라임 연남", "더클라임 연남"),
+        ("더클라임 양재", "더클라임 양재"),
+        ("더클라임 신림", "더클라임 신림"),
+    )
+
+    workout_location: models.CharField = models.CharField(
+        max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점"
+    )
+    start_date: models.DateField = models.DateField()
+    end_date: models.DateField = models.DateField()
+
+    class Meta:
+        db_table = "unavailable_date"
