@@ -24,7 +24,7 @@ class UserRegistrationAPIView(APIView):
             access_token: str = str(token.access_token)
             refresh_token: str = str(token)
         except TokenError:
-            raise TokenIssuanceException({"message": "토큰 발급 중에 문제가 발생했습니다."})
+            raise TokenIssuanceException("토큰 발급 중에 문제가 발생했습니다.")
 
         return Response(
             # fmt: off
@@ -56,7 +56,7 @@ class UserLoginAPIView(APIView):
             access_token: str = str(token.access_token)
             refresh_token: str = str(token)
         except TokenError:
-            raise TokenIssuanceException({"message": "토큰 발급 중에 문제가 발생했습니다."})
+            raise TokenIssuanceException("토큰 발급 중에 문제가 발생했습니다.")
 
         return Response(
             # fmt: off
