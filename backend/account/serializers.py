@@ -98,41 +98,41 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value: str) -> str:
         if User.objects.filter(email=value).exists():
-            raise InvalidFieldException({"message": "이미 존재하는 이메일입니다."})
+            raise InvalidFieldException("이미 존재하는 이메일입니다.")
         return value
 
     def validate_username(self, value: str) -> str:
         if not self.username_pattern.match(value):
-            raise InvalidFieldException({"message": "이름이 정확하지 않습니다."})
+            raise InvalidFieldException("이름이 정확하지 않습니다.")
         return value
 
     def validate_generation(self, value: str) -> str:
         generation = [choice[0] for choice in User.GENERATION_CHOICES]
         if value not in generation:
-            raise InvalidFieldException({"message": "기수가 정확하지 않습니다."})
+            raise InvalidFieldException("기수가 정확하지 않습니다.")
         return value
 
     def validate_role(self, value: str) -> str:
         role = [choice[0] for choice in User.ROLE_CHOICES]
         if value not in role:
-            raise InvalidFieldException({"message": "역할이 정확하지 않습니다."})
+            raise InvalidFieldException("역할이 정확하지 않습니다.")
         return value
 
     def validate_workout_location(self, value: str) -> str:
         workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
-            raise InvalidFieldException({"message": "지점이 정확하지 않습니다."})
+            raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
 
     def validate_workout_level(self, value: str) -> str:
         workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
         if value not in workout_level:
-            raise InvalidFieldException({"message": "난이도가 정확하지 않습니다."})
+            raise InvalidFieldException("난이도가 정확하지 않습니다.")
         return value
 
     def validate_profile_number(self, value: str) -> str:
         if value not in range(1, 9):
-            raise InvalidFieldException({"message": "프로필 번호가 정확하지 않습니다."})
+            raise InvalidFieldException("프로필 번호가 정확하지 않습니다.")
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
@@ -140,30 +140,30 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password_confirmation = data.get("password_confirmation")
 
         if password is None:
-            raise EmptyFieldException({"message": "비밀번호는 필수 입력 항목입니다."})
+            raise EmptyFieldException("비밀번호는 필수 입력 항목입니다.")
 
         if password != password_confirmation:
-            raise InvalidFieldException({"message": "비밀번호가 일치하지 않습니다."})
+            raise InvalidFieldException("비밀번호가 일치하지 않습니다.")
 
         if len(password) < 7:
-            raise InvalidFieldException({"message": "비밀번호는 최소 7자 이상이어야 합니다."})
+            raise InvalidFieldException("비밀번호는 최소 7자 이상이어야 합니다.")
 
         if not any(char.isupper() for char in password):
-            raise InvalidFieldException({"message": "비밀번호에는 최소 1개 이상의 대문자가 포함되어야 합니다."})
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 대문자가 포함되어야 합니다.")
 
         if not any(char.islower() for char in password):
-            raise InvalidFieldException({"message": "비밀번호에는 최소 1개 이상의 소문자가 포함되어야 합니다."})
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 소문자가 포함되어야 합니다.")
 
         if not any(char.isdigit() for char in password):
-            raise InvalidFieldException({"message": "비밀번호에는 최소 1개 이상의 숫자가 포함되어야 합니다."})
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 숫자가 포함되어야 합니다.")
 
         special_characters = r"[~!@#$%^&*()_+{}\":;'<>?,./]"
         if not any(char in special_characters for char in password):
-            raise InvalidFieldException({"message": "비밀번호에는 최소 1개 이상의 특수 문자가 포함되어야 합니다."})
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 특수 문자가 포함되어야 합니다.")
 
         pattern = re.compile(r"[가-힣ㄱ-ㅎㅏ-ㅣ]")
         if pattern.search(password):
-            raise InvalidFieldException({"message": "비밀번호에는 한글이 포함될 수 없습니다."})
+            raise InvalidFieldException("비밀번호에는 한글이 포함될 수 없습니다.")
 
         return data
 
@@ -191,13 +191,13 @@ class UserLoginSerializer(serializers.Serializer):
 
     def validate_email(self, value: str) -> str:
         if not User.objects.filter(email=value).exists():
-            raise InvalidAccountException({"message": "등록되지 않은 이메일입니다."})
+            raise InvalidAccountException("등록되지 않은 이메일입니다.")
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         user = authenticate(email=data["email"], password=data["password"])
         if user is None:
-            raise InvalidFieldException({"message": "이메일 또는 비밀번호가 유효하지 않습니다."})
+            raise InvalidFieldException("이메일 또는 비밀번호가 유효하지 않습니다.")
 
         data["user"] = user
         return data

@@ -1,4 +1,4 @@
-from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 from rest_framework_simplejwt.authentication import (
@@ -7,26 +7,36 @@ from rest_framework_simplejwt.authentication import (
     TokenError,
 )
 
+from config.exceptions import (
+    AuthenticationFailedException,
+    InvalidTokenException,
+    TokenErrorException,
+)
+
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
     if isinstance(exc, AuthenticationFailed):
-        return Response({"message": "인증에 실패했습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        raise AuthenticationFailedException()
     elif isinstance(exc, InvalidToken):
-        return Response({"message": "유효하지 않은 토큰입니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        raise InvalidTokenException()
     elif isinstance(exc, TokenError):
-        return Response({"message": "토큰 처리 중 오류가 발생했습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+        raise TokenErrorException()
 
-    if response is not None and "message" not in response.data:
-        error_messages = []
+    if isinstance(exc, APIException):
+        combined_message = ""
+        if response is not None and "detail" not in response.data:
+            error_messages = []
+            for messages in response.data.values():
+                if isinstance(messages, str):
+                    error_messages.append(messages)
+                elif isinstance(messages, list):
+                    error_messages.extend(messages)
+                else:
+                    error_messages.append(str(messages))
+            combined_message = " ".join(error_messages)
 
-        for field, messages in response.data.items():
-            if isinstance(messages, list):
-                error_messages.extend(messages)
-            else:
-                error_messages.append(messages)
-
-        combined_message = " ".join(error_messages)
-        response.data = {"message": combined_message}
-    return response
+        detail = exc.detail if not combined_message else combined_message
+        custom_response_data = {"status_code": exc.status_code, "code": exc.default_code, "detail": detail}
+        return Response(custom_response_data, status=exc.status_code)
