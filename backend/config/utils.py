@@ -25,9 +25,9 @@ def custom_exception_handler(exc, context):
         raise TokenErrorException()
 
     if isinstance(exc, APIException):
-        combined_message = ""
+        combined_message: str = ""
         if response is not None and "detail" not in response.data:
-            error_messages = []
+            error_messages: list = []
             for messages in response.data.values():
                 if isinstance(messages, str):
                     error_messages.append(messages)
@@ -35,8 +35,14 @@ def custom_exception_handler(exc, context):
                     error_messages.extend(messages)
                 else:
                     error_messages.append(str(messages))
-            combined_message = " ".join(error_messages)
+            combined_message: str = " ".join(error_messages)
 
-        detail = exc.detail if not combined_message else combined_message
-        custom_response_data = {"status_code": exc.status_code, "code": exc.default_code, "detail": detail}
+        detail: str = exc.detail if not combined_message else combined_message
+        # fmt: off
+        custom_response_data: dict[[str, str], ...] = {
+            "status_code": exc.status_code,
+            "code": exc.default_code,
+            "detail": detail
+        }
+        # fmt: on
         return Response(custom_response_data, status=exc.status_code)
