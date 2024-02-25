@@ -37,10 +37,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    class Meta:
-        verbose_name = "User"
-        verbose_name_plural = "Users"
-
     ROLE_CHOICES: tuple[tuple[str, str], ...] = (
         ("운영진", "운영진"),
         ("부원", "부원"),
@@ -104,3 +100,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return str(self.email)
+
+    class Meta:
+        db_table = "user"
