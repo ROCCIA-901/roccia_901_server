@@ -20,24 +20,6 @@ class InvalidAccountException(APIException):
     default_code = "invalid_account"
 
 
-class AuthenticationFailedException(APIException):
-    status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "인증에 실패했습니다."
-    default_code = "authentication_failed"
-
-
-class InvalidTokenException(APIException):
-    status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "유효하지 않은 토큰입니다."
-    default_code = "invalid_token"
-
-
-class TokenErrorException(APIException):
-    status_code = status.HTTP_401_UNAUTHORIZED
-    default_detail = "토큰 처리 중 오류가 발생했습니다."
-    default_code = "token_error"
-
-
 class PermissionFailedException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = {"message": "이 작업을 수행할 권한이 없습니다."}
