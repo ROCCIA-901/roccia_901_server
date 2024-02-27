@@ -1,7 +1,11 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-from attendance.views import AttendanceRequest
+from attendance.views import AttendanceViewSet
+
+router = DefaultRouter()
+router.register(r'', AttendanceViewSet, basename='attendance')
 
 urlpatterns = [
-    path("", AttendanceRequest.as_view(), name="attendance-request"),
+    path("", include((router.urls, "attendance"), namespace="attendance")),
 ]

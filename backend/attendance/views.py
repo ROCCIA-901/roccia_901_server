@@ -1,20 +1,24 @@
 from datetime import datetime
 from typing import Any
 
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from account.models import User
 from attendance.serializers import AttendanceSerializer
-from config.utils import IsMember
+from config.utils import IsManager, IsMember
 
 
-class AttendanceRequest(APIView):
-    permission_classes = [IsMember]
+class AttendanceViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        if self.action == "create":
+            permissions = [IsMember]
+        else:
+            permissions = [IsManager]
+        return [permission() for permission in permissions]
 
-    def post(self, request: Request) -> Response:
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
         # 해당 일에 아직 처리되지 않은 출석 요청이 존재하고, 현재 들어온 요청보다 먼저 요청 됐으면 예외 처리
         # 출석 누른 시간과 날짜 등을 검증하는 로직
