@@ -2,13 +2,18 @@ from typing import Any
 
 from django.utils import timezone
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from account.models import User
 from attendance.models import Attendance
 from attendance.serializers import AttendanceSerializer
-from config.exceptions import InternalServerException
+from config.exceptions import (
+    InternalServerException,
+    InvalidFieldStateException,
+    NotExistException,
+)
 from config.utils import IsManager, IsMember
 
 
@@ -35,7 +40,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             "week": None,
         }
         # fmt: on
-        serializer = AttendanceSerializer(data=request_data)
+        serializer: AttendanceSerializer = AttendanceSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=user)
 
@@ -64,3 +69,34 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             raise InternalServerException()
+
+
+class AttendanceRequestViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsManager]
+    queryset = Attendance.objects.filter(request_processed_status=None)
+    serializer_class = AttendanceSerializer
+
+    @action(detail=True, methods=["patch"])
+    def accept(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+        if not Attendance.objects.filter(id=pk):
+            raise NotExistException("존재하지 않는 요청입니다.")
+
+        attendance_object: Attendance = Attendance.objects.get(id=pk)
+
+        if attendance_object.request_processed_status is not None:
+            raise InvalidFieldStateException("이미 처리된 요청입니다.")
+
+        attendance_object.request_processed_status = "승인"
+        attendance_object.request_processed_time = timezone.now()
+        attendance_object.request_processed_user = request.user
+        # attendance_object.attendance_status = check_attendance_status()
+        attendance_object.save()
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "요청 승인이 성공적으로 완료되었습니다.",
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
