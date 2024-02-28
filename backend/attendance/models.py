@@ -1,5 +1,7 @@
 from django.db import models
 
+from account.models import User
+
 
 class Attendance(models.Model):
     WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
@@ -21,7 +23,7 @@ class Attendance(models.Model):
         ("대체 출석", "대체 출석"),
     )
 
-    user_id: models.IntegerField = models.IntegerField(help_text="사용자 ID")
+    user: models.ForeignKey = models.ForeignKey(User, on_delete=models.CASCADE, help_text="사용자 ID")
     workout_location: models.CharField = models.CharField(
         max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )
@@ -38,6 +40,7 @@ class Attendance(models.Model):
 
     class Meta:
         db_table = "attendance"
+        ordering = ["-request_time"]
 
 
 class UnavailableDate(models.Model):
