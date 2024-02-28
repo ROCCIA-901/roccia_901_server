@@ -23,7 +23,9 @@ class Attendance(models.Model):
         ("대체 출석", "대체 출석"),
     )
 
-    user: models.ForeignKey = models.ForeignKey(User, on_delete=models.CASCADE, help_text="사용자 ID")
+    user: models.ForeignKey = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="attendances", help_text="사용자 ID"
+    )
     workout_location: models.CharField = models.CharField(
         max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )
@@ -33,7 +35,9 @@ class Attendance(models.Model):
         max_length=20, choices=REQUEST_STATUS_CHOICES, null=True, help_text="요청 상태"
     )
     request_processed_time: models.DateTimeField = models.DateTimeField(null=True, help_text="요청 처리 시간")
-    request_processed_user_id: models.IntegerField = models.IntegerField(null=True, help_text="요청을 처리한 사용자 ID")
+    request_processed_user: models.ForeignKey = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name="processed_requests", help_text="요청을 처리한 사용자"
+    )
     attendance_status: models.CharField = models.CharField(
         max_length=20, choices=ATTENDANCE_STATUS_CHOICES, null=True, help_text="출석 상태"
     )
