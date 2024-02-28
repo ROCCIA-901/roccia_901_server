@@ -28,7 +28,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 "user_id": representation["user"]["id"],
                 "username": representation["user"]["username"],
                 "generation": representation["user"]["generation"],
-                "role": representation["user"]["role"],
+                "profile_number": representation["user"]["profile_number"],
                 "workout_location": representation["user"]["workout_location"],
                 "workout_level": representation["user"]["workout_level"],
             }
