@@ -201,3 +201,19 @@ class UserLoginSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+
+
+class UserRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "username",
+            "generation",
+            "role",
+            "workout_location",
+            "workout_level",
+            "profile_number",
+            "introduction",
+        ]

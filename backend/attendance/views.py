@@ -1,22 +1,25 @@
-from datetime import datetime
 from typing import Any
 
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from account.models import User
+from attendance.models import Attendance
 from attendance.serializers import AttendanceSerializer
+from config.exceptions import InternalServerException
 from config.utils import IsManager, IsMember
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
+
     def get_permissions(self):
         if self.action == "create":
-            permissions = [IsMember]
+            permission_classes = [IsMember]
         else:
-            permissions = [IsManager]
-        return [permission() for permission in permissions]
+            permission_classes = [IsManager]
+        return [permission() for permission in permission_classes]
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
@@ -26,15 +29,15 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         # fmt: off
         request_data: dict[str, Any] = {
-            "user_id": user.id,  # type: ignore
-            "request_time": datetime.now(),
+            "user": user,  # type: ignore
+            "request_time": timezone.now(),
             "workout_location": None,
             "week": None,
         }
         # fmt: on
         serializer = AttendanceSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(user=user)
 
         return Response(
             # fmt: off
@@ -44,3 +47,20 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED
             # fmt: on
         )
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        try:
+            queryset = Attendance.objects.select_related("user").filter(request_processed_status=None)
+            serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
+
+            return Response(
+                # fmt: off
+                data={
+                    "detail": "출석 요청 목록 조회를 성공했습니다.",
+                    "data": serializer.data
+                },
+                status=status.HTTP_200_OK
+                # fmt: on
+            )
+        except Exception as e:
+            raise InternalServerException()
