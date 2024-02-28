@@ -100,3 +100,27 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
             # fmt: on
         )
+
+    @action(detail=True, methods=["patch"])
+    def reject(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+        attendance_object = Attendance.objects.filter(id=pk).first()
+
+        if not attendance_object:
+            raise NotExistException("존재하지 않는 요청입니다.")
+
+        if attendance_object.request_processed_status is not None:
+            raise InvalidFieldStateException("이미 처리된 요청입니다.")
+
+        attendance_object.request_processed_status = "거절"
+        attendance_object.request_processed_time = timezone.now()
+        attendance_object.request_processed_user = request.user
+        attendance_object.save()
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "요청 거절이 성공적으로 완료되었습니다.",
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
