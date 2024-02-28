@@ -79,7 +79,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["patch"])
     def accept(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
         if not Attendance.objects.filter(id=pk):
-            raise NotExistException("존재하지 않는 요청입니다.")
+            raise NotExistException()
 
         attendance_object: Attendance = Attendance.objects.get(id=pk)
 
