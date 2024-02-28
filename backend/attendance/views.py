@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -78,10 +78,10 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["patch"])
     def accept(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
-        if not Attendance.objects.filter(id=pk):
-            raise NotExistException()
+        attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
 
-        attendance_object: Attendance = Attendance.objects.get(id=pk)
+        if not attendance_object:
+            raise NotExistException()
 
         if attendance_object.request_processed_status is not None:
             raise InvalidFieldStateException("이미 처리된 요청입니다.")
@@ -103,10 +103,10 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["patch"])
     def reject(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
-        attendance_object = Attendance.objects.filter(id=pk).first()
+        attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
 
         if not attendance_object:
-            raise NotExistException("존재하지 않는 요청입니다.")
+            raise NotExistException()
 
         if attendance_object.request_processed_status is not None:
             raise InvalidFieldStateException("이미 처리된 요청입니다.")
