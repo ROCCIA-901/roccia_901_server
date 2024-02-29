@@ -63,3 +63,15 @@ class UnavailableDate(models.Model):
 
     class Meta:
         db_table = "unavailable_date"
+
+
+class AttendanceStats(models.Model):
+    user: models.ForeignKey = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendance_stats")
+    attendance: models.IntegerField = models.IntegerField(default=0, help_text="출석 횟수")
+    late: models.IntegerField = models.IntegerField(default=0, help_text="지각 횟수")
+    absence: models.IntegerField = models.IntegerField(default=0, help_text="결석 횟수")
+    substitute: models.IntegerField = models.IntegerField(default=0, help_text="대체 출석 횟수")
+    attendance_rate: models.FloatField = models.FloatField(help_text="출석률")
+
+    class Meta:
+        db_table = "attendance_stats"
