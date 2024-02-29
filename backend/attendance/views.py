@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from account.models import User
-from attendance.models import Attendance
+from attendance.models import Attendance, AttendanceStats
 from attendance.serializers import AttendanceSerializer
 from config.exceptions import (
     InternalServerException,
@@ -120,6 +120,32 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
             # fmt: off
             data={
                 "detail": "요청 거절이 성공적으로 완료되었습니다.",
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+
+class AttendanceUserViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsMember]
+
+    @action(detail=True, methods=["get"])
+    def rate(self, request: Request, pk=None) -> Response:
+        attendance_stats_object: Optional[AttendanceStats] = AttendanceStats.objects.filter(user_id=pk).first()
+
+        if not User.objects.filter(id=pk).exists():
+            raise NotExistException("존재하지 않는 사용자입니다.")
+
+        if not attendance_stats_object:
+            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "사용자 출석률 조회를 성공했습니다.",
+                "data": {
+                    "attendance_rate": attendance_stats_object.attendance_rate
+                }
             },
             status=status.HTTP_200_OK
             # fmt: on
