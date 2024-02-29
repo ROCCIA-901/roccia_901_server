@@ -30,7 +30,7 @@ class Attendance(models.Model):
         max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )
     week: models.IntegerField = models.IntegerField(null=True, help_text="주차")
-    request_time: models.DateTimeField = models.DateTimeField(help_text="출석 요청 시간")
+    request_time: models.DateTimeField = models.DateTimeField(null=True, help_text="출석 요청 시간")
     request_processed_status: models.CharField = models.CharField(
         max_length=20, choices=REQUEST_STATUS_CHOICES, null=True, help_text="요청 상태"
     )
