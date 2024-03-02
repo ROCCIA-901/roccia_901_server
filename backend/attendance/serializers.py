@@ -34,3 +34,12 @@ class AttendanceSerializer(serializers.ModelSerializer):
             }
 
         return representation
+
+
+class AttendanceDetailSerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(source="request_time", format="%Y년 %m월 %d일")
+    time = serializers.DateTimeField(source="request_time", format="%-H시 %M분")
+
+    class Meta:
+        model = Attendance
+        fields = ("week", "workout_location", "attendance_status", "date", "time")
