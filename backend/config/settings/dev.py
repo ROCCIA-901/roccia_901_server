@@ -22,6 +22,7 @@ if POSTGRES_DB:
             "PASSWORD": env("POSTGRES_PASSWORD", default=""),
             "HOST": env("POSTGRES_HOST", default=""),
             "PORT": env("POSTGRES_PORT", default=""),
+            "OPTIONS": {"options": "-c timezone=Asia/Seoul"},
         }
     }
 else:
