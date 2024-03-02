@@ -5,12 +5,13 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from account.models import User
 from attendance.models import Attendance, AttendanceStats
-from attendance.serializers import AttendanceSerializer
+from attendance.serializers import AttendanceDetailSerializer, AttendanceSerializer
 from config.exceptions import (
     InternalServerException,
     InvalidFieldException,
@@ -80,7 +81,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     serializer_class = AttendanceSerializer
 
     @action(detail=True, methods=["patch"])
-    def accept(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+    def accept(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
         attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
 
         if not attendance_object:
@@ -105,7 +106,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=["patch"])
-    def reject(self, request: Request, pk=None, *args: Any, **kwargs: Any) -> Response:
+    def reject(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
         attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
 
         if not attendance_object:
@@ -130,7 +131,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsMember]
+    permission_classes = [IsAuthenticated]
 
     def get_formatted_dates(self, id: int, status: str):
         dates: QuerySet[Attendance] = Attendance.objects.filter(
@@ -139,7 +140,7 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
         return [date.strftime("%Y-%m-%d") for date in dates]  # type: ignore
 
     @action(detail=True, methods=["get"])
-    def rate(self, request: Request, pk=None) -> Response:
+    def rate(self, request: Request, pk: Optional[int] = None) -> Response:
         attendance_stats_object: Optional[AttendanceStats] = AttendanceStats.objects.filter(user_id=pk).first()
 
         if not User.objects.filter(id=pk).exists():
@@ -178,6 +179,35 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
                 "data": {
                     "attendance": attendance_list,
                     "late": late_list
+                }
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+    @action(detail=True, methods=["get"], url_path="details")
+    def details(self, request: Request, pk: Optional[int] = None) -> Response:
+        attendance_stats_obj: Optional[AttendanceStats] = AttendanceStats.objects.filter(user_id=pk).first()
+        if not attendance_stats_obj:
+            raise NotExistException("존재하지 않는 사용자입니다.")
+
+        attendance_stats_dict: dict[str, int] = {
+            "attendance": attendance_stats_obj.attendance,
+            "late": attendance_stats_obj.late,
+            "absence": attendance_stats_obj.absence,
+            "substitute": attendance_stats_obj.substitute,
+        }
+
+        attendance_obj = Attendance.objects.filter(user_id=pk).order_by("week")
+        attendance_detail_serializer = AttendanceDetailSerializer(attendance_obj, many=True)
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "출석 현황 조회를 성공했습니다.",
+                "data": {
+                    "count": attendance_stats_dict,
+                    "detail": attendance_detail_serializer.data
                 }
             },
             status=status.HTTP_200_OK
