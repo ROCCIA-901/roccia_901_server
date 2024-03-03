@@ -11,7 +11,11 @@ from rest_framework.response import Response
 
 from account.models import User
 from attendance.models import Attendance, AttendanceStats
-from attendance.serializers import AttendanceDetailSerializer, AttendanceSerializer
+from attendance.serializers import (
+    AttendanceDetailSerializer,
+    AttendanceSerializer,
+    UserListSerializer,
+)
 from config.exceptions import (
     InternalServerException,
     InvalidFieldException,
@@ -59,7 +63,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         try:
-            queryset = Attendance.objects.select_related("user").filter(request_processed_status=None)
+            queryset = Attendance.objects.select_related("user").filter(
+                request_processed_status=None, attendance_status=None
+            )
             serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
 
             return Response(
@@ -209,6 +215,20 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
                     "count": attendance_stats_dict,
                     "detail": attendance_detail_serializer.data
                 }
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        queryset = User.objects.all().prefetch_related("attendance_stats")
+        serializer = UserListSerializer(queryset, many=True)
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "부원 목록 조회를 성공했습니다.",
+                "data": serializer.data
             },
             status=status.HTTP_200_OK
             # fmt: on

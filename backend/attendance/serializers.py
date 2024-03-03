@@ -2,8 +2,9 @@ from datetime import datetime
 
 from rest_framework import serializers
 
+from account.models import User
 from account.serializers import UserRetrieveSerializer
-from attendance.models import Attendance
+from attendance.models import Attendance, AttendanceStats
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -42,4 +43,45 @@ class AttendanceDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attendance
-        fields = ("week", "workout_location", "attendance_status", "date", "time")
+        fields = ["week", "workout_location", "attendance_status", "date", "time"]
+
+
+class AttendanceStatsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceStats
+        fields = "__all__"
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    attendance_stats = AttendanceStatsSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "profile_number",
+            "workout_location",
+            "workout_level",
+            "generation",
+            "attendance_stats",
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        data = {
+            "user_id": representation["id"],
+            "username": representation["username"],
+            "profile_number": representation["profile_number"],
+            "workout_location": representation["workout_location"],
+            "workout_level": representation["workout_level"],
+            "generation": representation["generation"],
+        }
+
+        if representation.get("attendance_stats"):
+            data["attendance_rate"] = representation["attendance_stats"]["attendance_rate"]
+        else:
+            data["attendance_rate"] = None
+
+        return data

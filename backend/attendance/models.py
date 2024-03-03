@@ -66,7 +66,7 @@ class UnavailableDate(models.Model):
 
 
 class AttendanceStats(models.Model):
-    user: models.ForeignKey = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendance_stats")
+    user: models.ForeignKey = models.OneToOneField(User, on_delete=models.CASCADE, related_name="attendance_stats")
     attendance: models.IntegerField = models.IntegerField(default=0, help_text="출석 횟수")
     late: models.IntegerField = models.IntegerField(default=0, help_text="지각 횟수")
     absence: models.IntegerField = models.IntegerField(default=0, help_text="결석 횟수")
