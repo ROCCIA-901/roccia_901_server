@@ -106,6 +106,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class AuthStatus(models.Model):
     email = models.EmailField(unique=True, help_text="이메일")  # type: ignore
     code = models.IntegerField(help_text="인증 번호")  # type: ignore
+    created_at = models.DateTimeField(auto_now=True, help_text="생성 시간")  # type: ignore
     status = models.BooleanField(default=False, help_text="인증 상태")  # type: ignore
 
     class Meta:
