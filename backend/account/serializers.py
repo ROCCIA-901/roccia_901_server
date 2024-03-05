@@ -217,3 +217,18 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "profile_number",
             "introduction",
         ]
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "required": "이메일은 필수 입력 항목입니다.",
+            "blank": "이메일은 비워 둘 수 없습니다.",
+        },
+    )
+
+    def validate_email(self, value: str) -> str:
+        if User.objects.filter(email=value).exists():
+            raise InvalidFieldException("이미 존재하는 이메일입니다.")
+        return value

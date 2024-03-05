@@ -48,3 +48,9 @@ class TokenIssuanceException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = "토큰 발급 중에 문제가 발생했습니다."
     default_code = "token_issuance_error"
+
+
+class EmailSendingFailedException(APIException):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_detail = "이메일 전송 중에 문제가 발생했습니다."
+    default_code = "email_sending_failed"
