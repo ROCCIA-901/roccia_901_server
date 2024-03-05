@@ -36,7 +36,7 @@ class UserRegistrationAPIView(APIView):
         return Response(
             # fmt: off
             data={
-                "message": "회원가입에 성공했습니다.",
+                "detail": "회원가입에 성공했습니다.",
                 "data": {
                     "user": serializer.data,
                     "token": {
@@ -68,7 +68,7 @@ class UserLoginAPIView(APIView):
         return Response(
             # fmt: off
             data={
-                "message": "로그인에 성공했습니다.",
+                "detail": "로그인에 성공했습니다.",
                 "data": {
                     "token": {
                         "access": access_token,
