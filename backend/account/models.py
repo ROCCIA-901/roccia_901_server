@@ -103,3 +103,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "user"
+
+
+class AuthStatus(models.Model):
+    email = models.EmailField(unique=True, help_text="이메일")  # type: ignore
+    code = models.IntegerField(help_text="인증 번호")  # type: ignore
+    status = models.BooleanField(default=False, help_text="인증 상태")  # type: ignore
+
+    class Meta:
+        db_table = "auth_status"
