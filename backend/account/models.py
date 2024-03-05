@@ -76,23 +76,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("11기", "11기"),
     )
 
-    email: models.EmailField = models.EmailField(
-        max_length=320, unique=True, null=False, blank=False, help_text="이메일"
-    )
-    username: models.CharField = models.CharField(max_length=20, help_text="사용자 이름")
-    generation: models.CharField = models.CharField(max_length=10, choices=GENERATION_CHOICES, help_text="기수")
-    role: models.CharField = models.CharField(max_length=10, choices=ROLE_CHOICES, default="부원", help_text="역할")
-    workout_location: models.CharField = models.CharField(
+    email = models.EmailField(max_length=320, unique=True, null=False, blank=False, help_text="이메일")  # type: ignore
+    username = models.CharField(max_length=20, help_text="사용자 이름")  # type: ignore
+    generation = models.CharField(max_length=10, choices=GENERATION_CHOICES, help_text="기수")  # type: ignore
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="부원", help_text="역할")  # type: ignore
+    workout_location = models.CharField(
         max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점"
-    )
-    workout_level: models.CharField = models.CharField(max_length=100, choices=WORKOUT_LEVELS, help_text="운동 난이도")
-    profile_number: models.IntegerField = models.IntegerField(help_text="프로필 번호")
-    introduction: models.TextField = models.TextField(max_length=500, help_text="소개글")
-    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True, help_text="생성 일시")
-    updated_at: models.DateTimeField = models.DateTimeField(auto_now=True, help_text="수정 일시")
+    )  # type: ignore
+    workout_level = models.CharField(max_length=100, choices=WORKOUT_LEVELS, help_text="운동 난이도")  # type: ignore
+    profile_number = models.IntegerField(help_text="프로필 번호")  # type: ignore
+    introduction = models.TextField(max_length=500, help_text="소개글")  # type: ignore
+    created_at = models.DateTimeField(auto_now_add=True, help_text="생성 일시")  # type: ignore
+    updated_at = models.DateTimeField(auto_now=True, help_text="수정 일시")  # type: ignore
 
-    is_active: models.BooleanField = models.BooleanField(default=True, help_text="활성 상태")
-    is_staff: models.BooleanField = models.BooleanField(default=False, help_text="스태프 상태")
+    is_active = models.BooleanField(default=True, help_text="활성 상태")  # type: ignore
+    is_staff = models.BooleanField(default=False, help_text="스태프 상태")  # type: ignore
 
     objects = UserManager()
 
