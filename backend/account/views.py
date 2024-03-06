@@ -11,6 +11,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from account.models import AuthStatus, User
 from account.serializers import (
+    AuthCodeVerificationSerializer,
     EmailVerificationSerializer,
     UserLoginSerializer,
     UserRegistrationSerializer,
@@ -104,6 +105,25 @@ class RequestAuthCodeAPIView(APIView):
             # fmt: off
             data={
                 "detail": "인증 번호가 전송됐습니다.",
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+
+class AuthCodeValidationAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        serializer = AuthCodeVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data.get("email")
+        AuthStatus.objects.filter(email=email).update(status=True)
+        return Response(
+            # fmt: off
+            data={
+                "detail": "인증번호 확인에 성공했습니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
