@@ -236,6 +236,15 @@ class EmailVerificationSerializer(serializers.Serializer):
             raise InvalidFieldException("이미 존재하는 이메일입니다.")
         return value
 
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        email = data["email"]
+
+        auth_status = AuthStatus.objects.filter(email=email).first()
+        if auth_status and auth_status.status is True:
+            raise InvalidFieldStateException("이미 인증 완료된 사용자입니다.")
+
+        return data
+
 
 class AuthCodeVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
