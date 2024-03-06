@@ -1,14 +1,17 @@
 import re
+from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import authenticate
+from django.utils import timezone
 from rest_framework import serializers
 
-from account.models import User
+from account.models import AuthStatus, User
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
     InvalidFieldException,
+    InvalidFieldStateException,
 )
 
 
@@ -232,3 +235,41 @@ class EmailVerificationSerializer(serializers.Serializer):
         if User.objects.filter(email=value).exists():
             raise InvalidFieldException("이미 존재하는 이메일입니다.")
         return value
+
+
+class AuthCodeVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "required": "이메일은 필수 입력 항목입니다.",
+            "blank": "이메일은 비워 둘 수 없습니다.",
+        },
+    )
+    code = serializers.IntegerField(
+        required=True,
+        error_messages={
+            "required": "인증번호는 필수 입력 항목입니다.",
+            "blank": "인증번호는 비워 둘 수 없습니다.",
+        },
+    )
+
+    def validate_email(self, value: str) -> str:
+        if not AuthStatus.objects.filter(email=value).exists():
+            raise InvalidFieldException("해당 이메일의 인증번호 요청 내역이 존재하지 않습니다.")
+        return value
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        email = data["email"]
+        code = data["code"]
+
+        auth_status = AuthStatus.objects.get(email=email)
+        if auth_status.status is True:
+            raise InvalidFieldStateException("이미 인증 완료된 사용자입니다.")
+
+        if auth_status.code != code:
+            raise InvalidFieldException("인증번호가 일치하지 않습니다.")
+
+        if timezone.now() - auth_status.created_at > timedelta(minutes=10):
+            raise InvalidFieldException("인증번호의 유효시간이 지났습니다.")
+
+        return data
