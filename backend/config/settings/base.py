@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # 설치한 라이브러리
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     # 설치한 앱
     "account.apps.AccountConfig",
     "attendance.apps.AttendanceConfig",

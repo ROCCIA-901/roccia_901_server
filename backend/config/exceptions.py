@@ -20,6 +20,12 @@ class EmptyFieldException(APIException):
     default_code = "empty_field"
 
 
+class InvalidRefreshToken(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "유효하지 않은 리프레시 토큰입니다."
+    default_code = "invalid_refresh_token"
+
+
 class InvalidAccountException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = "유효하지 않은 계정입니다."

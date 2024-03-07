@@ -302,3 +302,13 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
             raise serializers.ValidationError("토큰이 유효하지 않습니다.")
 
         return data
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(
+        required=True,
+        error_messages={
+            "required": "refresh 필드는 필수 항목입니다.",
+            "blank": "refresh 필드는 비워 둘 수 없습니다.",
+        },
+    )
