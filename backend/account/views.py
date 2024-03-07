@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from account.models import AuthStatus, User
@@ -15,10 +16,15 @@ from account.serializers import (
     AuthCodeVerificationSerializer,
     CustomTokenRefreshSerializer,
     EmailVerificationSerializer,
+    LogoutSerializer,
     UserLoginSerializer,
     UserRegistrationSerializer,
 )
-from config.exceptions import EmailSendingFailedException, TokenIssuanceException
+from config.exceptions import (
+    EmailSendingFailedException,
+    InvalidRefreshToken,
+    TokenIssuanceException,
+)
 
 
 class UserRegistrationAPIView(APIView):
@@ -149,6 +155,28 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
                         "access": serializer.validated_data["access"]
                     }
                 },
+            },
+            # fmt: on
+        )
+
+
+class UserLogoutAPIView(APIView):
+
+    def post(self, request: Request) -> Response:
+        serializer: LogoutSerializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            token: RefreshToken = RefreshToken(serializer.validated_data["refresh"])
+            token.blacklist()
+        except Exception as e:
+            raise InvalidRefreshToken()
+
+        return Response(
+            # fmt: off
+            status=status.HTTP_200_OK,
+            data={
+                "detail": "로그아웃에 성공했습니다.",
             },
             # fmt: on
         )
