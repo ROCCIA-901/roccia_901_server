@@ -8,10 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from account.models import AuthStatus, User
 from account.serializers import (
     AuthCodeVerificationSerializer,
+    CustomTokenRefreshSerializer,
     EmailVerificationSerializer,
     UserLoginSerializer,
     UserRegistrationSerializer,
@@ -126,5 +128,27 @@ class AuthCodeValidationAPIView(APIView):
                 "detail": "인증번호 확인에 성공했습니다.",
             },
             status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+
+class CustomTokenRefreshAPIView(TokenRefreshView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CustomTokenRefreshSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(
+            # fmt: off
+            status=status.HTTP_200_OK,
+            data={
+                "detail": "액세스 토큰 발급을 성공했습니다.",
+                "data": {
+                    "token": {
+                        "access": serializer.validated_data["access"]
+                    }
+                },
+            },
             # fmt: on
         )
