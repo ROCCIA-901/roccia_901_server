@@ -5,6 +5,8 @@ from typing import Any
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from account.models import AuthStatus, User
 from config.exceptions import (
@@ -280,5 +282,23 @@ class AuthCodeVerificationSerializer(serializers.Serializer):
 
         if timezone.now() - auth_status.created_at > timedelta(minutes=10):
             raise InvalidFieldException("인증번호의 유효시간이 지났습니다.")
+
+        return data
+
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    refresh = serializers.CharField(
+        required=True,
+        error_messages={
+            "required": "refresh 필드는 필수 항목입니다.",
+            "blank": "refresh 필드는 비워 둘 수 없습니다.",
+        },
+    )
+
+    def validate(self, attrs):
+        try:
+            data = super().validate(attrs)
+        except TokenError as e:
+            raise serializers.ValidationError("토큰이 유효하지 않습니다.")
 
         return data
