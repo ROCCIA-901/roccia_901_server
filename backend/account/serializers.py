@@ -312,3 +312,75 @@ class LogoutSerializer(serializers.Serializer):
             "blank": "refresh 필드는 비워 둘 수 없습니다.",
         },
     )
+
+
+class PasswordUpdateSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "required": "이메일은 필수 입력 항목입니다.",
+            "blank": "이메일은 비워 둘 수 없습니다.",
+        },
+    )
+    new_password = serializers.CharField(
+        write_only=True,
+        required=True,
+        error_messages={
+            "required": "비밀번호는 필수 입력 항목입니다.",
+            "blank": "비밀번호는 비워 둘 수 없습니다.",
+        },
+    )
+    new_password_confirmation = serializers.CharField(
+        write_only=True,
+        required=True,
+        error_messages={
+            "required": "비밀번호 확인은 필수 입력 항목입니다.",
+            "blank": "비밀번호 확인은 비워 둘 수 없습니다.",
+        },
+    )
+
+    def validate_email(self, value: str) -> str:
+        if not User.objects.filter(email=value).exists():
+            raise InvalidFieldException("존재하지 않는 이메일입니다.")
+        return value
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        new_password = data.get("new_password")
+        new_password_confirmation = data.get("new_password_confirmation")
+
+        if new_password is None:
+            raise EmptyFieldException("비밀번호는 필수 입력 항목입니다.")
+
+        if new_password != new_password_confirmation:
+            raise InvalidFieldException("비밀번호가 일치하지 않습니다.")
+
+        if len(new_password) < 7:
+            raise InvalidFieldException("비밀번호는 최소 7자 이상이어야 합니다.")
+
+        if not any(char.isupper() for char in new_password):
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 대문자가 포함되어야 합니다.")
+
+        if not any(char.islower() for char in new_password):
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 소문자가 포함되어야 합니다.")
+
+        if not any(char.isdigit() for char in new_password):
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 숫자가 포함되어야 합니다.")
+
+        special_characters = r"[~!@#$%^&*()_+{}\":;'<>?,./]"
+        if not any(char in special_characters for char in new_password):
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 특수 문자가 포함되어야 합니다.")
+
+        pattern = re.compile(r"[가-힣ㄱ-ㅎㅏ-ㅣ]")
+        if pattern.search(new_password):
+            raise InvalidFieldException("비밀번호에는 한글이 포함될 수 없습니다.")
+
+        return data
+
+    def save(self):
+        email = self.validated_data["email"]
+        new_password = self.validated_data["new_password"]
+
+        user = User.objects.get(email=email)
+        user.set_password(new_password)
+        user.save()
+        return user

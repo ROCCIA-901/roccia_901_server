@@ -6,6 +6,7 @@ from .views import (
     RequestAuthCodeAPIView,
     UserLoginAPIView,
     UserLogoutAPIView,
+    UserPasswordUpdateAPIView,
     UserRegistrationAPIView,
 )
 
@@ -16,4 +17,5 @@ urlpatterns = [
     path("auth-code-verify/", AuthCodeValidationAPIView.as_view(), name="auth-code-verify"),
     path("token-refresh/", CustomTokenRefreshAPIView.as_view(), name="token-refresh"),
     path('logout/', UserLogoutAPIView.as_view(), name='logout'),
+    path('password-update/', UserPasswordUpdateAPIView.as_view(), name='logout'),
 ]
