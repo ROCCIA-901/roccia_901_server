@@ -17,6 +17,7 @@ from account.serializers import (
     CustomTokenRefreshSerializer,
     EmailVerificationSerializer,
     LogoutSerializer,
+    PasswordUpdateSerializer,
     UserLoginSerializer,
     UserRegistrationSerializer,
 )
@@ -177,6 +178,24 @@ class UserLogoutAPIView(APIView):
             status=status.HTTP_200_OK,
             data={
                 "detail": "로그아웃에 성공했습니다.",
+            },
+            # fmt: on
+        )
+
+
+class UserPasswordUpdateAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def patch(self, request: Request) -> Response:
+        serializer: PasswordUpdateSerializer = PasswordUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            # fmt: off
+            status=status.HTTP_200_OK,
+            data={
+                "detail": "비밀번호 변경에 성공했습니다.",
             },
             # fmt: on
         )
