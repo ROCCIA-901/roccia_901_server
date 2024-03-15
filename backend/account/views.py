@@ -107,7 +107,7 @@ class UserLoginAPIView(APIView):
         )
 
 
-class RequestAuthCodeAPIView(APIView):
+class UserRegisterRequestAuthCodeAPIView(APIView):
     permission_classes = [AllowAny]
 
     @transaction.atomic
@@ -117,27 +117,21 @@ class RequestAuthCodeAPIView(APIView):
 
         receiver = serializer.validated_data.get("email")
         code = random.randint(10000, 99999)
-        try:
-            email_subject = "[ROCCIA 901] 본인 확인 인증번호 입니다."
-            email_body = f"본인확인을 위해 인증번호 [{code}]를 입력해 주세요."
-
-            send_mail(subject=email_subject, message=email_body, from_email="ROCCIA 901", recipient_list=[receiver])
-        except Exception as e:
-            raise EmailSendingFailedException()
+        send_auth_code_to_email(receiver, code)
 
         UserRegistrationEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
 
         return Response(
             # fmt: off
             data={
-                "detail": "인증 번호가 전송됐습니다.",
+                "detail": "회원가입을 위한 인증번호가 전송됐습니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
         )
 
 
-class AuthCodeValidationAPIView(APIView):
+class UserRegisterAuthCodeValidationAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
