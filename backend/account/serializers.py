@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from account.models import AuthStatus, User
+from account.models import User, UserRegistrationEmailAuthStatus
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -224,7 +224,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         ]
 
 
-class EmailVerificationSerializer(serializers.Serializer):
+class UserRegisterEmailVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
         error_messages={
@@ -241,14 +241,14 @@ class EmailVerificationSerializer(serializers.Serializer):
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         email = data["email"]
 
-        auth_status = AuthStatus.objects.filter(email=email).first()
+        auth_status = UserRegistrationEmailAuthStatus.objects.filter(email=email).first()
         if auth_status and auth_status.status is True:
             raise InvalidFieldStateException("이미 인증 완료된 사용자입니다.")
 
         return data
 
 
-class AuthCodeVerificationSerializer(serializers.Serializer):
+class UserRegisterAuthCodeVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
         error_messages={
@@ -265,7 +265,7 @@ class AuthCodeVerificationSerializer(serializers.Serializer):
     )
 
     def validate_email(self, value: str) -> str:
-        if not AuthStatus.objects.filter(email=value).exists():
+        if not UserRegistrationEmailAuthStatus.objects.filter(email=value).exists():
             raise InvalidFieldException("해당 이메일의 인증번호 요청 내역이 존재하지 않습니다.")
         return value
 
@@ -273,7 +273,7 @@ class AuthCodeVerificationSerializer(serializers.Serializer):
         email = data["email"]
         code = data["code"]
 
-        auth_status = AuthStatus.objects.get(email=email)
+        auth_status = UserRegistrationEmailAuthStatus.objects.get(email=email)
         if auth_status.status is True:
             raise InvalidFieldStateException("이미 인증 완료된 사용자입니다.")
 
