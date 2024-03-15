@@ -286,6 +286,21 @@ class UserRegisterAuthCodeVerificationSerializer(serializers.Serializer):
         return data
 
 
+class PasswordUpdateEmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "required": "이메일은 필수 입력 항목입니다.",
+            "blank": "이메일은 비워 둘 수 없습니다.",
+        },
+    )
+
+    def validate_email(self, value: str) -> str:
+        if not User.objects.filter(email=value).exists():
+            raise InvalidFieldException("존재하지 않는 이메일입니다.")
+        return value
+
+
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     refresh = serializers.CharField(
         required=True,

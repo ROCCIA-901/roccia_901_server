@@ -12,10 +12,15 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from account.models import User, UserRegistrationEmailAuthStatus
+from account.models import (
+    PasswordUpdateEmailAuthStatus,
+    User,
+    UserRegistrationEmailAuthStatus,
+)
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
+    PasswordUpdateEmailVerificationSerializer,
     PasswordUpdateSerializer,
     UserLoginSerializer,
     UserRegisterAuthCodeVerificationSerializer,
@@ -27,6 +32,16 @@ from config.exceptions import (
     InvalidRefreshToken,
     TokenIssuanceException,
 )
+
+
+def send_auth_code_to_email(receiver: str, code: int) -> None:
+    try:
+        email_subject = "[ROCCIA 901] 본인 확인 인증번호 입니다."
+        email_body = f"본인확인을 위해 인증번호 [{code}]를 입력해 주세요."
+
+        send_mail(subject=email_subject, message=email_body, from_email="ROCCIA 901", recipient_list=[receiver])
+    except Exception as e:
+        raise EmailSendingFailedException()
 
 
 class UserRegistrationAPIView(APIView):
@@ -135,6 +150,30 @@ class AuthCodeValidationAPIView(APIView):
             # fmt: off
             data={
                 "detail": "인증번호 확인에 성공했습니다.",
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+
+class PasswordUpdateRequestAuthCodeAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    @transaction.atomic
+    def post(self, request: Request) -> Response:
+        serializer = PasswordUpdateEmailVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        receiver = serializer.validated_data.get("email")
+        code = random.randint(10000, 99999)
+        send_auth_code_to_email(receiver, code)
+
+        PasswordUpdateEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "비밀번호 변경을 위한 인증 번호가 전송됐습니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
