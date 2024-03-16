@@ -20,6 +20,7 @@ from account.models import (
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
+    PasswordUpdateAuthCodeVerificationSerializer,
     PasswordUpdateEmailVerificationSerializer,
     PasswordUpdateSerializer,
     UserLoginSerializer,
@@ -143,7 +144,7 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         return Response(
             # fmt: off
             data={
-                "detail": "인증번호 확인에 성공했습니다.",
+                "detail": "회원가입을 위한 인증번호 확인에 성공했습니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
@@ -168,6 +169,23 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
             # fmt: off
             data={
                 "detail": "비밀번호 변경을 위한 인증 번호가 전송됐습니다.",
+            },
+            status=status.HTTP_200_OK
+            # fmt: on
+        )
+
+
+class PasswordUpdateAuthCodeValidationAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        serializer = PasswordUpdateAuthCodeVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(
+            # fmt: off
+            data={
+                "detail": "비밀번호 변경을 위한 인증번호 확인에 성공했습니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
@@ -225,6 +243,9 @@ class UserPasswordUpdateAPIView(APIView):
         serializer: PasswordUpdateSerializer = PasswordUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        email = serializer.validated_data.get("email")
+        PasswordUpdateEmailAuthStatus.objects.filter(email=email).delete()
 
         return Response(
             # fmt: off

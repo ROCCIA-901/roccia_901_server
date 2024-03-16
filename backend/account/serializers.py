@@ -8,7 +8,11 @@ from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from account.models import User, UserRegistrationEmailAuthStatus
+from account.models import (
+    PasswordUpdateEmailAuthStatus,
+    User,
+    UserRegistrationEmailAuthStatus,
+)
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -299,6 +303,44 @@ class PasswordUpdateEmailVerificationSerializer(serializers.Serializer):
         if not User.objects.filter(email=value).exists():
             raise InvalidFieldException("존재하지 않는 이메일입니다.")
         return value
+
+
+class PasswordUpdateAuthCodeVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField(
+        required=True,
+        error_messages={
+            "required": "이메일은 필수 입력 항목입니다.",
+            "blank": "이메일은 비워 둘 수 없습니다.",
+        },
+    )
+    code = serializers.IntegerField(
+        required=True,
+        error_messages={
+            "required": "인증번호는 필수 입력 항목입니다.",
+            "blank": "인증번호는 비워 둘 수 없습니다.",
+        },
+    )
+
+    def validate_email(self, value: str) -> str:
+        if not PasswordUpdateEmailAuthStatus.objects.filter(email=value).exists():
+            raise InvalidFieldException(
+                "해당 이메일의 인증번호 요청 내역이 존재하지 않습니다. 인증번호 요청을 진행해주세요."
+            )
+        return value
+
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        email = data["email"]
+        code = data["code"]
+
+        auth_status = PasswordUpdateEmailAuthStatus.objects.get(email=email)
+
+        if auth_status.code != code:
+            raise InvalidFieldException("인증번호가 일치하지 않습니다.")
+
+        if timezone.now() - auth_status.created_at > timedelta(minutes=10):
+            raise InvalidFieldException("인증번호의 유효시간이 지났습니다.")
+
+        return data
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
