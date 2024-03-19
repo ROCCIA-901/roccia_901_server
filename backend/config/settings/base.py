@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "account.apps.AccountConfig",
     "attendance.apps.AttendanceConfig",
     "record.apps.RecordConfig",
+    "ranking.apps.RankingConfig",
 ]
 
 MIDDLEWARE = [
