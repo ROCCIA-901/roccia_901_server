@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     # 설치한 앱
     "account.apps.AccountConfig",
     "attendance.apps.AttendanceConfig",
+    "record.apps.RecordConfig",
 ]
 
 MIDDLEWARE = [
