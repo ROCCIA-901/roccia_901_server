@@ -23,7 +23,7 @@ class BoulderProblem(models.Model):
     record = models.ForeignKey(
         Record, on_delete=models.CASCADE, related_name="boulder_problems", help_text="운동 기록 ID"
     )  # type: ignore
-    workout_level = models.CharField(max_length=100, choices=User.WORKOUT_LEVELS, help_text="운동 난이도")  # type: ignore
+    workout_level = models.IntegerField(choices=User.WORKOUT_LEVELS, help_text="운동 난이도")  # type: ignore
     count = models.PositiveIntegerField(help_text="푼 문제 개수")  # type: ignore
 
     class Meta:
