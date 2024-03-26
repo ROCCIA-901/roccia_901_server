@@ -57,7 +57,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "blank": "운동 지점은 비워 둘 수 없습니다.",
         },
     )
-    workout_level = serializers.CharField(
+    workout_level = serializers.IntegerField(
         required=True,
         error_messages={
             "required": "운동 난이도는 필수 입력 항목입니다.",
@@ -133,7 +133,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
 
-    def validate_workout_level(self, value: str) -> str:
+    def validate_workout_level(self, value: int) -> int:
         workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
         if value not in workout_level:
             raise InvalidFieldException("난이도가 정확하지 않습니다.")
