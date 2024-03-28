@@ -45,6 +45,7 @@ def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)):
     monday_datetime = pytz.timezone("Asia/Seoul").localize(datetime.combine(monday, datetime.min.time()))
     sunday_datetime = pytz.timezone("Asia/Seoul").localize(datetime.combine(sunday, datetime.max.time()))
 
+    # TODO: 성능 개선
     weekly_scores = (
         BoulderProblem.objects.select_related("record__user")
         .filter(record__start_time__range=(monday_datetime, sunday_datetime))
