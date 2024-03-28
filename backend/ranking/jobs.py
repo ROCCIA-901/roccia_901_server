@@ -1,9 +1,9 @@
 from datetime import date, datetime, timedelta
-from typing import Any, Union
 
 import pytz
 from django.db.models import Case, F, FloatField, Sum, Value, When
 
+from config.settings.base import TIME_ZONE
 from ranking.models import Ranking
 from record.models import BoulderProblem
 
@@ -12,9 +12,7 @@ from record.models import BoulderProblem
 # for a given date in Korea Standard Time.
 # Example usage:
 # monday, sunday = get_week_start_end_kst(datetime.now(pytz.utc))
-def get_week_start_end(
-    current_date_utc: datetime = datetime.now(pytz.utc), zone: str = "Asia/Seoul"
-) -> tuple[date, date]:
+def get_week_start_end(current_date_utc: datetime = datetime.now(pytz.utc), zone: str = TIME_ZONE) -> tuple[date, date]:
     # Get date in Timezone.
     try:
         timezone = pytz.timezone(zone)
@@ -31,25 +29,16 @@ def get_week_start_end(
     return start_of_week.date(), end_of_week.date()
 
 
-def find_choice_index(choice_value: Any, model_field_choices: tuple[Any]) -> Union[int, None]:
-    for index, (value, _) in enumerate(model_field_choices):
-        if value == choice_value:
-            return index
-    return None
-
-
-def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)):
-    # TODO: handle exceptions
-    # TODO: handle timezone
+def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tuple:
+    # TODO: handle pytz.UnknownTimeZoneError exceptions
     monday, sunday = get_week_start_end(current_date_utc)
-    monday_datetime = pytz.timezone("Asia/Seoul").localize(datetime.combine(monday, datetime.min.time()))
-    sunday_datetime = pytz.timezone("Asia/Seoul").localize(datetime.combine(sunday, datetime.max.time()))
+    monday_datetime = pytz.timezone(TIME_ZONE).localize(datetime.combine(monday, datetime.min.time()))
+    sunday_datetime = pytz.timezone(TIME_ZONE).localize(datetime.combine(sunday, datetime.max.time()))
 
     # TODO: 성능 개선
     weekly_scores = (
         BoulderProblem.objects.select_related("record__user")
         .filter(record__start_time__range=(monday_datetime, sunday_datetime))
-        .values("record__start_time", "record__user__workout_level")
         .annotate(
             score=Case(
                 When(workout_level__lt=F("record__user__workout_level"), then=F("count") * Value(0.5)),
@@ -64,14 +53,17 @@ def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)):
         .order_by("-total_score")
     )
 
+    year_week_week_day = tuple(current_date_utc.isocalendar())
     # add weekly_scores to Ranking model
     objs = [
         Ranking(
             user_id=weekly_score["record__user__id"],
             generation=Ranking.CUR_GENERATION,
-            week=current_date_utc.isocalendar()[1],
+            week=year_week_week_day[1],
             score=weekly_score["total_score"],
         )
         for weekly_score in weekly_scores
     ]
     Ranking.objects.bulk_create(objs)
+
+    return year_week_week_day
