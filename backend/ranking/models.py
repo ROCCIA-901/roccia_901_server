@@ -4,6 +4,8 @@ from account.models import User
 
 
 class Ranking(models.Model):
+    CUR_GENERATION = 11
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="ranking", help_text="사용자 ID"
     )  # type: ignore
