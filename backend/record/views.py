@@ -8,6 +8,8 @@ from record.models import Record
 from record.serializers import RecordCreateSerializer, RecordSerializer
 
 
+# TODO: 생성, 수정 권한 일치해야지만 가능하게 수정
+# TODO: 수정 시 id 값 처리 로직 추가
 class RecordViewSet(viewsets.ModelViewSet):
     allowed_methods = ["get", "post", "put"]
     permission_classes = [permissions.IsAuthenticated]

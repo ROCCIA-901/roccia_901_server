@@ -35,10 +35,12 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "django_apscheduler",
     # 설치한 앱
     "account.apps.AccountConfig",
     "attendance.apps.AttendanceConfig",
     "record.apps.RecordConfig",
+    "ranking.apps.RankingConfig",
 ]
 
 MIDDLEWARE = [
@@ -179,3 +181,11 @@ LOGGING = {
         },
     },
 }
+
+# django-apscheduler Settings
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+
+# job 실행 시간 limit. 오래 걸리는 작업 실행 시 시간을 늘려야한다.
+APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds
+
+SCHEDULER_DEFAULT = True

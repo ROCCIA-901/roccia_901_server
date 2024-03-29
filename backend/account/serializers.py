@@ -21,6 +21,20 @@ from config.exceptions import (
 )
 
 
+class WorkoutLevelChoiceField(serializers.ChoiceField):
+    def to_representation(self, obj):
+        for key, val in self._choices.items():
+            if key == int(obj):
+                return val
+
+    def to_internal_value(self, data):
+        # To support inserts with the value
+        for key, val in self._choices.items():
+            if val == data:
+                return key
+        raise InvalidFieldException("난이도가 정확하지 않습니다.")
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
@@ -57,7 +71,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "blank": "운동 지점은 비워 둘 수 없습니다.",
         },
     )
-    workout_level = serializers.CharField(
+    workout_level = WorkoutLevelChoiceField(
+        User.WORKOUT_LEVELS,
         required=True,
         error_messages={
             "required": "운동 난이도는 필수 입력 항목입니다.",
@@ -133,7 +148,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
 
-    def validate_workout_level(self, value: str) -> str:
+    def validate_workout_level(self, value: int) -> int:
         workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
         if value not in workout_level:
             raise InvalidFieldException("난이도가 정확하지 않습니다.")

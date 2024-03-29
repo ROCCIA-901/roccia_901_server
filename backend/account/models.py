@@ -49,17 +49,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("더클라임 신림", "더클라임 신림"),
     )
 
-    WORKOUT_LEVELS: tuple[tuple[str, str], ...] = (
-        ("하얀색", "하얀색"),
-        ("노란색", "노란색"),
-        ("주황색", "주황색"),
-        ("초록색", "초록색"),
-        ("파란색", "파란색"),
-        ("빨간색", "빨간색"),
-        ("보라색", "보라색"),
-        ("회색", "회색"),
-        ("갈색", "갈색"),
-        ("검정색", "검정색"),
+    WORKOUT_LEVELS: tuple[tuple[int, str], ...] = (
+        (1, "하얀색"),
+        (2, "노란색"),
+        (3, "주황색"),
+        (4, "초록색"),
+        (5, "파란색"),
+        (6, "빨간색"),
+        (7, "보라색"),
+        (8, "회색"),
+        (9, "갈색"),
+        (10, "검정색"),
     )
 
     GENERATION_CHOICES: tuple[tuple[str, str], ...] = (
@@ -83,7 +83,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     workout_location = models.CharField(
         max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점"
     )  # type: ignore
-    workout_level = models.CharField(max_length=100, choices=WORKOUT_LEVELS, help_text="운동 난이도")  # type: ignore
+    workout_level = models.IntegerField(choices=WORKOUT_LEVELS, help_text="운동 난이도")  # type: ignore
     profile_number = models.IntegerField(help_text="프로필 번호")  # type: ignore
     introduction = models.TextField(max_length=500, help_text="소개글")  # type: ignore
     created_at = models.DateTimeField(auto_now_add=True, help_text="생성 일시")  # type: ignore
