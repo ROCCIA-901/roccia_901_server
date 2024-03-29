@@ -67,7 +67,7 @@ def get_generation_rankings(request: Request) -> Response:
         .annotate(score=models.Sum("score"))
         .order_by("-score")
     )
-    print(generation_rankings)
+
     generations = list(set([generation_ranking["generation"] for generation_ranking in generation_rankings]))
     return Response(
         # fmt: off
