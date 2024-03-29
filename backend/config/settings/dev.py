@@ -5,16 +5,26 @@ import environ
 
 from .base import *
 
-environ.Env.read_env(env_file=os.path.join(BASE_DIR, ".env.dev"))
-env = environ.Env()
+
+def load_env_settings():
+    ENVIRONMENT = os.getenv("DJANGO_ENV", "dev")
+    if ENVIRONMENT == "dev.docker":
+        env_file = os.path.join(BASE_DIR, ".env.dev.docker")
+    else:
+        env_file = os.path.join(BASE_DIR, ".env.dev")
+
+    env = environ.Env()
+    if os.path.isfile(env_file):
+        environ.Env.read_env(env_file=env_file)
+    return env
 
 
 # 필수 설정
 
+env = load_env_settings()
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=True)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
-
 
 # 데이터베이스 설정
 
@@ -39,7 +49,6 @@ else:
         }
     }
 
-
 # JWT 설정
 
 SIMPLE_JWT = {
@@ -55,7 +64,6 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
 }
-
 
 # smtp 설정
 
