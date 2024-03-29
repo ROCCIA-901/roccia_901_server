@@ -15,3 +15,7 @@
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+#
+# 정적 파일 설정
+#
+# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
