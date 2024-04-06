@@ -1,0 +1,49 @@
+version: '3'
+
+volumes:
+    postgres:
+    django_static:
+
+services:
+    nginx:
+        container_name: nginx
+        build: ./nginx
+        environment:
+            - TZ=Asia/Seoul
+        image: docker-server/nginx
+        restart: always
+        volumes:
+            - ./nginx/logs:/var/log/nginx
+            - django_static:/roccia_901/static
+        ports:
+            - "80:80"
+        depends_on:
+            - backend
+
+    backend:
+        container_name: backend
+        build: ./backend
+        image: docker-server/backend
+        env_file:
+            - ./backend/.env.dev.docker
+        restart: always
+        entrypoint: ./wait-for-it.sh database:5432 --
+        command: sh -c "./init.sh"
+        volumes:
+            - ./backend/logs:/roccia_901/logs
+            - django_static:/roccia_901/static
+        expose:
+            - 8000
+        depends_on:
+            - database
+
+    database:
+        container_name: database
+        image: postgres:14.9
+        environment:
+            - TZ=Asia/Seoul
+        env_file:
+            - ./backend/.env.dev.docker
+        restart: always
+        volumes:
+            - postgres:/var/lib/postgresql/data
