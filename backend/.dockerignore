@@ -1,0 +1,8 @@
+db.sqlite3
+Dockerfile
+venv
+.git
+logs/
+.env*
+.pre-commit-config.yaml
+pyproject.toml
