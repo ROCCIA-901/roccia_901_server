@@ -1,0 +1,15 @@
+/var/log/nginx/*.log {
+    create 0644 root root
+    daily
+    missingok
+    rotate 180
+    compress
+    delaycompress
+    notifempty
+    dateformat .%Y-%m-%d.log
+    dateext
+    sharedscripts
+    postrotate
+        docker exec nginx nginx -s reload
+    endscript
+}
