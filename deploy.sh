@@ -24,6 +24,10 @@ else
   echo "Docker Compose is already installed."
 fi
 
+if [ -d "/home/ubuntu/srv" ]; then
+    cd /home/ubuntu/srv
+    echo "Moved to /home/ubuntu/srv."
+
 echo "Starting Docker Compose..."
 sudo docker-compose -f docker-compose.yml down
 sudo docker-compose -f docker-compose.yml up --build -d
