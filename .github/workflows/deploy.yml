@@ -63,4 +63,4 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         working-directory: /home/ubuntu/srv
         script: |
-          sh ./deploy.sh
+          sh deploy.sh
