@@ -27,6 +27,7 @@ fi
 if [ -d "/home/ubuntu/srv" ]; then
     cd /home/ubuntu/srv
     echo "Moved to /home/ubuntu/srv."
+fi
 
 echo "Starting Docker Compose..."
 sudo docker-compose -f docker-compose.yml down
