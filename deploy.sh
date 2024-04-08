@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -o pipefail
 
 # Install Docker if it is not installed
 if ! type docker > /dev/null 2>&1; then
