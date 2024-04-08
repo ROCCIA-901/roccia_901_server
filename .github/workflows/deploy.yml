@@ -61,5 +61,6 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        working-directory: /home/ubuntu/srv
         script: |
-          sh /home/ubuntu/srv/deploy.sh
+          sh ./deploy.sh
