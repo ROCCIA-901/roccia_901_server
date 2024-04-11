@@ -19,10 +19,11 @@ def load_env_settings():
     return env_settings
 
 
-# 필수 설정
-
 django_env = os.getenv("DJANGO_ENV", "dev")
 env = load_env_settings()
+
+# 필수 설정
+
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=True)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
