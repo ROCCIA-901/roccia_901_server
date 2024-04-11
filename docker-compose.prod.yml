@@ -32,5 +32,3 @@ services:
             - django_static:/roccia_901/static
         expose:
             - 8000
-        depends_on:
-            - database
