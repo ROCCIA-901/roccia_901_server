@@ -23,11 +23,11 @@ jobs:
         echo ALLOWED_HOSTS=${{secrets.ALLOWED_HOSTS}} >> .env.prod
         echo DEBUG=${{secrets.DEBUG}} >> .env.prod
 
-        echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> .env.prod
-        echo POSTGRES_USER=${{secrets.POSTGRES_USER}} >> .env.prod
-        echo POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}} >> .env.prod
-        echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> .env.prod
-        echo POSTGRES_PORT=${{secrets.POSTGRES_PORT}} >> .env.prod
+        echo DATABASE_HOST=${{secrets.DATABASE_HOST}} >> .env.prod
+        echo DATABASE_PORT=${{secrets.DATABASE_PORT}} >> .env.prod
+        echo DATABASE_NAME=${{secrets.DATABASE_NAME}} >> .env.prod
+        echo DATABASE_USER=${{secrets.DATABASE_USER}} >> .env.prod
+        echo DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} >> .env.prod
 
         echo EMAIL_HOST_USER=${{secrets.EMAIL_HOST_USER}} >> .env.prod
         echo EMAIL_HOST_PASSWORD=${{secrets.EMAIL_HOST_PASSWORD}} >> .env.prod
