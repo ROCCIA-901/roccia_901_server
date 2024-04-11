@@ -46,10 +46,10 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: mkdir -p /home/ubuntu/srv
 
-    - name: copy source via ssh key
+    - name: Copy source via ssh key excluding logs
       uses: burnett01/rsync-deployments@4.1
       with:
-        switches: -avzr --delete
+        switches: -avzr --delete --exclude='backend/logs/*' --exclude='nginx/logs/*'
         remote_path: /home/ubuntu/srv/
         remote_host: ${{ secrets.SSH_HOST }}
         remote_user: ${{ secrets.SSH_USERNAME }}
