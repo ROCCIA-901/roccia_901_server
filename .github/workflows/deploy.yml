@@ -14,29 +14,29 @@ jobs:
 
     - name: create env file
       run: |
-        touch .env.dev.docker
+        touch .env.prod
 
-        echo DJANGO_ENV=${{secrets.DJANGO_ENV}} >> .env.dev.docker
-        echo DJANGO_SETTINGS_MODULE=${{secrets.DJANGO_SETTINGS_MODULE}} >> .env.dev.docker
+        echo DJANGO_ENV=${{secrets.DJANGO_ENV}} >> .env.prod
+        echo DJANGO_SETTINGS_MODULE=${{secrets.DJANGO_SETTINGS_MODULE}} >> .env.prod
 
-        echo SECRET_KEY=${{secrets.SECRET_KEY}} >> .env.dev.docker
-        echo ALLOWED_HOSTS=${{secrets.ALLOWED_HOSTS}} >> .env.dev.docker
-        echo DEBUG=${{secrets.DEBUG}} >> .env.dev.docker
+        echo SECRET_KEY=${{secrets.SECRET_KEY}} >> .env.prod
+        echo ALLOWED_HOSTS=${{secrets.ALLOWED_HOSTS}} >> .env.prod
+        echo DEBUG=${{secrets.DEBUG}} >> .env.prod
 
-        echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> .env.dev.docker
-        echo POSTGRES_USER=${{secrets.POSTGRES_USER}} >> .env.dev.docker
-        echo POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}} >> .env.dev.docker
-        echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> .env.dev.docker
-        echo POSTGRES_PORT=${{secrets.POSTGRES_PORT}} >> .env.dev.docker
+        echo POSTGRES_DB=${{secrets.POSTGRES_DB}} >> .env.prod
+        echo POSTGRES_USER=${{secrets.POSTGRES_USER}} >> .env.prod
+        echo POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}} >> .env.prod
+        echo POSTGRES_HOST=${{secrets.POSTGRES_HOST}} >> .env.prod
+        echo POSTGRES_PORT=${{secrets.POSTGRES_PORT}} >> .env.prod
 
-        echo EMAIL_HOST_USER=${{secrets.EMAIL_HOST_USER}} >> .env.dev.docker
-        echo EMAIL_HOST_PASSWORD=${{secrets.EMAIL_HOST_PASSWORD}} >> .env.dev.docker
-        echo SERVER_EMAIL=${{secrets.SERVER_EMAIL}} >> .env.dev.docker
-        echo DEFAULT_FROM_MAIL=${{secrets.DEFAULT_FROM_MAIL}} >> .env.dev.docker
+        echo EMAIL_HOST_USER=${{secrets.EMAIL_HOST_USER}} >> .env.prod
+        echo EMAIL_HOST_PASSWORD=${{secrets.EMAIL_HOST_PASSWORD}} >> .env.prod
+        echo SERVER_EMAIL=${{secrets.SERVER_EMAIL}} >> .env.prod
+        echo DEFAULT_FROM_MAIL=${{secrets.DEFAULT_FROM_MAIL}} >> .env.prod
 
-        echo DJANGO_SUPERUSER_PASSWORD=${{secrets.DJANGO_SUPERUSER_PASSWORD}} >> .env.dev.docker
-        echo DJANGO_SUPERUSER_EMAIL=${{secrets.DJANGO_SUPERUSER_EMAIL}} >> .env.dev.docker
-        echo DJANGO_SUPERUSER_USERNAME=${{secrets.DJANGO_SUPERUSER_USERNAME}} >> .env.dev.docker
+        echo DJANGO_SUPERUSER_PASSWORD=${{secrets.DJANGO_SUPERUSER_PASSWORD}} >> .env.prod
+        echo DJANGO_SUPERUSER_EMAIL=${{secrets.DJANGO_SUPERUSER_EMAIL}} >> .env.prod
+        echo DJANGO_SUPERUSER_USERNAME=${{secrets.DJANGO_SUPERUSER_USERNAME}} >> .env.prod
 
     - name: create remote directory
       uses: appleboy/ssh-action@master
@@ -61,7 +61,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        source: ".env.dev.docker"
+        source: ".env.prod"
         target: "/home/ubuntu/srv/backend/"
 
     - name: executing remote ssh commands using password
