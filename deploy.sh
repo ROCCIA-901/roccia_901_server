@@ -24,11 +24,12 @@ else
   echo "Docker Compose is already installed."
 fi
 
+# Moving directory in the prod environment
 if [ -d "/home/ubuntu/srv" ]; then
     cd /home/ubuntu/srv
     echo "Moved to /home/ubuntu/srv."
 fi
 
 echo "Starting Docker Compose..."
-sudo docker-compose -f docker-compose.yml down
-sudo docker-compose -f docker-compose.yml up --build -d
+sudo docker-compose -f docker-compose.prod.yml down
+sudo docker-compose -f docker-compose.prod.yml up --build -d

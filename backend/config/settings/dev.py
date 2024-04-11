@@ -7,21 +7,23 @@ from .base import *
 
 
 def load_env_settings():
+    env_settings = environ.Env()
     if django_env == "dev.docker":
         env_file = os.path.join(BASE_DIR, ".env.dev.docker")
     else:
         env_file = os.path.join(BASE_DIR, ".env.dev")
 
-    env_settings = environ.Env()
     if os.path.isfile(env_file):
-        environ.Env.read_env(env_file=env_file)
+        env_settings.read_env(env_file=env_file)
+
     return env_settings
 
 
-# 필수 설정
-
 django_env = os.getenv("DJANGO_ENV", "dev")
 env = load_env_settings()
+
+# 필수 설정
+
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=True)
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
@@ -52,8 +54,8 @@ else:
 # JWT 설정
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "ALGORITHM": "HS256",
