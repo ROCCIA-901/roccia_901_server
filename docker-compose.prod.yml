@@ -1,0 +1,36 @@
+version: '3'
+
+volumes:
+    django_static:
+
+services:
+    nginx:
+        container_name: nginx
+        build: ./nginx
+        environment:
+            - TZ=Asia/Seoul
+        image: docker-server/nginx
+        restart: always
+        volumes:
+            - ./nginx/logs:/var/log/nginx
+            - django_static:/roccia_901/static
+        ports:
+            - "80:80"
+        depends_on:
+            - backend
+
+    backend:
+        container_name: backend
+        build: ./backend
+        image: docker-server/backend
+        env_file:
+            - ./backend/.env.prod
+        restart: always
+        command: sh -c "./init.sh"
+        volumes:
+            - ./backend/logs:/roccia_901/logs
+            - django_static:/roccia_901/static
+        expose:
+            - 8000
+        depends_on:
+            - database
