@@ -48,6 +48,7 @@ def send_auth_code_to_email(receiver: str, code: int) -> None:
 class UserRegistrationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
