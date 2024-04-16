@@ -40,6 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES: tuple[tuple[str, str], ...] = (
         ("운영진", "운영진"),
         ("부원", "부원"),
+        ("관리자", "관리자"),
     )
 
     WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
@@ -47,6 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("더클라임 연남", "더클라임 연남"),
         ("더클라임 양재", "더클라임 양재"),
         ("더클라임 신림", "더클라임 신림"),
+        ("더클라임 마곡", "더클라임 마곡"),
     )
 
     WORKOUT_LEVELS: tuple[tuple[int, str], ...] = (
