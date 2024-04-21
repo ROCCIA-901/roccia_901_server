@@ -27,6 +27,18 @@ DATABASES = {
     }
 }
 
+# Redis 설정
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_URI", default=""),
+        "OPTION": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
 # JWT 설정
 
 SIMPLE_JWT = {
