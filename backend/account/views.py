@@ -114,8 +114,8 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
         serializer = UserRegisterEmailVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        receiver = serializer.validated_data.get("email")
-        code = random.randint(10000, 99999)
+        receiver: str = serializer.validated_data.get("email")
+        code: int = random.randint(10000, 99999)
         send_auth_code_to_email(receiver, code)
 
         cache.set(f"{receiver}:register:code", code, timeout=600)
@@ -138,12 +138,14 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         serializer = UserRegisterAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data.get("email")
-        # UserRegistrationEmailAuthStatus.objects.filter(email=email).update(status=True)
+        receiver: str = serializer.validated_data.get("email")
+
+        cache.set(f"{receiver}:register:status", "certified", timeout=3600)
+
         return Response(
             # fmt: off
             data={
-                "detail": "회원가입을 위한 인증번호 확인에 성공했습니다.",
+                "detail": "회원가입을 위한 인증번호 확인에 성공했습니다. 인증은 1시간 동안 유효합니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
