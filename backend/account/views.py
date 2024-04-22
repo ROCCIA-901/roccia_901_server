@@ -1,5 +1,6 @@
 import random
 
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework import status
@@ -12,11 +13,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from account.models import (
-    PasswordUpdateEmailAuthStatus,
-    User,
-    UserRegistrationEmailAuthStatus,
-)
+from account.models import PasswordUpdateEmailAuthStatus, User
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
@@ -121,7 +118,8 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
         code = random.randint(10000, 99999)
         send_auth_code_to_email(receiver, code)
 
-        UserRegistrationEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
+        cache.set(f"{receiver}:register:code", code, timeout=600)
+        cache.set(f"{receiver}:register:status", "uncertified", timeout=600)
 
         return Response(
             # fmt: off
@@ -141,7 +139,7 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data.get("email")
-        UserRegistrationEmailAuthStatus.objects.filter(email=email).update(status=True)
+        # UserRegistrationEmailAuthStatus.objects.filter(email=email).update(status=True)
         return Response(
             # fmt: off
             data={
