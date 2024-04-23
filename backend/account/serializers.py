@@ -120,6 +120,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def validate_email(self, value: str) -> str:
         if User.objects.filter(email=value).exists():
             raise InvalidFieldException("이미 존재하는 이메일입니다.")
+
+        if cache.get(f"{value}:register:status") is None or cache.get(f"{value}:register:status") == "uncertified":
+            raise InvalidFieldStateException("인증이 안 된 이메일입니다.")
+
         return value
 
     def validate_username(self, value: str) -> str:
