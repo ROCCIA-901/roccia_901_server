@@ -32,10 +32,10 @@ from config.exceptions import (
 )
 
 
-def send_auth_code_to_email(receiver: str, code: int) -> None:
+def send_auth_code_to_email(type: str, receiver: str, code: int) -> None:
     try:
-        email_subject = "[ROCCIA 901] 본인 확인 인증번호 입니다."
-        email_body = f"본인확인을 위해 인증번호 [{code}]를 입력해 주세요."
+        email_subject = "[ROCCIA 901] 본인 확인 인증 번호 입니다."
+        email_body = f"{type}을 위해 전송된 이메일입니다.\n 본인확인을 위해 인증 번호 [{code}]를 입력해 주세요."
 
         send_mail(subject=email_subject, message=email_body, from_email="ROCCIA 901", recipient_list=[receiver])
     except Exception as e:
@@ -119,7 +119,7 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
         cache.set(f"{receiver}:register:code", code, timeout=600)
         cache.set(f"{receiver}:register:status", "uncertified", timeout=600)
 
-        send_auth_code_to_email(receiver, code)
+        send_auth_code_to_email("회원가입", receiver, code)
 
         return Response(
             # fmt: off
@@ -139,7 +139,6 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         receiver: str = serializer.validated_data.get("email")
-
         cache.set(f"{receiver}:register:status", "certified", timeout=3600)
 
         return Response(
@@ -162,7 +161,7 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
 
         receiver = serializer.validated_data.get("email")
         code = random.randint(10000, 99999)
-        send_auth_code_to_email(receiver, code)
+        send_auth_code_to_email("비밀번호 변경", receiver, code)
 
         PasswordUpdateEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
 
