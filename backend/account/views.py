@@ -116,10 +116,10 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
 
         receiver: str = serializer.validated_data.get("email")
         code: int = random.randint(10000, 99999)
-        send_auth_code_to_email(receiver, code)
-
         cache.set(f"{receiver}:register:code", code, timeout=600)
         cache.set(f"{receiver}:register:status", "uncertified", timeout=600)
+
+        send_auth_code_to_email(receiver, code)
 
         return Response(
             # fmt: off

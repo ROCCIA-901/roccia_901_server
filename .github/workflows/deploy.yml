@@ -38,6 +38,8 @@ jobs:
         echo DJANGO_SUPERUSER_EMAIL=${{secrets.DJANGO_SUPERUSER_EMAIL}} >> .env.prod
         echo DJANGO_SUPERUSER_USERNAME=${{secrets.DJANGO_SUPERUSER_USERNAME}} >> .env.prod
 
+        echo REDIS_URI=${{secrets.REDIS_URI}} >> .env.prod
+
     - name: create remote directory
       uses: appleboy/ssh-action@master
       with:
