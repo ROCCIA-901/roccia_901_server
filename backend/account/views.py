@@ -185,10 +185,13 @@ class PasswordUpdateAuthCodeValidationAPIView(APIView):
         serializer = PasswordUpdateAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        receiver: str = serializer.validated_data.get("email")
+        cache.set(f"{receiver}:password:status", "certified", timeout=600)
+
         return Response(
             # fmt: off
             data={
-                "detail": "비밀번호 변경을 위한 인증번호 확인에 성공했습니다.",
+                "detail": "비밀번호 변경을 위한 인증번호 확인에 성공했습니다. 인증은 10분 동안 유효합니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
