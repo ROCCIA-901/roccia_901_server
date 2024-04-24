@@ -32,3 +32,11 @@ services:
             - django_static:/roccia_901/static
         expose:
             - 8000
+        depends_on:
+            - cache
+
+    cache:
+        container_name: cache
+        image: redis:7
+        ports:
+            - "6379:6379"

@@ -1,5 +1,6 @@
 import random
 
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import transaction
 from rest_framework import status
@@ -12,11 +13,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from account.models import (
-    PasswordUpdateEmailAuthStatus,
-    User,
-    UserRegistrationEmailAuthStatus,
-)
+from account.models import PasswordUpdateEmailAuthStatus, User
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
@@ -48,6 +45,7 @@ def send_auth_code_to_email(receiver: str, code: int) -> None:
 class UserRegistrationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -116,11 +114,12 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
         serializer = UserRegisterEmailVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        receiver = serializer.validated_data.get("email")
-        code = random.randint(10000, 99999)
+        receiver: str = serializer.validated_data.get("email")
+        code: int = random.randint(10000, 99999)
         send_auth_code_to_email(receiver, code)
 
-        UserRegistrationEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
+        cache.set(f"{receiver}:register:code", code, timeout=600)
+        cache.set(f"{receiver}:register:status", "uncertified", timeout=600)
 
         return Response(
             # fmt: off
@@ -139,12 +138,14 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         serializer = UserRegisterAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        email = serializer.validated_data.get("email")
-        UserRegistrationEmailAuthStatus.objects.filter(email=email).update(status=True)
+        receiver: str = serializer.validated_data.get("email")
+
+        cache.set(f"{receiver}:register:status", "certified", timeout=3600)
+
         return Response(
             # fmt: off
             data={
-                "detail": "회원가입을 위한 인증번호 확인에 성공했습니다.",
+                "detail": "회원가입을 위한 인증번호 확인에 성공했습니다. 인증은 1시간 동안 유효합니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on

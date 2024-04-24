@@ -17,5 +17,5 @@ class Command(BaseCommand):
                 password = os.getenv("DJANGO_SUPERUSER_PASSWORD", "")
 
                 User.objects.create_superuser(
-                    email=email, username=username, password=password, workout_level=0, profile_number=0
+                    email=email, username=username, password=password, role="관리자", workout_level=0, profile_number=0
                 )

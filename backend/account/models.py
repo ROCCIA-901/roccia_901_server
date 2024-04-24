@@ -40,6 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES: tuple[tuple[str, str], ...] = (
         ("운영진", "운영진"),
         ("부원", "부원"),
+        ("관리자", "관리자"),
     )
 
     WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
@@ -47,6 +48,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("더클라임 연남", "더클라임 연남"),
         ("더클라임 양재", "더클라임 양재"),
         ("더클라임 신림", "더클라임 신림"),
+        ("더클라임 마곡", "더클라임 마곡"),
     )
 
     WORKOUT_LEVELS: tuple[tuple[int, str], ...] = (
@@ -101,16 +103,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "user"
-
-
-class UserRegistrationEmailAuthStatus(models.Model):
-    email = models.EmailField(unique=True, help_text="이메일")  # type: ignore
-    code = models.IntegerField(help_text="인증 번호")  # type: ignore
-    created_at = models.DateTimeField(auto_now=True, help_text="생성 시간")  # type: ignore
-    status = models.BooleanField(default=False, help_text="인증 상태")  # type: ignore
-
-    class Meta:
-        db_table = "user_register_auth_status"
 
 
 class PasswordUpdateEmailAuthStatus(models.Model):
