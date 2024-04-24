@@ -13,7 +13,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from account.models import PasswordUpdateEmailAuthStatus, User
+from account.models import User
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
@@ -32,10 +32,10 @@ from config.exceptions import (
 )
 
 
-def send_auth_code_to_email(receiver: str, code: int) -> None:
+def send_auth_code_to_email(type: str, receiver: str, code: int) -> None:
     try:
-        email_subject = "[ROCCIA 901] 본인 확인 인증번호 입니다."
-        email_body = f"본인확인을 위해 인증번호 [{code}]를 입력해 주세요."
+        email_subject = "[ROCCIA 901] 본인 확인 인증 번호 입니다."
+        email_body = f"{type}을 위해 전송된 이메일입니다.\n 본인확인을 위해 인증 번호 [{code}]를 입력해 주세요."
 
         send_mail(subject=email_subject, message=email_body, from_email="ROCCIA 901", recipient_list=[receiver])
     except Exception as e:
@@ -116,10 +116,11 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
 
         receiver: str = serializer.validated_data.get("email")
         code: int = random.randint(10000, 99999)
+
         cache.set(f"{receiver}:register:code", code, timeout=600)
         cache.set(f"{receiver}:register:status", "uncertified", timeout=600)
 
-        send_auth_code_to_email(receiver, code)
+        send_auth_code_to_email("회원가입", receiver, code)
 
         return Response(
             # fmt: off
@@ -139,7 +140,6 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         receiver: str = serializer.validated_data.get("email")
-
         cache.set(f"{receiver}:register:status", "certified", timeout=3600)
 
         return Response(
@@ -162,9 +162,11 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
 
         receiver = serializer.validated_data.get("email")
         code = random.randint(10000, 99999)
-        send_auth_code_to_email(receiver, code)
 
-        PasswordUpdateEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
+        cache.set(f"{receiver}:password:code", code, timeout=600)
+        cache.set(f"{receiver}:password:status", "uncertified", timeout=600)
+
+        send_auth_code_to_email("비밀번호 변경", receiver, code)
 
         return Response(
             # fmt: off
@@ -183,10 +185,13 @@ class PasswordUpdateAuthCodeValidationAPIView(APIView):
         serializer = PasswordUpdateAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        receiver: str = serializer.validated_data.get("email")
+        cache.set(f"{receiver}:password:status", "certified", timeout=600)
+
         return Response(
             # fmt: off
             data={
-                "detail": "비밀번호 변경을 위한 인증번호 확인에 성공했습니다.",
+                "detail": "비밀번호 변경을 위한 인증번호 확인에 성공했습니다. 인증은 10분 동안 유효합니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
@@ -218,7 +223,7 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
 class UserLogoutAPIView(APIView):
 
     def post(self, request: Request) -> Response:
-        serializer: LogoutSerializer = LogoutSerializer(data=request.data)
+        serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -241,12 +246,9 @@ class UserPasswordUpdateAPIView(APIView):
     permission_classes = [AllowAny]
 
     def patch(self, request: Request) -> Response:
-        serializer: PasswordUpdateSerializer = PasswordUpdateSerializer(data=request.data)
+        serializer = PasswordUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        email = serializer.validated_data.get("email")
-        PasswordUpdateEmailAuthStatus.objects.filter(email=email).delete()
 
         return Response(
             # fmt: off

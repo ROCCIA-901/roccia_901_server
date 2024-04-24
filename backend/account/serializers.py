@@ -1,15 +1,13 @@
 import re
-from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import authenticate
 from django.core.cache import cache
-from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from account.models import PasswordUpdateEmailAuthStatus, User
+from account.models import User
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -325,23 +323,19 @@ class PasswordUpdateAuthCodeVerificationSerializer(serializers.Serializer):
     )
 
     def validate_email(self, value: str) -> str:
-        if not PasswordUpdateEmailAuthStatus.objects.filter(email=value).exists():
-            raise InvalidFieldException(
-                "해당 이메일의 인증번호 요청 내역이 존재하지 않습니다. 인증번호 요청을 진행해주세요."
-            )
+        if not cache.get(f"{value}:password:code"):
+            raise InvalidFieldException("해당 이메일의 인증번호 요청 내역이 존재하지 않습니다.")
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        email = data["email"]
-        code = data["code"]
+        receiver = data["email"]
+        entered_code = data["code"]
 
-        auth_status = PasswordUpdateEmailAuthStatus.objects.get(email=email)
+        if cache.get(f"{receiver}:password:status") == "certified":
+            raise InvalidFieldStateException("이미 인증 완료된 사용자입니다.")
 
-        if auth_status.code != code:
+        if cache.get(f"{receiver}:password:code") != entered_code:
             raise InvalidFieldException("인증번호가 일치하지 않습니다.")
-
-        if timezone.now() - auth_status.created_at > timedelta(minutes=10):
-            raise InvalidFieldException("인증번호의 유효시간이 지났습니다.")
 
         return data
 
@@ -402,6 +396,10 @@ class PasswordUpdateSerializer(serializers.Serializer):
     def validate_email(self, value: str) -> str:
         if not User.objects.filter(email=value).exists():
             raise InvalidFieldException("존재하지 않는 이메일입니다.")
+
+        if cache.get(f"{value}:password:status") != "certified":
+            raise InvalidFieldException("비밀번호 변경 전에 인증이 필요합니다.")
+
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
