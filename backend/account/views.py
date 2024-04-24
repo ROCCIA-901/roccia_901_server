@@ -223,7 +223,7 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
 class UserLogoutAPIView(APIView):
 
     def post(self, request: Request) -> Response:
-        serializer: LogoutSerializer = LogoutSerializer(data=request.data)
+        serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -246,12 +246,9 @@ class UserPasswordUpdateAPIView(APIView):
     permission_classes = [AllowAny]
 
     def patch(self, request: Request) -> Response:
-        serializer: PasswordUpdateSerializer = PasswordUpdateSerializer(data=request.data)
+        serializer = PasswordUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        email = serializer.validated_data.get("email")
-        # PasswordUpdateEmailAuthStatus.objects.filter(email=email).delete()
 
         return Response(
             # fmt: off

@@ -396,6 +396,10 @@ class PasswordUpdateSerializer(serializers.Serializer):
     def validate_email(self, value: str) -> str:
         if not User.objects.filter(email=value).exists():
             raise InvalidFieldException("존재하지 않는 이메일입니다.")
+
+        if cache.get(f"{value}:password:status") != "certified":
+            raise InvalidFieldException("비밀번호 변경 전에 인증이 필요합니다.")
+
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
