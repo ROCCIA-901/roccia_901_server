@@ -103,12 +103,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "user"
-
-
-class PasswordUpdateEmailAuthStatus(models.Model):
-    email = models.EmailField(unique=True, help_text="이메일")  # type: ignore
-    code = models.IntegerField(help_text="인증 번호")  # type: ignore
-    created_at = models.DateTimeField(auto_now=True, help_text="생성 시간")  # type: ignore
-
-    class Meta:
-        db_table = "password_update_email_auth_status"

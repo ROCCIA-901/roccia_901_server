@@ -13,7 +13,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from account.models import PasswordUpdateEmailAuthStatus, User
+from account.models import User
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
@@ -116,6 +116,7 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
 
         receiver: str = serializer.validated_data.get("email")
         code: int = random.randint(10000, 99999)
+
         cache.set(f"{receiver}:register:code", code, timeout=600)
         cache.set(f"{receiver}:register:status", "uncertified", timeout=600)
 
@@ -161,9 +162,11 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
 
         receiver = serializer.validated_data.get("email")
         code = random.randint(10000, 99999)
-        send_auth_code_to_email("비밀번호 변경", receiver, code)
 
-        PasswordUpdateEmailAuthStatus.objects.update_or_create(email=receiver, defaults={"code": code})
+        cache.set(f"{receiver}:password:code", code, timeout=600)
+        cache.set(f"{receiver}:password:status", "uncertified", timeout=600)
+
+        send_auth_code_to_email("비밀번호 변경", receiver, code)
 
         return Response(
             # fmt: off
@@ -245,7 +248,7 @@ class UserPasswordUpdateAPIView(APIView):
         serializer.save()
 
         email = serializer.validated_data.get("email")
-        PasswordUpdateEmailAuthStatus.objects.filter(email=email).delete()
+        # PasswordUpdateEmailAuthStatus.objects.filter(email=email).delete()
 
         return Response(
             # fmt: off
