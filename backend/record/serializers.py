@@ -1,6 +1,7 @@
 from typing import Any
 
 from rest_framework import serializers
+from rest_framework.fields import IntegerField, ReadOnlyField
 
 from account.models import User
 from config.exceptions import InvalidFieldException
@@ -27,7 +28,6 @@ class BoulderProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = BoulderProblem
         fields: tuple = (
-            "id",
             "workout_level",
             "count",
         )
@@ -40,6 +40,8 @@ class BoulderProblemSerializer(serializers.ModelSerializer):
 
 
 class RecordSerializer(serializers.ModelSerializer):
+    user_id = ReadOnlyField(source="user__id")
+
     workout_location = serializers.CharField(
         required=True,
         error_messages={
@@ -67,12 +69,10 @@ class RecordSerializer(serializers.ModelSerializer):
         model: type[Record] = Record
         fields: tuple[str, ...] = (
             "id",
-            "user",
+            "user_id",
             "workout_location",
             "start_time",
             "end_time",
-            "created_at",
-            "updated_at",
             "boulder_problems",
         )
 
@@ -99,7 +99,7 @@ class RecordSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data: dict[str, Any]) -> dict[str, Any]:
         probs_data = validated_data.pop("boulder_problems")
 
-        instance.user = validated_data.get("user", instance.user)
+        instance.user = validated_data.get("user_id", instance.user)
         instance.workout_location = validated_data.get("workout_location", instance.workout_location)
         instance.start_time = validated_data.get("start_time", instance.start_time)
         instance.end_time = validated_data.get("end_time", instance.end_time)
@@ -122,17 +122,16 @@ class BoulderProblemCreateSerializer(serializers.ModelSerializer):
 
 
 class RecordCreateSerializer(serializers.ModelSerializer):
+    user_id = IntegerField(source="user__id")
     boulder_problems = BoulderProblemSerializer(many=True)
 
     class Meta:
         model: type[Record] = Record
         fields: tuple[str, ...] = (
-            "user",
+            "user_id",
             "workout_location",
             "start_time",
             "end_time",
-            "created_at",
-            "updated_at",
             "boulder_problems",
         )
 
