@@ -43,7 +43,9 @@ class WeeklyRankingViewSet(viewsets.ModelViewSet):
             # fmt: off
             data={
                 "detail": "주차별 랭킹 목록 조회를 성공했습니다.",
-                "data": data
+                "data": {
+                    "weekly_rankings": data,
+                },
             },
             status=status.HTTP_200_OK
             # fmt: on
@@ -73,15 +75,17 @@ def get_generation_rankings(request: Request) -> Response:
         # fmt: off
         data={
             "detail": "기수별 랭킹 조회를 성공했습니다.",
-            "data": [
-                {
-                    "generation": generation,
-                    "ranking": RankingSerializer(
-                        generation_rankings.filter(generation=generation) .order_by("-score"),
-                        many=True
-                    ).data
-                } for generation in generations
-            ]
+            "data": {
+                "generation_rankings": [
+                    {
+                        "generation": generation,
+                        "ranking": RankingSerializer(
+                            generation_rankings.filter(generation=generation) .order_by("-score"),
+                            many=True
+                        ).data
+                    } for generation in generations
+                ],
+            },
         },
         status=status.HTTP_200_OK
         # fmt: on

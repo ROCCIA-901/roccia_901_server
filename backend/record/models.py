@@ -4,11 +4,26 @@ from account.models import User
 
 
 class Record(models.Model):
+
+    WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
+        ("더클라임 일산", "더클라임 일산"),
+        ("더클라임 연남", "더클라임 연남"),
+        ("더클라임 양재", "더클라임 양재"),
+        ("더클라임 신림", "더클라임 신림"),
+        ("더클라임 마곡", "더클라임 마곡"),
+        ("더클라임 홍대", "더클라임 홍대"),
+        ("더클라임 서울대", "더클라임 서울대"),
+        ("더클라임 강남", "더클라임 강남"),
+        ("더클라임 사당", "더클라임 사당"),
+        ("더클라임 신사", "더클라임 신사"),
+        ("더클라임 논현", "더클라임 논현"),
+    )
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="records", help_text="사용자 ID"
     )  # type: ignore
     workout_location = models.CharField(
-        max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, help_text="운동 지점"
+        max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점"
     )  # type: ignore
     start_time = models.DateTimeField(help_text="운동 시작 시간")  # type: ignore
     end_time = models.DateTimeField(help_text="운동 종료 시간")  # type: ignore

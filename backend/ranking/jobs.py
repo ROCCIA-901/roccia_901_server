@@ -29,6 +29,14 @@ def get_week_start_end(current_date_utc: datetime = datetime.now(pytz.utc), zone
     return start_of_week.date(), end_of_week.date()
 
 
+def get_week_start(week: int) -> datetime:
+    return datetime.fromisocalendar(datetime.now().year, week, 1)
+
+
+def delete_rankings(generation: int, week: int) -> None:
+    Ranking.objects.filter(generation=generation, week=week).delete()
+
+
 def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tuple:
     # TODO: handle pytz.UnknownTimeZoneError exceptions
     monday, sunday = get_week_start_end(current_date_utc)
@@ -53,17 +61,20 @@ def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tup
         .order_by("-total_score")
     )
 
-    year_week_week_day = tuple(current_date_utc.isocalendar())
+    year_week_day = tuple(current_date_utc.isocalendar())
+
+    # remove previous rankings for the same week
+    delete_rankings(Ranking.CUR_GENERATION, year_week_day[1])
     # add weekly_scores to Ranking model
     objs = [
         Ranking(
             user_id=weekly_score["record__user__id"],
             generation=Ranking.CUR_GENERATION,
-            week=year_week_week_day[1],
+            week=year_week_day[1],
             score=weekly_score["total_score"],
         )
         for weekly_score in weekly_scores
     ]
     Ranking.objects.bulk_create(objs)
 
-    return year_week_week_day
+    return year_week_day
