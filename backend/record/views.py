@@ -16,12 +16,16 @@ class RecordViewSet(viewsets.ModelViewSet):
     serializer_class = RecordSerializer
 
     def get_serializer_class(self):
-        if self.action == "list" or "retrieve":
-            return RecordSerializer
-        return RecordCreateSerializer
+        if self.action == "create":
+            return RecordCreateSerializer
+        return RecordSerializer
 
     def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
+        data = request.data
+        data["user"] = request.user.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         return Response(
             data={
                 "detail": "운동 기록이 생성되었습니다.",
@@ -70,7 +74,7 @@ class RecordViewSet(viewsets.ModelViewSet):
             data={
                 "detail": "운동 기록이 삭제되었습니다.",
             },
-            status=status.HTTP_204_NO_CONTENT,
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=False, methods=["get"], url_path="dates")
