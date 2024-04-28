@@ -8,6 +8,7 @@ jobs:
   build:
     name: Deployment
     runs-on: ubuntu-latest
+    if: github.repository == 'ROCCIA-901/roccia_901_server'
     steps:
     - name: checkout
       uses: actions/checkout@master
