@@ -1,7 +1,12 @@
 import pytest
 
-from account.serializers import UserRegistrationSerializer
-from config.exceptions import InvalidFieldException, InvalidFieldStateException
+from account.models import User
+from account.serializers import UserLoginSerializer, UserRegistrationSerializer
+from config.exceptions import (
+    InvalidAccountException,
+    InvalidFieldException,
+    InvalidFieldStateException,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -126,5 +131,54 @@ class TestUserRegistrationSerializer:
         user_data["password"] = password
         user_data["password_confirmation"] = password_confirmation
         serializer = UserRegistrationSerializer(data=user_data)
+        with pytest.raises(Exception):
+            serializer.is_valid(raise_exception=True)
+
+
+class TestUserLoginSerializer:
+
+    def test_user_login_serializer_with_valid_data(self, user_login_data, mock_exists, mock_authenticate):
+        mock_exists.return_value = True
+        mock_authenticate.return_value = User(email="test@example.com")
+
+        serializer = UserLoginSerializer(data=user_login_data)
+        assert serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        assert validated_data["email"] == "test@example.com"
+        assert validated_data["password"] == "Password1!"
+
+        mock_authenticate.assert_called_once_with(email="test@example.com", password="Password1!")
+
+    def test_user_login_with_existing_email(self, mock_exists, user_login_data):
+        mock_exists.return_value = False
+
+        serializer = UserLoginSerializer(data=user_login_data)
+        with pytest.raises(InvalidAccountException):
+            serializer.is_valid(raise_exception=True)
+
+    def test_user_login_with_wrong_account(self, mock_exists, user_login_data, mock_authenticate):
+        mock_exists.return_value = True
+        mock_authenticate.return_value = None
+
+        serializer = UserLoginSerializer(data=user_login_data)
+        with pytest.raises(InvalidFieldException):
+            serializer.is_valid(raise_exception=True)
+
+    @pytest.mark.parametrize(
+        "email, password",
+        [
+            ("", ""),
+            (None, ""),
+            ("", None),
+            (None, None),
+        ],
+    )
+    def test_user_login_with_empty_or_none_field(self, mock_exists, mock_authenticate, email, password):
+        mock_exists.return_value = False
+        mock_authenticate.return_value = User()
+
+        user_data = {"email": email, "password": password}
+        serializer = UserLoginSerializer(data=user_data)
         with pytest.raises(Exception):
             serializer.is_valid(raise_exception=True)

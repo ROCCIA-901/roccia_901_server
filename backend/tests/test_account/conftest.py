@@ -35,3 +35,17 @@ def mock_cache():
 def mock_exists():
     with patch("django.db.models.query.QuerySet.exists") as mock:
         yield mock
+
+
+@pytest.fixture
+def user_login_data():
+    return {
+        "email": "test@example.com",
+        "password": "Password1!",
+    }
+
+
+@pytest.fixture
+def mock_authenticate():
+    with patch("account.serializers.authenticate") as mock:
+        yield mock
