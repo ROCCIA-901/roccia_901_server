@@ -1,7 +1,11 @@
 import pytest
 
 from account.models import User
-from account.serializers import UserLoginSerializer, UserRegistrationSerializer
+from account.serializers import (
+    UserLoginSerializer,
+    UserRegistrationSerializer,
+    UserRetrieveSerializer,
+)
 from config.exceptions import (
     InvalidAccountException,
     InvalidFieldException,
@@ -182,3 +186,22 @@ class TestUserLoginSerializer:
         serializer = UserLoginSerializer(data=user_data)
         with pytest.raises(Exception):
             serializer.is_valid(raise_exception=True)
+
+
+class TestUserRetrieveSerializer:
+    def test_user_retrieve_serializer(self, user):
+        serializer = UserRetrieveSerializer(instance=user)
+        expected_data = {
+            "id": user.id,
+            "email": user.email,
+            "username": user.username,
+            "generation": user.generation,
+            "role": user.role,
+            "workout_location": user.workout_location,
+            "workout_level": user.workout_level,
+            "profile_number": user.profile_number,
+            "introduction": user.introduction,
+        }
+
+        assert serializer.data == expected_data
+        assert serializer.data.keys() == expected_data.keys()

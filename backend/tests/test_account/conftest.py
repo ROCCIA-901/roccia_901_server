@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
+from tests.test_account.factories import UserFactory
+
 
 @pytest.fixture
 def mock_send_mail():
@@ -49,3 +51,8 @@ def user_login_data():
 def mock_authenticate():
     with patch("account.serializers.authenticate") as mock:
         yield mock
+
+
+@pytest.fixture
+def user():
+    return UserFactory.build()
