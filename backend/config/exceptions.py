@@ -32,6 +32,12 @@ class InvalidAccountException(APIException):
     default_code = "invalid_account"
 
 
+class InvalidRefreshTokenException(APIException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    default_detail = "유효하지 않은 리프레쉬 토큰입니다."
+    default_code = "invalid_refresh_token"
+
+
 class PermissionFailedException(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_detail = "이 작업을 수행할 권한이 없습니다."

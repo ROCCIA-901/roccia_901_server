@@ -13,6 +13,7 @@ from config.exceptions import (
     InvalidAccountException,
     InvalidFieldException,
     InvalidFieldStateException,
+    InvalidRefreshTokenException,
 )
 
 
@@ -353,7 +354,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         try:
             data = super().validate(attrs)
         except TokenError as e:
-            raise serializers.ValidationError("토큰이 유효하지 않습니다.")
+            raise InvalidRefreshTokenException("토큰이 유효하지 않습니다.")
 
         return data
 
