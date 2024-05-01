@@ -54,5 +54,5 @@ def mock_authenticate():
 
 
 @pytest.fixture
-def user():
+def mock_user_model():
     return UserFactory.build()

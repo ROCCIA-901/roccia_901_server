@@ -1,8 +1,10 @@
 import pytest
+from rest_framework.exceptions import ValidationError
 
 from account.models import User
 from account.serializers import (
     UserLoginSerializer,
+    UserRegisterEmailVerificationSerializer,
     UserRegistrationSerializer,
     UserRetrieveSerializer,
 )
@@ -189,19 +191,38 @@ class TestUserLoginSerializer:
 
 
 class TestUserRetrieveSerializer:
-    def test_user_retrieve_serializer(self, user):
-        serializer = UserRetrieveSerializer(instance=user)
+    def test_user_retrieve_serializer(self, mock_user_model):
+        serializer = UserRetrieveSerializer(instance=mock_user_model)
         expected_data = {
-            "id": user.id,
-            "email": user.email,
-            "username": user.username,
-            "generation": user.generation,
-            "role": user.role,
-            "workout_location": user.workout_location,
-            "workout_level": user.workout_level,
-            "profile_number": user.profile_number,
-            "introduction": user.introduction,
+            "id": mock_user_model.id,
+            "email": mock_user_model.email,
+            "username": mock_user_model.username,
+            "generation": mock_user_model.generation,
+            "role": mock_user_model.role,
+            "workout_location": mock_user_model.workout_location,
+            "workout_level": mock_user_model.workout_level,
+            "profile_number": mock_user_model.profile_number,
+            "introduction": mock_user_model.introduction,
         }
 
         assert serializer.data == expected_data
         assert serializer.data.keys() == expected_data.keys()
+
+
+class TestUserRegisterEmailVerificationSerializer:
+    def test_exist_email_verification(self, mock_exists):
+        mock_exists.return_value = True
+        data = {"email": "test@example.com"}
+
+        serializer = UserRegisterEmailVerificationSerializer(data=data)
+        with pytest.raises(InvalidFieldException):
+            serializer.is_valid(raise_exception=True)
+
+    @pytest.mark.parametrize("email", ["", None])
+    def test_email_field_verification(self, mock_exists, email):
+        mock_exists.return_value = False
+        data = {"email": email}
+
+        serializer = UserRegisterEmailVerificationSerializer(data=data)
+        with pytest.raises(ValidationError):
+            serializer.is_valid(raise_exception=True)
