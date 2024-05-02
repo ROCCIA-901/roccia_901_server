@@ -78,3 +78,12 @@ DEFAULT_FROM_MAIL = env("DEFAULT_FROM_MAIL", default="")
 # 정적 파일 설정
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
+# cors 설정
+
+CORS_ORIGIN_WHITELIST = (
+    "http://roccia-901.com",
+    "https://roccia-901.com",
+    "http://www.roccia-901.com",
+    "https://www.roccia-901.com",
+)
