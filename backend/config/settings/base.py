@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "attendance.apps.AttendanceConfig",
     "record.apps.RecordConfig",
     "ranking.apps.RankingConfig",
+    "mypage.apps.MypageConfig",
 ]
 
 MIDDLEWARE = [
