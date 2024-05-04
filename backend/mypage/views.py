@@ -39,8 +39,7 @@ class MypageAPIView(APIView):
         return Response(
             # fmt: off
             data={
-                "detail": "마이페이지 수정을 성공했습니다.",
-                "data": serializer.data,
+                "detail": "사용자 정보 수정을 성공했습니다.",
             },
             status=status.HTTP_200_OK
             # fmt: on
