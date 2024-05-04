@@ -44,6 +44,12 @@ class PermissionFailedException(APIException):
     default_code = "permission_failed"
 
 
+class UserNotExistException(APIException):
+    status_code = status.HTTP_404_NOT_FOUND
+    default_detail = "존재하지 않는 사용자입니다."
+    default_code = "user_not_exist"
+
+
 class NotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = "존재하지 않는 자원입니다."
