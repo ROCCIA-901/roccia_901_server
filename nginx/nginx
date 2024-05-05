@@ -1,4 +1,4 @@
-/var/log/nginx/*.log {
+/home/ubuntu/srv/nginx/logs/*.log {
     create 0644 root root
     daily
     missingok
@@ -6,10 +6,10 @@
     compress
     delaycompress
     notifempty
-    dateformat .%Y-%m-%d.log
+    dateformat .%Y-%m-%d
     dateext
     sharedscripts
     postrotate
-        docker exec nginx nginx -s reload
+        sudo docker exec nginx nginx -s reload
     endscript
 }
