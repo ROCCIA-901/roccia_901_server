@@ -78,7 +78,7 @@ def get_generation_rankings(request: Request) -> Response:
             "data": {
                 "generation_rankings": [
                     {
-                        "generation": generation,
+                        "generation": f"{generation}기",
                         "ranking": RankingSerializer(
                             generation_rankings.filter(generation=generation) .order_by("-score"),
                             many=True
