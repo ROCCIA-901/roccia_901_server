@@ -24,6 +24,13 @@ else
   echo "Docker Compose is already installed."
 fi
 
+# Copy Nginx logrotate file to host
+if sudo cp -f /home/ubuntu/srv/nginx/nginx /etc/logrotate.d/nginx; then
+    echo "File successfully copied."
+else
+    echo "Failed to copy file."
+fi
+
 # Moving directory in the prod environment
 if [ -d "/home/ubuntu/srv" ]; then
     cd /home/ubuntu/srv
