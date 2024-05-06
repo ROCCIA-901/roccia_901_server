@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Any
 
+import pytz
 from rest_framework import serializers
 
 from account.models import User
@@ -39,7 +41,6 @@ class BoulderProblemSerializer(serializers.ModelSerializer):
 
 
 class RecordSerializer(serializers.ModelSerializer):
-
     workout_location = serializers.CharField(
         required=True,
         error_messages={
@@ -129,6 +130,13 @@ class RecordCreateSerializer(serializers.ModelSerializer):
             "end_time",
             "boulder_problems",
         )
+
+    def validate_end_time(self, value: datetime) -> datetime:
+        korea_tz = pytz.timezone("Asia/Seoul")
+        current_time = datetime.now(korea_tz)
+        if current_time < value:
+            raise InvalidFieldException("운동 종료 후 기록할 수 있습니다.")
+        return value
 
     def validate_workout_location(self, value: str) -> str:
         workout_location = [choice[0] for choice in Record.WORKOUT_LOCATION_CHOICES]
