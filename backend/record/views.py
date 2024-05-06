@@ -50,12 +50,13 @@ class RecordViewSet(viewsets.ModelViewSet):
         )
 
     def list(self, request, *args, **kwargs):
-        data = super().list(request, *args, **kwargs)
+        data = Record.objects.filter(user=request.user)  # type: ignore
+        data = self.get_serializer(data, many=True).data
         return Response(
             data={
                 "detail": "모든 운동 기록을 가져왔습니다.",
                 "data": {
-                    "records": data.data,
+                    "records": data,
                 },
             },
             status=status.HTTP_200_OK,
