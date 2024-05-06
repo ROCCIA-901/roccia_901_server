@@ -8,6 +8,8 @@ from record.serializers import WorkoutLevelChoiceField
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    workout_level = WorkoutLevelChoiceField(choices=User.WORKOUT_LEVELS)
+
     class Meta:
         model = User
         fields = [
