@@ -31,23 +31,6 @@ class CustomUserAdmin(UserAdmin):
         (_('Important dates'), {'fields': ('last_login', 'created_at', 'updated_at')}),
     )
 
-    # 사용자 생성 페이지에 표시할 필드 구성
-    """ 추가 기능인데 굳이 필요할까해서 일단 지워둡니다.
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2'),
-        }),
-        (_('Personal info'), {'fields': ('username', 'introduction', 'profile_number')}),
-        (_('Roles and permissions'), {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
-        }),
-        (_('Details'), {
-            'fields': ('role', 'generation', 'workout_location', 'workout_level'),
-        }),
-    )
-     
-     """
     # 사용자 생성 및 수정 페이지에 입력할 때 필드에 대한 도움말 제공
     readonly_fields = ('created_at', 'updated_at')
 
