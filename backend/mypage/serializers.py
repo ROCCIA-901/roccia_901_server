@@ -1,9 +1,9 @@
-from django.db.models import Sum
+from django.db.models import DurationField, ExpressionWrapper, F, Sum
 from rest_framework import serializers
 
 from account.models import User
 from config.exceptions import InvalidFieldException
-from record.models import BoulderProblem
+from record.models import BoulderProblem, Record
 from record.serializers import WorkoutLevelChoiceField
 
 
@@ -31,10 +31,11 @@ class LevelCountSerializer(serializers.Serializer):
 class MypageSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(source="*")
     records = serializers.SerializerMethodField()
+    total_workout_time = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["profile", "records"]
+        fields = ["profile", "total_workout_time", "records"]
 
     def get_records(self, obj):
         level_counts = (
@@ -44,6 +45,20 @@ class MypageSerializer(serializers.ModelSerializer):
             .order_by("workout_level")
         )
         return LevelCountSerializer(level_counts, many=True).data
+
+    def get_total_workout_time(self, obj):
+        total_time_dict = (
+            Record.objects.filter(user=obj)
+            .annotate(workout_time=ExpressionWrapper(F("end_time") - F("start_time"), output_field=DurationField()))
+            .aggregate(total=Sum("workout_time"))
+        )
+        dict_result = total_time_dict["total"]
+        if dict_result is None:
+            return 0
+
+        total_seconds = dict_result.total_seconds()
+        total_minutes = int(total_seconds // 60)
+        return total_minutes
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

@@ -3,19 +3,38 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from account.models import User
 from config.exceptions import UserNotExistException
-from mypage.serializers import MypageSerializer, UserUpdateSerializer
+from mypage.serializers import (
+    MypageSerializer,
+    UserProfileSerializer,
+    UserUpdateSerializer,
+)
+
+
+def get_user(user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        return user
+    except Exception:
+        raise UserNotExistException()
 
 
 class MypageAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        user = request.user
-        if not user:
-            raise UserNotExistException()
+        user_id = request.query_params.get("user_id")
 
-        serializer = MypageSerializer(user)
+        if user_id:
+            user = get_user(user_id)
+            serializer = UserProfileSerializer(user)
+        else:
+            user = request.user
+            if not user:
+                raise UserNotExistException()
+
+            serializer = MypageSerializer(user)
 
         return Response(
             # fmt: off
