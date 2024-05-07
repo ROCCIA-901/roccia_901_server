@@ -12,13 +12,13 @@ from record.models import BoulderProblem
 # for a given date in Korea Standard Time.
 # Example usage:
 # monday, sunday = get_week_start_end_kst(datetime.now(pytz.utc))
-def get_week_start_end(current_date_utc: datetime = datetime.now(pytz.utc), zone: str = TIME_ZONE) -> tuple[date, date]:
+def get_week_start_end(target_date_utc: datetime = datetime.now(pytz.utc), zone: str = TIME_ZONE) -> tuple[date, date]:
     # Get date in Timezone.
     try:
         timezone = pytz.timezone(zone)
     except pytz.UnknownTimeZoneError:
         raise ValueError("Unknown timezone")
-    current_date_in_timezone: datetime = current_date_utc.astimezone(timezone)
+    current_date_in_timezone: datetime = target_date_utc.astimezone(timezone)
 
     # Calculate the start of the week (Monday).
     start_of_week = current_date_in_timezone - timedelta(days=current_date_in_timezone.weekday())
