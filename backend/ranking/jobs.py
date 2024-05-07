@@ -37,9 +37,9 @@ def delete_rankings(generation: int, week: int) -> None:
     Ranking.objects.filter(generation=generation, week=week).delete()
 
 
-def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tuple:
+def compile_rankings(target_date_utc: datetime = datetime.now(pytz.utc)) -> tuple:
     # TODO: handle pytz.UnknownTimeZoneError exceptions
-    monday, sunday = get_week_start_end(current_date_utc)
+    monday, sunday = get_week_start_end(target_date_utc)
     monday_datetime = pytz.timezone(TIME_ZONE).localize(datetime.combine(monday, datetime.min.time()))
     sunday_datetime = pytz.timezone(TIME_ZONE).localize(datetime.combine(sunday, datetime.max.time()))
 
@@ -61,7 +61,7 @@ def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tup
         .order_by("-total_score")
     )
 
-    year_week_day = tuple(current_date_utc.isocalendar())
+    year_week_day = tuple(target_date_utc.isocalendar())
 
     # remove previous rankings for the same week
     delete_rankings(Ranking.CUR_GENERATION, year_week_day[1])
