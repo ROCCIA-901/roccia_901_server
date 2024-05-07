@@ -7,7 +7,8 @@ python manage.py collectstatic --no-input
 gunicorn --config gunicorn.conf.py config.wsgi:application &
 
 # APScheduler 실행
-python manage.py runapscheduler &
+#python manage.py runapscheduler &
+python manage.py runapscheduler --minutes=1 &
 
 # Celery 실행
 celery -A config worker --loglevel=info &
