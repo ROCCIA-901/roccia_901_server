@@ -12,13 +12,13 @@ from record.models import BoulderProblem
 # for a given date in Korea Standard Time.
 # Example usage:
 # monday, sunday = get_week_start_end_kst(datetime.now(pytz.utc))
-def get_week_start_end(current_date_utc: datetime = datetime.now(pytz.utc), zone: str = TIME_ZONE) -> tuple[date, date]:
+def get_week_start_end(target_date_utc: datetime = datetime.now(pytz.utc), zone: str = TIME_ZONE) -> tuple[date, date]:
     # Get date in Timezone.
     try:
         timezone = pytz.timezone(zone)
     except pytz.UnknownTimeZoneError:
         raise ValueError("Unknown timezone")
-    current_date_in_timezone: datetime = current_date_utc.astimezone(timezone)
+    current_date_in_timezone: datetime = target_date_utc.astimezone(timezone)
 
     # Calculate the start of the week (Monday).
     start_of_week = current_date_in_timezone - timedelta(days=current_date_in_timezone.weekday())
@@ -37,9 +37,9 @@ def delete_rankings(generation: int, week: int) -> None:
     Ranking.objects.filter(generation=generation, week=week).delete()
 
 
-def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tuple:
+def compile_rankings(target_date_utc: datetime = datetime.now(pytz.utc)) -> tuple:
     # TODO: handle pytz.UnknownTimeZoneError exceptions
-    monday, sunday = get_week_start_end(current_date_utc)
+    monday, sunday = get_week_start_end(target_date_utc)
     monday_datetime = pytz.timezone(TIME_ZONE).localize(datetime.combine(monday, datetime.min.time()))
     sunday_datetime = pytz.timezone(TIME_ZONE).localize(datetime.combine(sunday, datetime.max.time()))
 
@@ -61,7 +61,7 @@ def compile_rankings(current_date_utc: datetime = datetime.now(pytz.utc)) -> tup
         .order_by("-total_score")
     )
 
-    year_week_day = tuple(current_date_utc.isocalendar())
+    year_week_day = tuple(target_date_utc.isocalendar())
 
     # remove previous rankings for the same week
     delete_rankings(Ranking.CUR_GENERATION, year_week_day[1])

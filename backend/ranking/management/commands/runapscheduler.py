@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime, timedelta
 
+import pytz
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from django.conf import settings
@@ -14,7 +16,13 @@ logger = logging.getLogger(__name__)
 
 @util.close_old_connections
 def compile_rankings_job():
-    (year, week, _) = compile_rankings()
+    current_date_utc: datetime = datetime.now(pytz.utc)
+
+    (year, week, _) = compile_rankings(current_date_utc)
+    print(f"Rankings for the {week}th week of {year} completed.")
+    logger.info(f"Rankings for the {week}th week of {year} completed.")
+
+    (year, week, _) = compile_rankings(current_date_utc - timedelta(days=7))
     print(f"Rankings for the {week}th week of {year} completed.")
     logger.info(f"Rankings for the {week}th week of {year} completed.")
 
