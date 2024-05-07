@@ -146,11 +146,10 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        current_date = datetime.today().date()
         if (
             Record.objects.filter(user=data.get("user"))
             .annotate(date=TruncDate("end_time"))
-            .filter(date=current_date)
+            .filter(date=TruncDate(data.get("end_time")))
             .exists()
         ):
             raise InvalidFieldException("해당일에 이미 기록이 존재합니다.")
