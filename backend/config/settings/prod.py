@@ -81,11 +81,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 # cors 설정
 
-CORS_ALLOWED_ORIGINS = [
-    "roccia-901.com",
-    "www.roccia-901.com",
-    "http://roccia-901.com",
-    "https://roccia-901.com",
-    "http://www.roccia-901.com",
-    "https://www.roccia-901.com",
-]
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
