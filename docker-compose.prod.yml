@@ -12,10 +12,14 @@ services:
         image: docker-server/nginx
         restart: always
         volumes:
+            - /var/www/certbot:/var/www/certbot
+            - /etc/letsencrypt:/etc/letsencrypt
+            - /var/lib/letsencrypt:/var/lib/letsencrypt
             - ./nginx/logs:/var/log/nginx
             - django_static:/roccia_901/static
         ports:
             - "8080:80"
+            - "8443:443"
         depends_on:
             - backend
 
