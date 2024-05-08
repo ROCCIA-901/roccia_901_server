@@ -46,6 +46,8 @@ jobs:
 
         echo CORS_ALLOWED_ORIGINS=${{secrets.CORS_ALLOWED_ORIGINS}} >> .env.prod
 
+        echo CSRF_TRUSTED_ORIGINS=${{secrets.CSRF_TRUSTED_ORIGINS}} >> .env.prod
+
     - name: create remote directory
       uses: appleboy/ssh-action@master
       with:
