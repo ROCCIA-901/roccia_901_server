@@ -46,3 +46,16 @@ services:
         image: redis:7
         ports:
             - "6379:6379"
+
+    worker:
+        container_name: celery_worker
+        build: ./backend
+        image: docker-server/backend
+        env_file:
+            - ./backend/.env.prod
+        environment:
+            - TZ=Asia/Seoul
+        restart: always
+        command: celery -A config worker --loglevel=info
+        depends_on:
+            - cache
