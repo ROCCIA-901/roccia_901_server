@@ -47,6 +47,12 @@ CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Seoul"
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "max_retries": 5,
+    "interval_start": 0,  # 첫 번째 재시도를 즉시 수행
+    "interval_step": 0.2,  # 이후 각 재시도 간격을 200ms씩 증가
+    "interval_max": 0.5,  # 재시도 간격이 0.5초를 넘지 않도록 설정
+}
 
 # JWT 설정
 
