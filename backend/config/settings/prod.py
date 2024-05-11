@@ -42,7 +42,7 @@ CACHES = {
 # Celery 설정
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="")
-CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="")
+CELERY_RESULT_BACKEND = f"db+postgresql://{env('DATABASE_USER')}:{env('DATABASE_PASSWORD')}@{env('DATABASE_HOST')}:{env('DATABASE_PORT')}/{env('DATABASE_NAME')}"  # noqa: E501
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"

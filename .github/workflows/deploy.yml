@@ -42,7 +42,6 @@ jobs:
         echo REDIS_URI=${{secrets.REDIS_URI}} >> .env.prod
 
         echo CELERY_BROKER_URL=${{secrets.CELERY_BROKER_URL}} >> .env.prod
-        echo CELERY_RESULT_BACKEND=${{secrets.CELERY_RESULT_BACKEND}} >> .env.prod
 
         echo CORS_ALLOWED_ORIGINS=${{secrets.CORS_ALLOWED_ORIGINS}} >> .env.prod
 
