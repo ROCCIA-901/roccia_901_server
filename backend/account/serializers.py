@@ -216,7 +216,14 @@ class UserLoginSerializer(serializers.Serializer):
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        user = authenticate(email=data["email"], password=data["password"])
+        email = data.get("email")
+        password = data.get("password")
+
+        is_active = User.objects.filter(email=email).values_list("is_active", flat=True).first()
+        if not is_active:
+            raise InvalidAccountException("가입 승인이 필요한 계정입니다. 관리자에게 문의해주세요.")
+
+        user = authenticate(email=email, password=password)
         if user is None:
             raise InvalidFieldException("이메일 또는 비밀번호가 유효하지 않습니다.")
 
