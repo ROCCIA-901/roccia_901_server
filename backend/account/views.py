@@ -40,7 +40,7 @@ class UserRegistrationAPIView(APIView):
         return Response(
             # fmt: off
             data={
-                "detail": "회원가입에 성공했습니다.",
+                "detail": "회원가입에 성공했습니다. 관리자에게 승인 문의 바랍니다.",
                 "data": {
                     "user": serializer.data,
                 }
