@@ -61,7 +61,7 @@ def compile_rankings(target_date_utc: datetime = datetime.now(pytz.utc)) -> tupl
         .order_by("-total_score")
     )
 
-    year_week_day = tuple(target_date_utc.isocalendar())
+    year_week_day = tuple(monday_datetime.isocalendar())
 
     # remove previous rankings for the same week
     delete_rankings(Ranking.CUR_GENERATION, year_week_day[1])
