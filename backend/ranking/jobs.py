@@ -18,10 +18,10 @@ def get_week_start_end(target_date_utc: datetime = datetime.now(pytz.utc), zone:
         timezone = pytz.timezone(zone)
     except pytz.UnknownTimeZoneError:
         raise ValueError("Unknown timezone")
-    current_date_in_timezone: datetime = target_date_utc.astimezone(timezone)
+    target_date_in_timezone: datetime = target_date_utc.astimezone(timezone)
 
     # Calculate the start of the week (Monday).
-    start_of_week = current_date_in_timezone - timedelta(days=current_date_in_timezone.weekday())
+    start_of_week = target_date_in_timezone - timedelta(days=target_date_in_timezone.weekday())
     # Calculate the end of the week (Sunday).
     end_of_week = start_of_week + timedelta(days=6)
 
@@ -61,7 +61,7 @@ def compile_rankings(target_date_utc: datetime = datetime.now(pytz.utc)) -> tupl
         .order_by("-total_score")
     )
 
-    year_week_day = tuple(target_date_utc.isocalendar())
+    year_week_day = tuple(monday_datetime.isocalendar())
 
     # remove previous rankings for the same week
     delete_rankings(Ranking.CUR_GENERATION, year_week_day[1])
