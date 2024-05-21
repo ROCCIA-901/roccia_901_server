@@ -24,6 +24,23 @@ else
   echo "Docker Compose is already installed."
 fi
 
+# Copy Nginx logrotate file to host
+if sudo cp -f /home/ubuntu/srv/nginx/nginx /etc/logrotate.d/nginx; then
+    echo "File successfully copied."
+else
+    echo "Failed to copy file."
+fi
+
+# Creating directory for certbot
+if [ -d "/var/www/certbot" ]; then
+  echo "Directory /var/www/certbot already exists."
+else
+  echo "Directory /var/www/certbot does not exist. Creating now..."
+  sudo mkdir -p "/var/www/certbot"
+  sudo chown -R $USER:$USER "/var/www/certbot"
+  echo "Directory /var/www/certbot created and ownership assigned to $USER."
+fi
+
 # Moving directory in the prod environment
 if [ -d "/home/ubuntu/srv" ]; then
     cd /home/ubuntu/srv

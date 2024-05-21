@@ -42,11 +42,17 @@ CACHES = {
 # Celery 설정
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="")
-CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND", default="")
+CELERY_RESULT_BACKEND = f"db+postgresql://{env('DATABASE_USER')}:{env('DATABASE_PASSWORD')}@{env('DATABASE_HOST')}:{env('DATABASE_PORT')}/{env('DATABASE_NAME')}"  # noqa: E501
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TASK_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Seoul"
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "max_retries": 5,
+    "interval_start": 0,  # 첫 번째 재시도를 즉시 수행
+    "interval_step": 0.2,  # 이후 각 재시도 간격을 200ms씩 증가
+    "interval_max": 0.5,  # 재시도 간격이 0.5초를 넘지 않도록 설정
+}
 
 # JWT 설정
 
@@ -78,3 +84,17 @@ DEFAULT_FROM_MAIL = env("DEFAULT_FROM_MAIL", default="")
 # 정적 파일 설정
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
+# cors 설정
+
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+
+# CSRF 설정
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+
+# HTTPS 관련 설정
+
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

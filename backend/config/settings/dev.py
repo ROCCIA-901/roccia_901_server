@@ -103,3 +103,7 @@ DEFAULT_FROM_MAIL = env("DEFAULT_FROM_MAIL", default="")
 
 if django_env == "dev.docker":
     STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
+# cors 설정
+
+CORS_ORIGIN_ALLOW_ALL = True

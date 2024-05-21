@@ -35,25 +35,14 @@ class UserRegistrationAPIView(APIView):
     def post(self, request: Request) -> Response:
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user: User = serializer.save()
-
-        try:
-            token = TokenObtainPairSerializer.get_token(user)
-            access_token: str = str(token.access_token)
-            refresh_token: str = str(token)
-        except TokenError:
-            raise TokenIssuanceException("토큰 발급 중에 문제가 발생했습니다.")
+        serializer.save()
 
         return Response(
             # fmt: off
             data={
-                "detail": "회원가입에 성공했습니다.",
+                "detail": "회원가입에 성공했습니다. 관리자에게 승인 문의 바랍니다.",
                 "data": {
                     "user": serializer.data,
-                    "token": {
-                        "access": access_token,
-                        "refresh": refresh_token
-                    }
                 }
             },
             status=status.HTTP_201_CREATED
