@@ -1,5 +1,8 @@
+from datetime import datetime
 from typing import Any
 
+import pytz
+from django.db.models.functions.datetime import TruncDate
 from rest_framework import serializers
 
 from account.models import User
@@ -116,6 +119,13 @@ class RecordCreateSerializer(serializers.ModelSerializer):
             "boulder_problems",
         )
 
+    def validate_end_time(self, value: datetime) -> datetime:
+        korea_tz = pytz.timezone("Asia/Seoul")
+        current_time = datetime.now(korea_tz)
+        if current_time < value:
+            raise InvalidFieldException("운동 종료 후 기록할 수 있습니다.")
+        return value
+
     def validate_workout_location(self, value: str) -> str:
         workout_location = [choice[0] for choice in Record.WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
@@ -123,6 +133,14 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
+        if (
+            Record.objects.filter(user=data.get("user"))
+            .annotate(date=TruncDate("end_time"))
+            .filter(date=TruncDate(data.get("end_time")))
+            .exists()
+        ):
+            raise InvalidFieldException("해당일에 이미 기록이 존재합니다.")
+
         if data.get("start_time") >= data.get("end_time"):  # type: ignore
             raise InvalidFieldException("시작 시간이 종료 시간보다 같거나 늦을 수 없습니다.")
         return data

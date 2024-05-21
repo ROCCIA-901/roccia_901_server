@@ -1,8 +1,9 @@
-name: Deploy to EC2
+name: Continuous Deployment
 
 on:
-  push:
-    branches: [master]
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types: [completed]
 
 jobs:
   build:
@@ -42,7 +43,10 @@ jobs:
         echo REDIS_URI=${{secrets.REDIS_URI}} >> .env.prod
 
         echo CELERY_BROKER_URL=${{secrets.CELERY_BROKER_URL}} >> .env.prod
-        echo CELERY_RESULT_BACKEND=${{secrets.CELERY_RESULT_BACKEND}} >> .env.prod
+
+        echo CORS_ALLOWED_ORIGINS=${{secrets.CORS_ALLOWED_ORIGINS}} >> .env.prod
+
+        echo CSRF_TRUSTED_ORIGINS=${{secrets.CSRF_TRUSTED_ORIGINS}} >> .env.prod
 
     - name: create remote directory
       uses: appleboy/ssh-action@master

@@ -13,6 +13,7 @@ from config.exceptions import (
     InvalidAccountException,
     InvalidFieldException,
     InvalidFieldStateException,
+    InvalidRefreshTokenException,
 )
 from config.utils import WorkoutLevelChoiceField
 
@@ -158,11 +159,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if len(password) < 7:
             raise InvalidFieldException("비밀번호는 최소 7자 이상이어야 합니다.")
 
-        if not any(char.isupper() for char in password):
-            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 대문자가 포함되어야 합니다.")
-
-        if not any(char.islower() for char in password):
-            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 소문자가 포함되어야 합니다.")
+        if not any(char.isalpha() for char in password):
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 영문자가 포함되어야 합니다.")
 
         if not any(char.isdigit() for char in password):
             raise InvalidFieldException("비밀번호에는 최소 1개 이상의 숫자가 포함되어야 합니다.")
@@ -205,7 +203,14 @@ class UserLoginSerializer(serializers.Serializer):
         return value
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
-        user = authenticate(email=data["email"], password=data["password"])
+        email = data.get("email")
+        password = data.get("password")
+
+        is_active = User.objects.filter(email=email).values_list("is_active", flat=True).first()
+        if not is_active:
+            raise InvalidAccountException("가입 승인이 필요한 계정입니다. 관리자에게 문의해주세요.")
+
+        user = authenticate(email=email, password=password)
         if user is None:
             raise InvalidFieldException("이메일 또는 비밀번호가 유효하지 않습니다.")
 
@@ -340,7 +345,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         try:
             data = super().validate(attrs)
         except TokenError as e:
-            raise serializers.ValidationError("토큰이 유효하지 않습니다.")
+            raise InvalidRefreshTokenException("토큰이 유효하지 않습니다.")
 
         return data
 

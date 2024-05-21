@@ -16,7 +16,7 @@ services:
             - ./nginx/logs:/var/log/nginx
             - django_static:/roccia_901/static
         ports:
-            - "80:80"
+            - "8080:80"
         depends_on:
             - backend
 
@@ -26,6 +26,8 @@ services:
         image: docker-server/backend
         env_file:
             - ./backend/.env.dev.docker
+        environment:
+            - TZ=Asia/Seoul
         restart: always
         entrypoint: ./wait-for-it.sh database:5432 --
         command: sh -c "./init.sh"

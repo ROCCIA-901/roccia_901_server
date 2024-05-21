@@ -91,7 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True, help_text="생성 일시")  # type: ignore
     updated_at = models.DateTimeField(auto_now=True, help_text="수정 일시")  # type: ignore
 
-    is_active = models.BooleanField(default=True, help_text="활성 상태")  # type: ignore
+    is_active = models.BooleanField(default=False, help_text="활성 상태")  # type: ignore
     is_staff = models.BooleanField(default=False, help_text="스태프 상태")  # type: ignore
 
     objects = UserManager()

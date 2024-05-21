@@ -24,5 +24,6 @@ urlpatterns = [
         path("attendances/", include("attendance.urls")),
         path("records/", include("record.urls")),
         path("rankings/", include("ranking.urls")),
+        path("mypages/", include("mypage.urls")),
     ]))
 ]
