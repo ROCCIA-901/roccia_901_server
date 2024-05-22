@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 from account.models import User
 from account.serializers import (
     UserLoginSerializer,
+    UserRegisterAuthCodeVerificationSerializer,
     UserRegisterEmailVerificationSerializer,
     UserRegistrationSerializer,
     UserRetrieveSerializer,
@@ -226,3 +227,56 @@ class TestUserRegisterEmailVerificationSerializer:
         serializer = UserRegisterEmailVerificationSerializer(data=data)
         with pytest.raises(ValidationError):
             serializer.is_valid(raise_exception=True)
+
+
+class TestUserRegisterAuthCodeVerificationSerializer:
+
+    @pytest.mark.parametrize(
+        "email, code",
+        [
+            ("", ""),
+            (None, ""),
+            ("", None),
+            (None, None),
+        ],
+    )
+    def test_field_verification(self, email, code):
+        data = {"email": email, "code": code}
+
+        serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        with pytest.raises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+
+    def test_email_verification_success(self, mock_cache):
+        mock_cache.side_effect = lambda key: 123456 if key == "test@example.com:register:code" else None
+        data = {"email": "test@example.com", "code": 123456}
+        serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        assert serializer.is_valid()
+
+    def test_validate_email_failure(self, mock_cache):
+        mock_cache.return_value = False
+        data = {"email": "test@example.com", "code": 123456}
+        serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="해당 이메일의 인증번호 요청 내역이 존재하지 않습니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_already_certified(self, mock_cache):
+        mock_cache.return_value = "certified"
+        data = {"email": "test@example.com", "code": 123456}
+        serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        with pytest.raises(InvalidFieldStateException, match="이미 인증 완료된 사용자입니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_code_mismatch(self, mock_cache):
+        mock_cache.side_effect = lambda key: 123456 if key == "test@example.com:register:code" else None
+        data = {"email": "test@example.com", "code": 654321}
+        serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="인증번호가 일치하지 않습니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_success(self, mock_cache):
+        mock_cache.side_effect = lambda key: 123456 if key == "test@example.com:register:code" else None
+        data = {"email": "test@example.com", "code": 123456}
+        serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
