@@ -143,9 +143,12 @@ class TestUserRegistrationSerializer:
 
 class TestUserLoginSerializer:
 
-    def test_user_login_serializer_with_valid_data(self, user_login_data, mock_exists, mock_authenticate):
+    def test_user_login_serializer_with_valid_data(
+        self, user_login_data, mock_exists, mock_authenticate, mock_active_user_filter_queryset
+    ):
         mock_exists.return_value = True
         mock_authenticate.return_value = User(email="test@example.com")
+        mock_active_user_filter_queryset.return_value.values_list.return_value.first.return_value = True
 
         serializer = UserLoginSerializer(data=user_login_data)
         assert serializer.is_valid(raise_exception=True)
@@ -160,15 +163,18 @@ class TestUserLoginSerializer:
         mock_exists.return_value = False
 
         serializer = UserLoginSerializer(data=user_login_data)
-        with pytest.raises(InvalidAccountException):
+        with pytest.raises(InvalidAccountException, match="등록되지 않은 이메일입니다."):
             serializer.is_valid(raise_exception=True)
 
-    def test_user_login_with_wrong_account(self, mock_exists, user_login_data, mock_authenticate):
+    def test_user_login_with_wrong_account(
+        self, mock_exists, user_login_data, mock_authenticate, mock_active_user_filter_queryset
+    ):
         mock_exists.return_value = True
         mock_authenticate.return_value = None
+        mock_active_user_filter_queryset.return_value.values_list.return_value.first.return_value = True
 
         serializer = UserLoginSerializer(data=user_login_data)
-        with pytest.raises(InvalidFieldException):
+        with pytest.raises(InvalidFieldException, match="이메일 또는 비밀번호가 유효하지 않습니다."):
             serializer.is_valid(raise_exception=True)
 
     @pytest.mark.parametrize(
@@ -184,9 +190,19 @@ class TestUserLoginSerializer:
         mock_exists.return_value = False
         mock_authenticate.return_value = User()
 
-        user_data = {"email": email, "password": password}
+        user_data = {"email": "test@example.com", "password": password}
         serializer = UserLoginSerializer(data=user_data)
         with pytest.raises(Exception):
+            serializer.is_valid(raise_exception=True)
+
+    def test_deactivate_user_login(self, mock_exists, mock_authenticate, mock_active_user_filter_queryset):
+        mock_exists.return_value = True
+        mock_authenticate.return_value = User(email="test@example.com")
+        mock_active_user_filter_queryset.return_value.values_list.return_value.first.return_value = False
+
+        user_data = {"email": "test@test.com", "password": "Password1!"}
+        serializer = UserLoginSerializer(data=user_data)
+        with pytest.raises(InvalidAccountException, match="가입 승인이 필요한 계정입니다. 관리자에게 문의해주세요."):
             serializer.is_valid(raise_exception=True)
 
 

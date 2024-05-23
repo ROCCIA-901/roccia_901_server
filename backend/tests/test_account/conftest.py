@@ -40,6 +40,12 @@ def mock_exists():
 
 
 @pytest.fixture
+def mock_active_user_filter_queryset():
+    with patch("account.models.User.objects.filter") as mock:
+        yield mock
+
+
+@pytest.fixture
 def user_login_data():
     return {
         "email": "test@example.com",
