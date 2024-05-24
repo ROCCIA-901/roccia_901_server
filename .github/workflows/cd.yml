@@ -3,13 +3,14 @@ name: Continuous Deployment
 on:
   workflow_run:
     workflows: ["Continuous Integration"]
-    types: [completed]
+    types:
+      - completed
 
 jobs:
   build:
     name: Deployment
     runs-on: ubuntu-latest
-    if: github.repository == 'ROCCIA-901/roccia_901_server'
+    if: github.event.workflow_run.conclusion == 'success' && github.repository == 'ROCCIA-901/roccia_901_server'
     steps:
     - name: checkout
       uses: actions/checkout@master
