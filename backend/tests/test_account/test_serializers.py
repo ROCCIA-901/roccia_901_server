@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from account.models import User
 from account.serializers import (
+    CustomTokenRefreshSerializer,
     PasswordUpdateAuthCodeVerificationSerializer,
     PasswordUpdateEmailVerificationSerializer,
     UserLoginSerializer,
@@ -15,6 +16,7 @@ from config.exceptions import (
     InvalidAccountException,
     InvalidFieldException,
     InvalidFieldStateException,
+    InvalidRefreshTokenException,
 )
 
 pytestmark = pytest.mark.unit
@@ -373,3 +375,36 @@ class TestPasswordUpdateAuthCodeVerificationSerializer:
         serializer = PasswordUpdateAuthCodeVerificationSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data == data
+
+
+class TestCustomTokenRefreshSerializer:
+
+    @pytest.mark.parametrize(
+        "refresh",
+        ["", None],
+    )
+    def test_field_verification(self, refresh):
+        data = {"refresh": refresh}
+
+        serializer = CustomTokenRefreshSerializer(data=data)
+        with pytest.raises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_refresh_token(self, mock_token_refresh_serializer_validate):
+        from rest_framework_simplejwt.exceptions import TokenError
+
+        mock_token_refresh_serializer_validate.side_effect = TokenError("Invalid token")
+        data = {"refresh": "mock_invalid_refresh_token"}
+
+        serializer = CustomTokenRefreshSerializer(data=data)
+        with pytest.raises(InvalidRefreshTokenException, match="토큰이 유효하지 않습니다."):
+            serializer.is_valid(raise_exception=True)
+        mock_token_refresh_serializer_validate.assert_called_once()
+
+    def test_token_reissue_success(self, mock_token_refresh_serializer_validate):
+        mock_token_refresh_serializer_validate.return_value = {"access": "new_access_token"}
+        data = {"refresh": "mock_valid_refresh_token"}
+
+        serializer = CustomTokenRefreshSerializer(data=data)
+        assert serializer.is_valid()
+        mock_token_refresh_serializer_validate.assert_called_once()

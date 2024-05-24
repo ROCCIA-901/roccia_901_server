@@ -62,3 +62,9 @@ def mock_authenticate():
 @pytest.fixture
 def mock_user_model():
     return UserFactory.build()
+
+
+@pytest.fixture
+def mock_token_refresh_serializer_validate(mock_user_model):
+    with patch("rest_framework_simplejwt.serializers.TokenRefreshSerializer.validate") as mock:
+        yield mock
