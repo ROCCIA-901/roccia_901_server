@@ -18,8 +18,8 @@ cd roccia_901_server
 cd backend
 python -m venv {가상환경명}
 source {가상환경명}/bin/activate
-pip install -r requirements.txt  
-```  
+pip install -r requirements.txt
+```
 <br>
 
 ### 환경변수 파일 생성
