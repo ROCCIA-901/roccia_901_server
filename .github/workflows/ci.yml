@@ -1,9 +1,6 @@
 name: Continuous Integration
 
 on:
-  push:
-    branches:
-      - '**'
   pull_request:
     branches:
       - master
@@ -34,4 +31,4 @@ jobs:
     - name: run pytest
       run: |
         cd backend
-        pytest test
+        pytest tests
