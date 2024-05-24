@@ -226,14 +226,6 @@ class TestUserRetrieveSerializer:
 
 
 class TestUserRegisterEmailVerificationSerializer:
-    def test_exist_email_verification(self, mock_exists):
-        mock_exists.return_value = True
-        data = {"email": "test@example.com"}
-
-        serializer = UserRegisterEmailVerificationSerializer(data=data)
-        with pytest.raises(InvalidFieldException):
-            serializer.is_valid(raise_exception=True)
-
     @pytest.mark.parametrize("email", ["", None])
     def test_email_field_verification(self, mock_exists, email):
         mock_exists.return_value = False
@@ -242,6 +234,22 @@ class TestUserRegisterEmailVerificationSerializer:
         serializer = UserRegisterEmailVerificationSerializer(data=data)
         with pytest.raises(ValidationError):
             serializer.is_valid(raise_exception=True)
+
+    def test_exist_email_verification(self, mock_exists):
+        mock_exists.return_value = True
+        data = {"email": "test@example.com"}
+
+        serializer = UserRegisterEmailVerificationSerializer(data=data)
+        with pytest.raises(InvalidFieldException):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_success(self, mock_exists):
+        mock_exists.return_value = False
+        data = {"email": "test@example.com"}
+
+        serializer = UserRegisterEmailVerificationSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
 
 
 class TestUserRegisterAuthCodeVerificationSerializer:
