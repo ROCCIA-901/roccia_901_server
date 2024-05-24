@@ -1,12 +1,12 @@
 from typing import Union
 
-from rest_framework import permissions, serializers
+from rest_framework import permissions
 from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
-from config.exceptions import InvalidFieldException, PermissionFailedException
+from config.exceptions import PermissionFailedException
 
 
 def custom_exception_handler(exc, context) -> Response:
@@ -57,17 +57,3 @@ class IsManager(permissions.BasePermission):
             return True
         else:
             raise PermissionFailedException
-
-
-class WorkoutLevelChoiceField(serializers.ChoiceField):
-    def to_representation(self, obj):
-        for key, val in self._choices.items():
-            if key == int(obj):
-                return val
-
-    def to_internal_value(self, data):
-        # To support inserts with the value
-        for key, val in self._choices.items():
-            if val == data:
-                return key
-        raise InvalidFieldException("난이도가 정확하지 않습니다.")

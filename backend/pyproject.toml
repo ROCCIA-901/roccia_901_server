@@ -11,15 +11,3 @@ include_trailing_comma = true
 [tool.mypy]
 python_version = "3.9"
 ignore_missing_imports = true
-
-[tool.pytest.ini_options]
-minversion = "8.0"
-addopts = "-v -x"
-testpaths = "tests"
-python_files = ["test*.py", "*test.py"]
-python_classes = "Test*"
-python_functions = "test_*"
-markers = [
-    "unit: tests that are isolated from the db, external api calls and other mockable internal code."
-]
-DJANGO_SETTINGS_MODULE = "config.settings.dev"

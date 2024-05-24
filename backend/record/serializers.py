@@ -7,8 +7,21 @@ from rest_framework import serializers
 
 from account.models import User
 from config.exceptions import InvalidFieldException
-from config.utils import WorkoutLevelChoiceField
 from record.models import BoulderProblem, Record
+
+
+class WorkoutLevelChoiceField(serializers.ChoiceField):
+    def to_representation(self, obj):
+        for key, val in self._choices.items():
+            if key == int(obj):
+                return val
+
+    def to_internal_value(self, data):
+        # To support inserts with the value
+        for key, val in self._choices.items():
+            if val == data:
+                return key
+        raise InvalidFieldException("난이도가 정확하지 않습니다.")
 
 
 class BoulderProblemSerializer(serializers.ModelSerializer):
