@@ -4,6 +4,7 @@ from rest_framework.exceptions import ValidationError
 from account.models import User
 from account.serializers import (
     CustomTokenRefreshSerializer,
+    LogoutSerializer,
     PasswordUpdateAuthCodeVerificationSerializer,
     PasswordUpdateEmailVerificationSerializer,
     UserLoginSerializer,
@@ -408,3 +409,24 @@ class TestCustomTokenRefreshSerializer:
         serializer = CustomTokenRefreshSerializer(data=data)
         assert serializer.is_valid()
         mock_token_refresh_serializer_validate.assert_called_once()
+
+
+class TestLogoutSerializer:
+
+    @pytest.mark.parametrize(
+        "refresh",
+        ["", None],
+    )
+    def test_field_verification(self, refresh):
+        data = {"refresh": refresh}
+
+        serializer = LogoutSerializer(data=data)
+        with pytest.raises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+
+    def test_field_verification_success(self):
+        data = {"refresh": "valid_refresh_token"}
+
+        serializer = LogoutSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data["refresh"] == data["refresh"]
