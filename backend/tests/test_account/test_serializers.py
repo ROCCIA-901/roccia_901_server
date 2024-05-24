@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from account.models import User
 from account.serializers import (
+    PasswordUpdateEmailVerificationSerializer,
     UserLoginSerializer,
     UserRegisterAuthCodeVerificationSerializer,
     UserRegisterEmailVerificationSerializer,
@@ -235,7 +236,7 @@ class TestUserRegisterEmailVerificationSerializer:
         with pytest.raises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_exist_email_verification(self, mock_exists):
+    def test_not_exist_email_verification(self, mock_exists):
         mock_exists.return_value = True
         data = {"email": "test@example.com"}
 
@@ -301,5 +302,32 @@ class TestUserRegisterAuthCodeVerificationSerializer:
         mock_cache.side_effect = lambda key: 123456 if key == "test@example.com:register:code" else None
         data = {"email": "test@example.com", "code": 123456}
         serializer = UserRegisterAuthCodeVerificationSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+
+class TestPasswordUpdateEmailVerificationSerializer:
+
+    @pytest.mark.parametrize("email", ["", None])
+    def test_email_field_verification(self, email):
+        data = {"email": email}
+
+        serializer = PasswordUpdateEmailVerificationSerializer(data=data)
+        with pytest.raises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+
+    def test_not_exist_email_verification(self, mock_exists):
+        mock_exists.return_value = False
+        data = {"email": "test@example.com"}
+
+        serializer = PasswordUpdateEmailVerificationSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="존재하지 않는 이메일입니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_success(self, mock_exists):
+        mock_exists.return_value = True
+        data = {"email": "test@example.com"}
+
+        serializer = PasswordUpdateEmailVerificationSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data == data
