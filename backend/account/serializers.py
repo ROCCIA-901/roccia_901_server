@@ -407,11 +407,8 @@ class PasswordUpdateSerializer(serializers.Serializer):
         if len(new_password) < 7:
             raise InvalidFieldException("비밀번호는 최소 7자 이상이어야 합니다.")
 
-        if not any(char.isupper() for char in new_password):
-            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 대문자가 포함되어야 합니다.")
-
-        if not any(char.islower() for char in new_password):
-            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 소문자가 포함되어야 합니다.")
+        if not any(char.isalpha() for char in new_password):
+            raise InvalidFieldException("비밀번호에는 최소 1개 이상의 영문자가 포함되어야 합니다.")
 
         if not any(char.isdigit() for char in new_password):
             raise InvalidFieldException("비밀번호에는 최소 1개 이상의 숫자가 포함되어야 합니다.")
