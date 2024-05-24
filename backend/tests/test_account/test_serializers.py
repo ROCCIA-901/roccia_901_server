@@ -7,6 +7,7 @@ from account.serializers import (
     LogoutSerializer,
     PasswordUpdateAuthCodeVerificationSerializer,
     PasswordUpdateEmailVerificationSerializer,
+    PasswordUpdateSerializer,
     UserLoginSerializer,
     UserRegisterAuthCodeVerificationSerializer,
     UserRegisterEmailVerificationSerializer,
@@ -430,3 +431,73 @@ class TestLogoutSerializer:
         serializer = LogoutSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data["refresh"] == data["refresh"]
+
+
+class TestPasswordUpdateSerializer:
+
+    @pytest.mark.parametrize(
+        "email, new_password, new_password_confirmation",
+        [
+            (None, None, None),
+            ("", None, None),
+            (None, "", None),
+            (None, None, ""),
+            (None, "", ""),
+            ("", None, ""),
+            ("", None, None),
+            ("", "", ""),
+        ],
+    )
+    def test_field_verification(self, email, new_password, new_password_confirmation):
+        data = {"email": email, "new_password": new_password, "new_password_confirmation": new_password_confirmation}
+
+        serializer = PasswordUpdateSerializer(data=data)
+        with pytest.raises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+
+    def test_not_exist_email_verification(self, mock_exists):
+        mock_exists.return_value = False
+        data = {"email": "test@example.com"}
+
+        serializer = PasswordUpdateSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="존재하지 않는 이메일입니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_uncertified_email_verification(self, mock_exists, mock_cache):
+        mock_exists.return_value = True
+        mock_cache.side_effect = lambda key: "uncertified" if key == "test@example.com:password:code" else None
+        data = {"email": "test@example.com"}
+
+        serializer = PasswordUpdateSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="비밀번호 변경 전에 인증이 필요합니다."):
+            serializer.is_valid(raise_exception=True)
+
+    @pytest.mark.parametrize(
+        "new_password, new_password_confirmation",
+        [
+            ("", ""),
+            ("Password1!", "WrongPassword1!"),
+            ("Pswd1!", "Pswd1!"),
+            ("1234567!", "1234567!"),
+            ("Password!", "WrongPassword!"),
+            ("Password1", "WrongPassword1"),
+            ("패스워드1!", "패스워드1!"),
+        ],
+    )
+    def test_password_validation(self, user_data, mock_cache, mock_exists, new_password, new_password_confirmation):
+        mock_cache.return_value = "certified"
+        mock_exists.return_value = False
+
+        user_data["new_password"] = new_password
+        user_data["new_password_confirmation"] = new_password_confirmation
+        serializer = PasswordUpdateSerializer(data=user_data)
+        with pytest.raises(Exception):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_success(self, user_data, mock_cache, mock_exists):
+        mock_cache.return_value = "certified"
+        mock_exists.return_value = True
+        data = {"email": "test@example.com", "new_password": "password1!", "new_password_confirmation": "password1!"}
+
+        serializer = PasswordUpdateSerializer(data=data)
+        assert serializer.is_valid()
