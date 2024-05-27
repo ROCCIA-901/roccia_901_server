@@ -11,6 +11,7 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from account.models import User
 from account.schemas import (
     USER_LOGIN_REQUEST_EXAMPLE,
+    USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
     USER_REGISTER_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
     USER_REGISTRATION_REQUEST_EXAMPLE,
 )
@@ -258,6 +259,7 @@ class UserRegisterEmailVerificationSerializer(serializers.Serializer):
         return value
 
 
+@extend_schema_serializer(examples=USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE)
 class UserRegisterAuthCodeVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,

@@ -19,6 +19,8 @@ from account.schemas import (
     LOGIN_401_FAILURE_EXAMPLE,
     LOGIN_500_FAILURE_EXAMPLE,
     USER_LOGIN_RESPONSE_EXAMPLE,
+    USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
+    USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
     USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
     USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
     USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
@@ -135,30 +137,30 @@ class UserLoginAPIView(APIView):
         )
 
 
-@extend_schema(
-    tags=["사용자 인증"],
-    summary="회원가입 인증 번호 요청",
-    request=UserRegisterEmailVerificationSerializer,
-    # fmt: off
-    responses={
-        status.HTTP_200_OK: OpenApiResponse(
-            response=UserRegisterEmailVerificationSerializer,
-            examples=USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
-        ),
-        status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            examples=USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
-        ),
-        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
-            response=ErrorResponseSerializer,
-            examples=USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
-        ),
-    },
-    # fmt: on
-)
 class UserRegisterRequestAuthCodeAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="회원가입 인증 번호 요청",
+        request=UserRegisterEmailVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserRegisterEmailVerificationSerializer,
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = UserRegisterEmailVerificationSerializer(data=request.data)
@@ -185,6 +187,23 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
 class UserRegisterAuthCodeValidationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="회원가입 인증 번호 확인",
+        request=UserRegisterAuthCodeVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserRegisterAuthCodeVerificationSerializer,
+                examples=USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = UserRegisterAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

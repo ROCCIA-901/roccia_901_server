@@ -200,3 +200,58 @@ USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE = [
         response_only=True,
     )
 ]
+
+USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "회원가입 인증 번호 확인 요청 예시",
+        summary="User Register Auth Code Validation API Request body Example",
+        description="회원가입 인증 번호 확인 요청 Request body 예시입니다.",
+        value={"email": "test@naver.com", "code": "121099"},
+        request_only=True,
+    )
+]
+
+USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "회원가입 인증 번호 확인 응답 예시",
+        summary="User Register Auth Code Validation API Response body Example",
+        description="회원가입 인증 번호 확인 응답 예시입니다.",
+        value={"detail": "인증번호 확인에 성공했습니다."},
+        response_only=True,
+    )
+]
+
+USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "인증번호 요청 내역 없음 예시",
+        summary="No Verification Request",
+        description="해당 이메일의 인증번호 요청 내역이 존재하지 않을 때의 응답 예시입니다.",
+        value={
+            "status_code": 400,
+            "code": "invalid_field",
+            "detail": "해당 이메일의 인증번호 요청 내역이 존재하지 않습니다.",
+        },
+        response_only=True,
+    ),
+    OpenApiExample(
+        "이미 인증 완료된 사용자 예시",
+        summary="Already Verified User",
+        description="이미 인증 완료된 사용자일 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field_state", "detail": "이미 인증 완료된 사용자입니다."},
+        response_only=True,
+    ),
+    OpenApiExample(
+        "인증번호 불일치 예시",
+        summary="Incorrect Verification Code",
+        description="인증번호가 일치하지 않을 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field", "detail": "인증번호가 일치하지 않습니다."},
+        response_only=True,
+    ),
+    OpenApiExample(
+        "인증번호 유효시간 초과 예시",
+        summary="Verification Code Expired",
+        description="인증번호의 유효시간이 지났을 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field", "detail": "인증번호의 유효시간이 지났습니다."},
+        response_only=True,
+    ),
+]
