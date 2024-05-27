@@ -1,3 +1,4 @@
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -5,6 +6,12 @@ from rest_framework.views import APIView
 
 from account.models import User
 from config.exceptions import UserNotExistException
+from mypage.schemas import (
+    MYPAGE_RESPONSE_EXAMPLE,
+    USER_NOT_EXIST_FAILURE_EXAMPLE,
+    USER_PROFILE_RESPONSE_EXAMPLE,
+    ErrorResponseSerializer,
+)
 from mypage.serializers import (
     MypageSerializer,
     UserProfileSerializer,
@@ -23,6 +30,25 @@ def get_user(user_id):
 class MypageAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @extend_schema(
+        tags=["마이페이지"],
+        summary="마이페이지 조회",
+        parameters=[
+            OpenApiParameter(name="user_id", description="조회할 유저의 ID", required=False, type=str),
+        ],
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=MypageSerializer,
+                examples=[MYPAGE_RESPONSE_EXAMPLE, USER_PROFILE_RESPONSE_EXAMPLE]
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[USER_NOT_EXIST_FAILURE_EXAMPLE]
+            ),
+        },
+        # fmt: on
+    )
     def get(self, request: Request) -> Response:
         user_id = request.query_params.get("user_id")
 
