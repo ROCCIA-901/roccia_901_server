@@ -350,3 +350,43 @@ PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE = [
         response_only=True,
     ),
 ]
+
+CUSTOM_TOKEN_REFRESH_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "토큰 재발급 요청 예시",
+        summary="Custom Token Refresh API Request body Example",
+        description="토큰 재발급 요청 Request body 예시입니다.",
+        value={"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXB..."},
+        request_only=True,
+    )
+]
+
+CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "토큰 재발급 응답 예시",
+        summary="Custom Token Refresh API Response body Example",
+        description="토큰 재발급 응답 예시입니다.",
+        value={
+            "detail": "액세스 토큰 발급을 성공했습니다.",
+            "data": {"token": {"access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXB..."}},
+        },
+        response_only=True,
+    )
+]
+
+CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "필수 필드 누락 예시",
+        summary="Missing Required Field",
+        description="refresh 필드가 누락되었을 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid", "detail": "refresh 필드는 필수 항목입니다."},
+        response_only=True,
+    ),
+    OpenApiExample(
+        "유효하지 않은 토큰 예시",
+        summary="Invalid Token",
+        description="토큰이 유효하지 않을 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid", "detail": "토큰이 유효하지 않습니다."},
+        response_only=True,
+    ),
+]

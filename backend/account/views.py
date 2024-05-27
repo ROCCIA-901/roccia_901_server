@@ -15,6 +15,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from account.models import User
 from account.schemas import (
+    CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE,
+    CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE,
     LOGIN_400_FAILURE_EXAMPLE,
     LOGIN_401_FAILURE_EXAMPLE,
     LOGIN_500_FAILURE_EXAMPLE,
@@ -313,6 +315,23 @@ class PasswordUpdateAuthCodeValidationAPIView(APIView):
 class CustomTokenRefreshAPIView(TokenRefreshView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="토큰 재발급",
+        request=CustomTokenRefreshSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=CustomTokenRefreshSerializer,
+                examples=CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request, *args, **kwargs):
         serializer = CustomTokenRefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
