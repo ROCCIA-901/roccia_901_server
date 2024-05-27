@@ -390,3 +390,47 @@ CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE = [
         response_only=True,
     ),
 ]
+
+LOGOUT_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "로그아웃 요청 예시",
+        summary="Logout API Request body Example",
+        description="로그아웃 요청 Request body 예시입니다.",
+        value={"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXB..."},
+        request_only=True,
+    )
+]
+
+LOGOUT_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "로그아웃 응답 예시",
+        summary="Logout API Response body Example",
+        description="로그아웃 응답 예시입니다.",
+        value={"detail": "로그아웃에 성공했습니다."},
+        response_only=True,
+    )
+]
+
+LOGOUT_400_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "유효하지 않은 토큰 예시",
+        summary="Invalid Token",
+        description="토큰이 유효하지 않을 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid", "detail": "토큰이 유효하지 않습니다."},
+        response_only=True,
+    )
+]
+
+LOGOUT_401_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "인증 정보 제공되지 않음 예시",
+        summary="No Authentication Credentials",
+        description="자격 인증데이터가 제공되지 않았을 때의 응답 예시입니다.",
+        value={
+            "status_code": 401,
+            "code": "not_authenticated",
+            "detail": "자격 인증데이터(authentication credentials)가 제공되지 않았습니다.",
+        },
+        response_only=True,
+    )
+]

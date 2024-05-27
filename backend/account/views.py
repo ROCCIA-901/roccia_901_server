@@ -20,6 +20,9 @@ from account.schemas import (
     LOGIN_400_FAILURE_EXAMPLE,
     LOGIN_401_FAILURE_EXAMPLE,
     LOGIN_500_FAILURE_EXAMPLE,
+    LOGOUT_400_FAILURE_EXAMPLE,
+    LOGOUT_401_FAILURE_EXAMPLE,
+    LOGOUT_RESPONSE_EXAMPLE,
     PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
     PASSWORD_UPDATE_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
     PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
@@ -353,6 +356,27 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
 
 class UserLogoutAPIView(APIView):
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="로그아웃",
+        request=LogoutSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=LogoutSerializer,
+                examples=LOGOUT_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGOUT_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGOUT_401_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
