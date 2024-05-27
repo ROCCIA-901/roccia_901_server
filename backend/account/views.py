@@ -2,6 +2,7 @@ import random
 
 from django.core.cache import cache
 from django.db import transaction
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -13,6 +14,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from account.models import User
+from account.schemas import (
+    USER_REGISTRATION_FAILURE_EXAMPLES,
+    USER_REGISTRATION_RESPONSE_EXAMPLE,
+    ErrorResponseSerializer,
+)
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
@@ -31,6 +37,20 @@ from config.exceptions import InvalidRefreshToken, TokenIssuanceException
 class UserRegistrationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="회원가입",
+        request=UserRegistrationSerializer,
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=UserRegistrationSerializer, examples=[USER_REGISTRATION_RESPONSE_EXAMPLE]
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTRATION_FAILURE_EXAMPLES,
+            ),
+        },
+    )
     @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = UserRegistrationSerializer(data=request.data)

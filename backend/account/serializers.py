@@ -3,11 +3,13 @@ from typing import Any
 
 from django.contrib.auth import authenticate
 from django.core.cache import cache
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from account.models import User
+from account.schemas import USER_REGISTRATION_REQUEST_EXAMPLE
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -18,6 +20,7 @@ from config.exceptions import (
 from config.utils import WorkoutLevelChoiceField
 
 
+@extend_schema_serializer(examples=[USER_REGISTRATION_REQUEST_EXAMPLE])
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
