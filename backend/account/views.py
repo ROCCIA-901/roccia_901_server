@@ -15,7 +15,11 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from account.models import User
 from account.schemas import (
-    USER_REGISTRATION_FAILURE_EXAMPLES,
+    LOGIN_400_FAILURE_EXAMPLE,
+    LOGIN_401_FAILURE_EXAMPLE,
+    LOGIN_500_FAILURE_EXAMPLE,
+    USER_LOGIN_RESPONSE_EXAMPLE,
+    USER_REGISTRATION_FAILURE_EXAMPLE,
     USER_REGISTRATION_RESPONSE_EXAMPLE,
     ErrorResponseSerializer,
 )
@@ -41,15 +45,18 @@ class UserRegistrationAPIView(APIView):
         tags=["사용자 인증"],
         summary="회원가입",
         request=UserRegistrationSerializer,
+        # fmt: off
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
-                response=UserRegistrationSerializer, examples=[USER_REGISTRATION_RESPONSE_EXAMPLE]
+                response=UserRegistrationSerializer,
+                examples=USER_REGISTRATION_RESPONSE_EXAMPLE
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=USER_REGISTRATION_FAILURE_EXAMPLES,
+                examples=USER_REGISTRATION_FAILURE_EXAMPLE,
             ),
         },
+        # fmt: on
     )
     @transaction.atomic
     def post(self, request: Request) -> Response:
@@ -73,6 +80,30 @@ class UserRegistrationAPIView(APIView):
 class UserLoginAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="로그인",
+        request=UserLoginSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserLoginSerializer,
+                examples=USER_LOGIN_RESPONSE_EXAMPLE),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGIN_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGIN_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGIN_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

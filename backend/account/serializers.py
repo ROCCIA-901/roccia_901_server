@@ -9,7 +9,10 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from account.models import User
-from account.schemas import USER_REGISTRATION_REQUEST_EXAMPLE
+from account.schemas import (
+    USER_LOGIN_REQUEST_EXAMPLE,
+    USER_REGISTRATION_REQUEST_EXAMPLE,
+)
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -20,7 +23,7 @@ from config.exceptions import (
 from config.utils import WorkoutLevelChoiceField
 
 
-@extend_schema_serializer(examples=[USER_REGISTRATION_REQUEST_EXAMPLE])
+@extend_schema_serializer(examples=USER_REGISTRATION_REQUEST_EXAMPLE)
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
@@ -184,6 +187,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
+@extend_schema_serializer(examples=USER_LOGIN_REQUEST_EXAMPLE)
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
