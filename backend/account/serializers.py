@@ -10,6 +10,7 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from account.models import User
 from account.schemas import (
+    PASSWORD_UPDATE_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
     PASSWORD_UPDATE_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
     USER_LOGIN_REQUEST_EXAMPLE,
     USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
@@ -311,6 +312,7 @@ class PasswordUpdateEmailVerificationSerializer(serializers.Serializer):
         return value
 
 
+@extend_schema_serializer(examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE)
 class PasswordUpdateAuthCodeVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
