@@ -434,3 +434,40 @@ LOGOUT_401_FAILURE_EXAMPLE = [
         response_only=True,
     )
 ]
+
+PASSWORD_UPDATE_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "비밀번호 변겅 요청 예시",
+        summary="Password Update API Request body Example",
+        description="비밀번호 변경 요청 Request body 예시입니다.",
+        value={"email": "test@gamil.com", "new_password": "Zsxcv1234!", "new_password_confirmation": "Zsxcv1234!"},
+        request_only=True,
+    )
+]
+
+PASSWORD_UPDATE_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "비밀번호 변겅 응답 예시",
+        summary="Password Update API Response body Example",
+        description="비밀번호 변겅 응답 예시입니다.",
+        value={"detail": "비밀번호 변경에 성공했습니다."},
+        response_only=True,
+    )
+]
+
+PASSWORD_UPDATE_400_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "비밀번호 불일치 예시",
+        summary="Password Mismatch",
+        description="비밀번호가 일치하지 않을 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field", "detail": "비밀번호가 일치하지 않습니다."},
+        response_only=True,
+    ),
+    OpenApiExample(
+        "존재하지 않는 이메일 예시",
+        summary="Non-existent Email",
+        description="존재하지 않는 이메일일 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field", "detail": "존재하지 않는 이메일입니다."},
+        response_only=True,
+    ),
+]

@@ -23,11 +23,13 @@ from account.schemas import (
     LOGOUT_400_FAILURE_EXAMPLE,
     LOGOUT_401_FAILURE_EXAMPLE,
     LOGOUT_RESPONSE_EXAMPLE,
+    PASSWORD_UPDATE_400_FAILURE_EXAMPLE,
     PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
     PASSWORD_UPDATE_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
     PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
     PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
     PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
+    PASSWORD_UPDATE_RESPONSE_EXAMPLE,
     USER_LOGIN_RESPONSE_EXAMPLE,
     USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
     USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
@@ -400,6 +402,23 @@ class UserLogoutAPIView(APIView):
 class UserPasswordUpdateAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="비밀번호 변경",
+        request=PasswordUpdateSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PasswordUpdateSerializer,
+                examples=PASSWORD_UPDATE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def patch(self, request: Request) -> Response:
         serializer = PasswordUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

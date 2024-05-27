@@ -14,6 +14,7 @@ from account.schemas import (
     LOGOUT_REQUEST_EXAMPLE,
     PASSWORD_UPDATE_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
     PASSWORD_UPDATE_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_EXAMPLE,
     USER_LOGIN_REQUEST_EXAMPLE,
     USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
     USER_REGISTER_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
@@ -379,6 +380,7 @@ class LogoutSerializer(serializers.Serializer):
     )
 
 
+@extend_schema_serializer(examples=PASSWORD_UPDATE_REQUEST_EXAMPLE)
 class PasswordUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
