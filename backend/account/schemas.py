@@ -11,8 +11,8 @@ class ErrorResponseSerializer(serializers.Serializer):
 USER_REGISTRATION_REQUEST_EXAMPLE = [
     OpenApiExample(
         "회원가입 요청 예시",
-        summary="User Registration Request body Example",
-        description="회원가입 Request body 요청 예시입니다.",
+        summary="User Registration API Request body Example",
+        description="회원가입 Request body 예시입니다.",
         value={
             "email": "test@gamil.com",
             "password": "Asdf1234!",
@@ -81,8 +81,8 @@ USER_REGISTRATION_FAILURE_EXAMPLE = [
 USER_LOGIN_REQUEST_EXAMPLE = [
     OpenApiExample(
         "로그인 요청 예시",
-        summary="User Login Request body Example",
-        description="로그인 Request body 요청 예시입니다.",
+        summary="User Login API Request body Example",
+        description="로그인 Request body 예시입니다.",
         value={"email": "test@gamil.com", "password": "Asdf1234!"},
         request_only=True,
     )
@@ -157,6 +157,46 @@ LOGIN_500_FAILURE_EXAMPLE = [
         summary="Token Issuance Error",
         description="토큰 발급 중에 문제가 발생했을 때의 응답 예시입니다.",
         value={"status_code": 500, "code": "token_issuance_error", "detail": "토큰 발급 중에 문제가 발생했습니다."},
+        response_only=True,
+    )
+]
+
+USER_REGISTER_REQUEST_AUTH_CODE_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "회원가입 인증 번호 요청 예시",
+        summary="User Register Request Auth Code API Request body Example",
+        description="회원가입 인증 번호 요청 Request body 예시입니다.",
+        value={"email": "test@naver.com"},
+        request_only=True,
+    )
+]
+
+USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "회원가입 인증 번호 응답 예시",
+        summary="User Register Request Auth Code API Response body Example",
+        description="회원가입 인증 번호 응답 예시입니다.",
+        value={"detail": "회원가입을 위한 인증 번호가 전송됐습니다."},
+        response_only=True,
+    )
+]
+
+USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "이미 인증 완료된 사용자 예시",
+        summary="Already Verified User",
+        description="이미 인증 완료된 사용자일 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field_state", "detail": "이미 인증 완료된 사용자입니다."},
+        response_only=True,
+    )
+]
+
+USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "이메일 전송 실패 예시",
+        summary="Email Sending Failed",
+        description="이메일 전송 중에 문제가 발생했을 때의 응답 예시입니다.",
+        value={"status_code": 500, "code": "email_sending_failed", "detail": "이메일 전송 중에 문제가 발생했습니다."},
         response_only=True,
     )
 ]
