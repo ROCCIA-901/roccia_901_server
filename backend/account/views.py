@@ -18,6 +18,9 @@ from account.schemas import (
     LOGIN_400_FAILURE_EXAMPLE,
     LOGIN_401_FAILURE_EXAMPLE,
     LOGIN_500_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
     USER_LOGIN_RESPONSE_EXAMPLE,
     USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
     USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
@@ -224,6 +227,27 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
 class PasswordUpdateRequestAuthCodeAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="비밀번호 변경 인증 번호 요청",
+        request=PasswordUpdateEmailVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PasswordUpdateEmailVerificationSerializer,
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = PasswordUpdateEmailVerificationSerializer(data=request.data)

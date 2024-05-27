@@ -255,3 +255,43 @@ USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE = [
         response_only=True,
     ),
 ]
+
+PASSWORD_UPDATE_REQUEST_AUTH_CODE_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "비밀번호 변경 인증 번호 요청 예시",
+        summary="Password Update Request Auth Code API Request body Example",
+        description="비밀번호 변경 인증 번호 요청 Request body 예시입니다.",
+        value={"email": "test@naver.com"},
+        request_only=True,
+    )
+]
+
+PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "비밀번호 변경 인증 번호 응답 예시",
+        summary="Password Update Request Auth Code API Response body Example",
+        description="비밀번호 변경 인증 번호 응답 예시입니다.",
+        value={"detail": "비밀번호 변경을 위한 인증 번호가 전송됐습니다."},
+        response_only=True,
+    )
+]
+
+PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "존재하지 않는 이메일 예시",
+        summary="Non-existent Email",
+        description="존재하지 않는 이메일일 때의 응답 예시입니다.",
+        value={"status_code": 400, "code": "invalid_field", "detail": "존재하지 않는 이메일입니다."},
+        response_only=True,
+    )
+]
+
+PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE = [
+    OpenApiExample(
+        "이메일 전송 실패 예시",
+        summary="Email Sending Failed",
+        description="이메일 전송 중에 문제가 발생했을 때의 응답 예시입니다.",
+        value={"status_code": 500, "code": "email_sending_failed", "detail": "이메일 전송 중에 문제가 발생했습니다."},
+        response_only=True,
+    )
+]
