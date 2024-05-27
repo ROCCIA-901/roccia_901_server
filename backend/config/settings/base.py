@@ -19,6 +19,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ROCCIA 901 API Document",
+    "DESCRIPTION": "ROCCIA 901 서비스의 API 문서입니다.",
+    "CONTACT": {"name": "김동욱", "email": "ehddnr7355@gmail.com"},
+    "SWAGGER_UI_SETTINGS": {
+        "dom_id": "#swagger-ui",
+        "layout": "BaseLayout",
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+        "filter": True,
+        "defaultModelsExpandDepth": -1,
+    },
+    "LICENSE": {
+        "name": "MIT License",
+        "url": "https://github.com/ROCCIA-901/roccia_901_server/blob/master/LICENSE",
+    },
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "//unpkg.com/swagger-ui-dist@3.38.0",
+}
 
 # Application definition
 
@@ -35,6 +56,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "django_apscheduler",
     "corsheaders",
+    "drf_spectacular",
     # 설치한 앱
     "account.apps.AccountConfig",
     "attendance.apps.AttendanceConfig",
@@ -122,6 +144,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "EXCEPTION_HANDLER": "config.utils.custom_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # django-apscheduler Settings
