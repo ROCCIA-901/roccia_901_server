@@ -216,13 +216,16 @@ class RecordViewSet(viewsets.ModelViewSet):
         # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_DATES_RESPONSE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_DATES_RESPONSE_EXAMPLE
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_401_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_401_FAILURE_EXAMPLE
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_500_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_500_FAILURE_EXAMPLE
             ),
         },
         # fmt: on
