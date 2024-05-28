@@ -1,14 +1,22 @@
 from django.db.models.functions import TruncDate
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from record.models import Record
+from record.schemas import (
+    RECORD_CREATE_400_FAILURE_EXAMPLE,
+    RECORD_CREATE_401_FAILURE_EXAMPLE,
+    RECORD_CREATE_403_FAILURE_EXAMPLE,
+    RECORD_CREATE_500_FAILURE_EXAMPLE,
+    RECORD_CREATE_RESPONSE_EXAMPLE,
+    ErrorResponseSerializer,
+)
 from record.serializers import RecordCreateSerializer, RecordSerializer
 
 
-# TODO: 생성, 수정 권한 일치해야지만 가능하게 수정
 class RecordViewSet(viewsets.ModelViewSet):
     allowed_methods = ["get", "post", "put", "delete"]
     permission_classes = [permissions.IsAuthenticated]
@@ -20,6 +28,28 @@ class RecordViewSet(viewsets.ModelViewSet):
             return RecordCreateSerializer
         return RecordSerializer
 
+    @extend_schema(
+        tags=["운동 기록"],
+        summary="운동 기록 생성",
+        request=RecordCreateSerializer,
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=RecordCreateSerializer, examples=RECORD_CREATE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_CREATE_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_CREATE_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_CREATE_403_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_CREATE_500_FAILURE_EXAMPLE
+            ),
+        },
+    )
     def create(self, request, *args, **kwargs):
         data = request.data
         data["user"] = request.user.id

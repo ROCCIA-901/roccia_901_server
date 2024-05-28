@@ -79,15 +79,22 @@ class MypageAPIView(APIView):
         tags=["마이페이지"],
         summary="사용자 정보 수정",
         request=UserUpdateSerializer,
+        # fmt: off
         responses={
-            status.HTTP_200_OK: OpenApiResponse(response=UserUpdateSerializer, examples=USER_UPDATE_SUCCESS_EXAMPLE),
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserUpdateSerializer,
+                examples=USER_UPDATE_SUCCESS_EXAMPLE
+            ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=USER_UPDATE_400_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=USER_UPDATE_400_FAILURE_EXAMPLE
             ),
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=USER_UPDATE_404_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=USER_UPDATE_404_FAILURE_EXAMPLE
             ),
         },
+        # fmt: on
     )
     def patch(self, request: Request) -> Response:
         user = request.user

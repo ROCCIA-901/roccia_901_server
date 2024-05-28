@@ -23,7 +23,7 @@ MYPAGE_RESPONSE_EXAMPLE = OpenApiExample(
                 "workout_location": "더클라임 신림",
                 "workout_level": "빨간색",
                 "profile_number": 8,
-                "introduction": "안녕하십니",
+                "introduction": "안녕하십니까",
             },
             "total_workout_time": 220,
             "records": [{"workout_level": "파란색", "total_count": 6}],
