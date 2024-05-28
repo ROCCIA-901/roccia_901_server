@@ -1,4 +1,3 @@
-# schemas.py
 from drf_spectacular.utils import OpenApiExample
 from rest_framework import serializers
 

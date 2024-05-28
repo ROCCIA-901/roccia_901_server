@@ -1,15 +1,42 @@
 from typing import Dict, List
 
 from django.db import models
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from ranking.models import Ranking
+from ranking.schemas import (
+    RANKING_401_FAILURE_EXAMPLE,
+    RANKING_500_FAILURE_EXAMPLE,
+    RANKING_WEEKS_RESPONSE_EXAMPLE,
+    ErrorResponseSerializer,
+)
 from ranking.serializers import RankingSerializer
 
 
+@extend_schema(
+    tags=["랭킹"],
+    summary="주차별 랭킹 조회",
+    # fmt: off
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=RankingSerializer,
+            examples=RANKING_WEEKS_RESPONSE_EXAMPLE
+        ),
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            examples=RANKING_401_FAILURE_EXAMPLE
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            examples=RANKING_500_FAILURE_EXAMPLE
+        ),
+    },
+    # fmt: on
+)
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def get_weekly_rankings(request: Request) -> Response:
