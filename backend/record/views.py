@@ -1,5 +1,5 @@
 from django.db.models.functions import TruncDate
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -7,11 +7,13 @@ from rest_framework.response import Response
 
 from record.models import Record
 from record.schemas import (
+    RECORD_401_FAILURE_EXAMPLE,
+    RECORD_403_FAILURE_EXAMPLE,
+    RECORD_500_FAILURE_EXAMPLE,
     RECORD_CREATE_400_FAILURE_EXAMPLE,
-    RECORD_CREATE_401_FAILURE_EXAMPLE,
-    RECORD_CREATE_403_FAILURE_EXAMPLE,
-    RECORD_CREATE_500_FAILURE_EXAMPLE,
     RECORD_CREATE_RESPONSE_EXAMPLE,
+    RECORD_UPDATE_REQUEST_EXAMPLE,
+    RECORD_UPDATE_RESPONSE_EXAMPLE,
     ErrorResponseSerializer,
 )
 from record.serializers import RecordCreateSerializer, RecordSerializer
@@ -32,23 +34,30 @@ class RecordViewSet(viewsets.ModelViewSet):
         tags=["운동 기록"],
         summary="운동 기록 생성",
         request=RecordCreateSerializer,
+        # fmt: off
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
-                response=RecordCreateSerializer, examples=RECORD_CREATE_RESPONSE_EXAMPLE
+                response=RecordCreateSerializer,
+                examples=RECORD_CREATE_RESPONSE_EXAMPLE
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_CREATE_400_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_CREATE_400_FAILURE_EXAMPLE
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_CREATE_401_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_401_FAILURE_EXAMPLE
             ),
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_CREATE_403_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_403_FAILURE_EXAMPLE
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
-                response=ErrorResponseSerializer, examples=RECORD_CREATE_500_FAILURE_EXAMPLE
+                response=ErrorResponseSerializer,
+                examples=RECORD_500_FAILURE_EXAMPLE
             ),
         },
+        # fmt: on
     )
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -63,6 +72,37 @@ class RecordViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(
+        tags=["운동 기록"],
+        summary="운동 기록 수정",
+        parameters=[
+            OpenApiParameter(
+                name="id", location=OpenApiParameter.PATH, description="수정할 기록의 ID", required=True, type=int
+            ),
+        ],
+        request=RecordSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=RecordSerializer,
+                examples=RECORD_UPDATE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_403_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+        examples=RECORD_UPDATE_REQUEST_EXAMPLE,
+    )
     def update(self, request, *args, **kwargs):
         if self.request.user != self.get_object().user:
             return Response(

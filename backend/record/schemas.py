@@ -68,7 +68,7 @@ RECORD_CREATE_400_FAILURE_EXAMPLE = [
     ),
 ]
 
-RECORD_CREATE_401_FAILURE_EXAMPLE = [
+RECORD_401_FAILURE_EXAMPLE = [
     OpenApiExample(
         "유효하지 않은 계정 예시",
         summary="Invalid Account",
@@ -78,7 +78,7 @@ RECORD_CREATE_401_FAILURE_EXAMPLE = [
     )
 ]
 
-RECORD_CREATE_403_FAILURE_EXAMPLE = [
+RECORD_403_FAILURE_EXAMPLE = [
     OpenApiExample(
         "권한 없음 예시",
         summary="Permission Denied",
@@ -88,12 +88,37 @@ RECORD_CREATE_403_FAILURE_EXAMPLE = [
     )
 ]
 
-RECORD_CREATE_500_FAILURE_EXAMPLE = [
+RECORD_500_FAILURE_EXAMPLE = [
     OpenApiExample(
         "서버 내부 오류 예시",
         summary="Internal Server Error",
         description="서버 내부에서 발생한 오류일 때의 응답 예시입니다.",
         value={"status_code": 500, "code": "internal_server_error", "detail": "서버 내부에서 발생한 오류입니다."},
+        response_only=True,
+    )
+]
+
+RECORD_UPDATE_REQUEST_EXAMPLE = [
+    OpenApiExample(
+        "운동 기록 수정 요청 예시",
+        summary="Record Update Request Example",
+        description="운동 기록 수정 요청의 예시입니다.",
+        value={
+            "workout_location": "더클라임 연남",
+            "start_time": "2024-01-02T17:30:00+09:00",
+            "end_time": "2024-01-02T19:00:00+09:00",
+            "boulder_problems": [{"workout_level": "파랑", "count": 3}],
+        },
+        request_only=True,
+    )
+]
+
+RECORD_UPDATE_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "운동 기록 수정 성공 예시",
+        summary="Record Update Response Example",
+        description="운동 기록 수정 성공 시의 응답 예시입니다.",
+        value={"detail": "운동 기록이 수정되었습니다."},
         response_only=True,
     )
 ]
