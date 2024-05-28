@@ -11,6 +11,7 @@ from ranking.models import Ranking
 from ranking.schemas import (
     RANKING_401_FAILURE_EXAMPLE,
     RANKING_500_FAILURE_EXAMPLE,
+    RANKING_GENERATIONS_RESPONSE_EXAMPLE,
     RANKING_WEEKS_RESPONSE_EXAMPLE,
     ErrorResponseSerializer,
 )
@@ -74,6 +75,26 @@ def get_weekly_rankings(request: Request) -> Response:
     )
 
 
+@extend_schema(
+    tags=["랭킹"],
+    summary="기수별 랭킹 조회",
+    # fmt: off
+    responses={
+        status.HTTP_200_OK: OpenApiResponse(
+            response=RankingSerializer,
+            examples=RANKING_GENERATIONS_RESPONSE_EXAMPLE
+        ),
+        status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            examples=RANKING_401_FAILURE_EXAMPLE
+        ),
+        status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+            response=ErrorResponseSerializer,
+            examples=RANKING_500_FAILURE_EXAMPLE
+        ),
+    },
+    # fmt: on
+)
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def get_generation_rankings(request: Request) -> Response:

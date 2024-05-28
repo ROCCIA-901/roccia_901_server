@@ -60,3 +60,36 @@ RANKING_500_FAILURE_EXAMPLE = [
         response_only=True,
     )
 ]
+
+RANKING_GENERATIONS_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "기수별 랭킹 목록 조회 성공 예시",
+        summary="Generations Rankings Response Example",
+        description="기수별 랭킹 목록 조회 성공 시의 응답 예시입니다.",
+        value={
+            "message": "기수별 랭킹 조회를 성공했습니다.",
+            "data": {
+                "generation_rankings": [
+                    {
+                        "generation": "5기",
+                        "ranking": [
+                            {
+                                "generation": "5기",
+                                "level": "파랑색",
+                                "location": "더클라임 홍대",
+                                "profile_img": 6,
+                                "rank": 1,
+                                "score": 71.5,
+                                "user_id": 28,
+                                "username": "조동욱",
+                            },
+                            # ... other user rankings
+                        ],
+                    }
+                    # ... other generation rankings
+                ]
+            },
+        },
+        response_only=True,
+    )
+]
