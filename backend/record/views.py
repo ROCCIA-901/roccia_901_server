@@ -12,6 +12,7 @@ from record.schemas import (
     RECORD_500_FAILURE_EXAMPLE,
     RECORD_CREATE_400_FAILURE_EXAMPLE,
     RECORD_CREATE_RESPONSE_EXAMPLE,
+    RECORD_LIST_RESPONSE_EXAMPLE,
     RECORD_UPDATE_REQUEST_EXAMPLE,
     RECORD_UPDATE_RESPONSE_EXAMPLE,
     ErrorResponseSerializer,
@@ -119,6 +120,30 @@ class RecordViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["운동 기록"],
+        summary="운동 기록 전체 조회",
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=RecordSerializer,
+                examples=RECORD_LIST_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_403_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def list(self, request, *args, **kwargs):
         data = Record.objects.filter(user=request.user)  # type: ignore
         data = self.get_serializer(data, many=True).data

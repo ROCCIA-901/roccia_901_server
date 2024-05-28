@@ -122,3 +122,52 @@ RECORD_UPDATE_RESPONSE_EXAMPLE = [
         response_only=True,
     )
 ]
+
+RECORD_LIST_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "운동 기록 전체 조회 성공 예시",
+        summary="Record List Response Example",
+        description="운동 기록 전체 조회 성공 시의 응답 예시입니다.",
+        value={
+            "message": "모든 운동 기록을 가져왔습니다.",
+            "data": {
+                "records": [
+                    {
+                        "climbing_record_id": 1,
+                        "user_id": 12345,
+                        "location": "더클라임 홍대",
+                        "start_time": "2024-01-04T17:30:00+09:00",
+                        "end_time": "2024-01-04T19:00:00+09:00",
+                        "boulder_problem_set": [
+                            {"level": "초록", "number_of_completions": 3},
+                            {"level": "파랑", "number_of_completions": 0},
+                        ],
+                    },
+                    {
+                        "climbing_record_id": 2,
+                        "user_id": 12345,
+                        "location": "더클라임 양재",
+                        "start_time": "2024-01-14T14:30:00+09:00",
+                        "end_time": "2024-01-14T16:00:00+09:00",
+                        "boulder_problem_set": [
+                            {"level": "초록", "number_of_completions": 2},
+                            {"level": "파랑", "number_of_completions": 1},
+                        ],
+                    },
+                    {
+                        "climbing_record_id": 3,
+                        "user_id": 12345,
+                        "location": "더클라임 연남",
+                        "start_time": "2024-01-20T12:30:00+09:00",
+                        "end_time": "2024-01-20T19:00:00+09:00",
+                        "boulder_problem_set": [
+                            {"level": "초록", "number_of_completions": 4},
+                            {"level": "파랑", "number_of_completions": 4},
+                        ],
+                    },
+                ]
+            },
+        },
+        response_only=True,
+    )
+]
