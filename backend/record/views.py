@@ -1,5 +1,10 @@
 from django.db.models.functions import TruncDate
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -13,6 +18,7 @@ from record.schemas import (
     RECORD_500_FAILURE_EXAMPLE,
     RECORD_CREATE_400_FAILURE_EXAMPLE,
     RECORD_CREATE_RESPONSE_EXAMPLE,
+    RECORD_DATES_RESPONSE_EXAMPLE,
     RECORD_DESTROY_RESPONSE_EXAMPLE,
     RECORD_LIST_RESPONSE_EXAMPLE,
     RECORD_UPDATE_REQUEST_EXAMPLE,
@@ -22,6 +28,10 @@ from record.schemas import (
 from record.serializers import RecordCreateSerializer, RecordSerializer
 
 
+@extend_schema_view(
+    retrieve=extend_schema(exclude=True),
+    partial_update=extend_schema(exclude=True),
+)
 class RecordViewSet(viewsets.ModelViewSet):
     allowed_methods = ["get", "post", "put", "delete"]
     permission_classes = [permissions.IsAuthenticated]
@@ -200,6 +210,23 @@ class RecordViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["운동 기록"],
+        summary="운동 기록 날짜 조회",
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_DATES_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer, examples=RECORD_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     @action(detail=False, methods=["get"], url_path="dates")
     def dates(self, request: Request) -> Response:
         dates = (

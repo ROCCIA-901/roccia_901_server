@@ -181,3 +181,16 @@ RECORD_DESTROY_RESPONSE_EXAMPLE = [
         response_only=True,
     )
 ]
+
+RECORD_DATES_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "운동 기록 날짜 조회 성공 예시",
+        summary="Record Dates Response Example",
+        description="운동 기록 날짜 조회 성공 시의 응답 예시입니다.",
+        value={
+            "detail": "운동 기록 날짜 목록 조회를 성공했습니다.",
+            "data": {"dates": ["2024-01-04", "2024-01-14", "2024-01-20"]},
+        },
+        response_only=True,
+    )
+]
