@@ -171,3 +171,13 @@ RECORD_LIST_RESPONSE_EXAMPLE = [
         response_only=True,
     )
 ]
+
+RECORD_DESTROY_RESPONSE_EXAMPLE = [
+    OpenApiExample(
+        "운동 기록 삭제 성공 예시",
+        summary="Record Destroy Response Example",
+        description="운동 기록 삭제 성공 시의 응답 예시입니다.",
+        value={"detail": "운동 기록이 삭제되었습니다."},
+        response_only=True,
+    )
+]

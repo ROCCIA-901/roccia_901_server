@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from config.exceptions import PermissionFailedException
 from record.models import Record
 from record.schemas import (
     RECORD_401_FAILURE_EXAMPLE,
@@ -12,6 +13,7 @@ from record.schemas import (
     RECORD_500_FAILURE_EXAMPLE,
     RECORD_CREATE_400_FAILURE_EXAMPLE,
     RECORD_CREATE_RESPONSE_EXAMPLE,
+    RECORD_DESTROY_RESPONSE_EXAMPLE,
     RECORD_LIST_RESPONSE_EXAMPLE,
     RECORD_UPDATE_REQUEST_EXAMPLE,
     RECORD_UPDATE_RESPONSE_EXAMPLE,
@@ -157,14 +159,39 @@ class RecordViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["운동 기록"],
+        summary="운동 기록 삭제",
+        parameters=[
+            OpenApiParameter(
+                name="id", location=OpenApiParameter.PATH, description="삭제할 기록의 ID", required=True, type=int
+            ),
+        ],
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=RecordSerializer,
+                examples=RECORD_DESTROY_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_403_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=RECORD_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def destroy(self, request, *args, **kwargs):
         if self.request.user != self.get_object().user:
-            return Response(
-                data={
-                    "detail": "운동 기록을 삭제할 권한이 없습니다.",
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            raise PermissionFailedException
+
         super().destroy(request, *args, **kwargs)
         return Response(
             data={
