@@ -1,5 +1,5 @@
 from account.models import User
-from mypage.serializers import UserProfileSerializer
+from mypage.serializers import LevelCountSerializer, UserProfileSerializer
 
 
 class TestUserProfileSerializer:
@@ -17,3 +17,11 @@ class TestUserProfileSerializer:
 
         assert serializer.data == expected_data
         assert serializer.data.keys() == expected_data.keys()
+
+
+class TestLevelCountSerializer:
+
+    def test_level_count_serializer_serialization(self):
+        data = {"workout_level": 1, "total_count": 10}
+        serializer = LevelCountSerializer(data)
+        assert serializer.data == {"workout_level": "하얀색", "total_count": 10}
