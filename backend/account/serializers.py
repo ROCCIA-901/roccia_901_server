@@ -190,7 +190,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict[str, Any]) -> User:
         validated_data.pop("password_confirmation", None)
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)  # type: ignore[attr-defined]
         return user
 
 
