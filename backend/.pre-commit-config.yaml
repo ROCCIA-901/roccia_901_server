@@ -14,8 +14,8 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - django-stubs
-          - types-pytz
+          - django-stubs==1.15.0
+          - types-pytz==2023.3.0
 
   - repo: https://github.com/psf/black
     rev: 24.2.0

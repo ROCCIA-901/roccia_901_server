@@ -2,6 +2,7 @@ import random
 
 from django.core.cache import cache
 from django.db import transaction
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -13,6 +14,32 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from account.models import User
+from account.schemas import (
+    CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE,
+    CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE,
+    LOGIN_400_FAILURE_EXAMPLE,
+    LOGIN_401_FAILURE_EXAMPLE,
+    LOGIN_500_FAILURE_EXAMPLE,
+    LOGOUT_400_FAILURE_EXAMPLE,
+    LOGOUT_401_FAILURE_EXAMPLE,
+    LOGOUT_RESPONSE_EXAMPLE,
+    PASSWORD_UPDATE_400_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
+    PASSWORD_UPDATE_RESPONSE_EXAMPLE,
+    USER_LOGIN_RESPONSE_EXAMPLE,
+    USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
+    USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
+    USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
+    USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
+    USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
+    USER_REGISTRATION_FAILURE_EXAMPLE,
+    USER_REGISTRATION_RESPONSE_EXAMPLE,
+    ErrorResponseSerializer,
+)
 from account.serializers import (
     CustomTokenRefreshSerializer,
     LogoutSerializer,
@@ -31,6 +58,23 @@ from config.exceptions import InvalidRefreshToken, TokenIssuanceException
 class UserRegistrationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="회원가입",
+        request=UserRegistrationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=UserRegistrationSerializer,
+                examples=USER_REGISTRATION_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTRATION_FAILURE_EXAMPLE,
+            ),
+        },
+        # fmt: on
+    )
     @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = UserRegistrationSerializer(data=request.data)
@@ -53,6 +97,30 @@ class UserRegistrationAPIView(APIView):
 class UserLoginAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="로그인",
+        request=UserLoginSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserLoginSerializer,
+                examples=USER_LOGIN_RESPONSE_EXAMPLE),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGIN_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGIN_401_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGIN_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -84,6 +152,27 @@ class UserLoginAPIView(APIView):
 class UserRegisterRequestAuthCodeAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="회원가입 인증 번호 요청",
+        request=UserRegisterEmailVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserRegisterEmailVerificationSerializer,
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = UserRegisterEmailVerificationSerializer(data=request.data)
@@ -110,6 +199,23 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
 class UserRegisterAuthCodeValidationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="회원가입 인증 번호 확인",
+        request=UserRegisterAuthCodeVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserRegisterAuthCodeVerificationSerializer,
+                examples=USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = UserRegisterAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -130,6 +236,27 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
 class PasswordUpdateRequestAuthCodeAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="비밀번호 변경 인증 번호 요청",
+        request=PasswordUpdateEmailVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PasswordUpdateEmailVerificationSerializer,
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     @transaction.atomic
     def post(self, request: Request) -> Response:
         serializer = PasswordUpdateEmailVerificationSerializer(data=request.data)
@@ -156,6 +283,23 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
 class PasswordUpdateAuthCodeValidationAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="비밀번호 변경 인증 번호 확인",
+        request=PasswordUpdateAuthCodeVerificationSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PasswordUpdateAuthCodeVerificationSerializer,
+                examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = PasswordUpdateAuthCodeVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -176,6 +320,23 @@ class PasswordUpdateAuthCodeValidationAPIView(APIView):
 class CustomTokenRefreshAPIView(TokenRefreshView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="토큰 재발급",
+        request=CustomTokenRefreshSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=CustomTokenRefreshSerializer,
+                examples=CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request, *args, **kwargs):
         serializer = CustomTokenRefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -197,6 +358,27 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
 
 class UserLogoutAPIView(APIView):
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="로그아웃",
+        request=LogoutSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=LogoutSerializer,
+                examples=LOGOUT_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGOUT_400_FAILURE_EXAMPLE
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=LOGOUT_401_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def post(self, request: Request) -> Response:
         serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -220,6 +402,23 @@ class UserLogoutAPIView(APIView):
 class UserPasswordUpdateAPIView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["사용자 인증"],
+        summary="비밀번호 변경",
+        request=PasswordUpdateSerializer,
+        # fmt: off
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=PasswordUpdateSerializer,
+                examples=PASSWORD_UPDATE_RESPONSE_EXAMPLE
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=PASSWORD_UPDATE_400_FAILURE_EXAMPLE
+            ),
+        },
+        # fmt: on
+    )
     def patch(self, request: Request) -> Response:
         serializer = PasswordUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

@@ -3,11 +3,23 @@ from typing import Any
 
 from django.contrib.auth import authenticate
 from django.core.cache import cache
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from account.models import User
+from account.schemas import (
+    CUSTOM_TOKEN_REFRESH_REQUEST_EXAMPLE,
+    LOGOUT_REQUEST_EXAMPLE,
+    PASSWORD_UPDATE_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
+    PASSWORD_UPDATE_REQUEST_EXAMPLE,
+    USER_LOGIN_REQUEST_EXAMPLE,
+    USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE,
+    USER_REGISTER_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
+    USER_REGISTRATION_REQUEST_EXAMPLE,
+)
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -15,22 +27,10 @@ from config.exceptions import (
     InvalidFieldStateException,
     InvalidRefreshTokenException,
 )
+from config.utils import WorkoutLevelChoiceField
 
 
-class WorkoutLevelChoiceField(serializers.ChoiceField):
-    def to_representation(self, obj):
-        for key, val in self._choices.items():
-            if key == int(obj):
-                return val
-
-    def to_internal_value(self, data):
-        # To support inserts with the value
-        for key, val in self._choices.items():
-            if val == data:
-                return key
-        raise InvalidFieldException("난이도가 정확하지 않습니다.")
-
-
+@extend_schema_serializer(examples=USER_REGISTRATION_REQUEST_EXAMPLE)
 class UserRegistrationSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
@@ -190,10 +190,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict[str, Any]) -> User:
         validated_data.pop("password_confirmation", None)
-        user = User.objects.create_user(**validated_data)
+        user = User.objects.create_user(**validated_data)  # type: ignore[attr-defined]
         return user
 
 
+@extend_schema_serializer(examples=USER_LOGIN_REQUEST_EXAMPLE)
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -247,6 +248,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         ]
 
 
+@extend_schema_serializer(examples=USER_REGISTER_REQUEST_AUTH_CODE_REQUEST_EXAMPLE)
 class UserRegisterEmailVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -262,6 +264,7 @@ class UserRegisterEmailVerificationSerializer(serializers.Serializer):
         return value
 
 
+@extend_schema_serializer(examples=USER_REGISTER_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE)
 class UserRegisterAuthCodeVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -296,6 +299,7 @@ class UserRegisterAuthCodeVerificationSerializer(serializers.Serializer):
         return data
 
 
+@extend_schema_serializer(examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_REQUEST_EXAMPLE)
 class PasswordUpdateEmailVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -311,6 +315,7 @@ class PasswordUpdateEmailVerificationSerializer(serializers.Serializer):
         return value
 
 
+@extend_schema_serializer(examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_REQUEST_EXAMPLE)
 class PasswordUpdateAuthCodeVerificationSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,
@@ -345,6 +350,7 @@ class PasswordUpdateAuthCodeVerificationSerializer(serializers.Serializer):
         return data
 
 
+@extend_schema_serializer(examples=CUSTOM_TOKEN_REFRESH_REQUEST_EXAMPLE)
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     refresh = serializers.CharField(
         required=True,
@@ -363,6 +369,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         return data
 
 
+@extend_schema_serializer(examples=LOGOUT_REQUEST_EXAMPLE)
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField(
         required=True,
@@ -373,6 +380,7 @@ class LogoutSerializer(serializers.Serializer):
     )
 
 
+@extend_schema_serializer(examples=PASSWORD_UPDATE_REQUEST_EXAMPLE)
 class PasswordUpdateSerializer(serializers.Serializer):
     email = serializers.EmailField(
         required=True,

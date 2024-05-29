@@ -1,11 +1,8 @@
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 
-from ranking.views import WeeklyRankingViewSet, get_generation_rankings
+from ranking.views import get_generation_rankings, get_weekly_rankings
 
-router = DefaultRouter()
-router.register(r"weeks", WeeklyRankingViewSet, basename="weekly_rankings")
-
-urlpatterns = router.urls + [
+urlpatterns = [
+    path("weeks/", get_weekly_rankings, name="weekly_rankings"),
     path("generations/", get_generation_rankings, name="generation_rankings"),
 ]

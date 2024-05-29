@@ -1,8 +1,10 @@
 from django.db.models import DurationField, ExpressionWrapper, F, Sum
+from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from account.models import User
 from config.exceptions import InvalidFieldException
+from mypage.schemas import USER_UPDATE_REQUEST_EXAMPLE
 from record.models import BoulderProblem, Record
 from record.serializers import WorkoutLevelChoiceField
 
@@ -61,6 +63,7 @@ class MypageSerializer(serializers.ModelSerializer):
         return total_minutes
 
 
+@extend_schema_serializer(examples=USER_UPDATE_REQUEST_EXAMPLE)
 class UserUpdateSerializer(serializers.ModelSerializer):
     workout_location = serializers.CharField(
         error_messages={
