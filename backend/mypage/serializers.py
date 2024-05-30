@@ -93,6 +93,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
 
+    def validate_workout_level(self, value: int) -> int:
+        workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
+        if value not in workout_level:
+            raise InvalidFieldException("난이도가 정확하지 않습니다.")
+        return value
+
     def validate_profile_number(self, value: str) -> str:
         if value not in range(1, 9):
             raise InvalidFieldException("프로필 번호가 정확하지 않습니다.")
