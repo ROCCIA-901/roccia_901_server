@@ -1,10 +1,14 @@
 from unittest.mock import MagicMock
 
+import pytest
+
 from account.models import User
+from config.exceptions import InvalidFieldException
 from mypage.serializers import (
     LevelCountSerializer,
     MypageSerializer,
     UserProfileSerializer,
+    UserUpdateSerializer,
 )
 
 
@@ -64,3 +68,48 @@ class TestMypageSerializer:
         }
 
         assert data == expected_data
+
+
+class TestUserUpdateSerializer:
+
+    @pytest.mark.parametrize(
+        "workout_location, workout_level, profile_number",
+        [
+            ("더클라임 양재", "1", ""),
+            ("더클라임 양재", "", "7"),
+            ("", "1", "7"),
+        ],
+    )
+    def test_field_verification(self, workout_location, workout_level, profile_number):
+        data = {"workout_location": workout_location, "workout_level": workout_level, "profile_number": profile_number}
+
+        serializer = UserUpdateSerializer(data=data)
+        with pytest.raises(InvalidFieldException):
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_workout_location_verification(self):
+        data = {"workout_location": "피커스 구로", "workout_level": "파란색", "profile_number": "1"}
+
+        serializer = UserUpdateSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="지점이 정확하지 않습니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_workout_level_verification(self):
+        data = {"workout_location": "더클라임 양재", "workout_level": "분홍색", "profile_number": "1"}
+
+        serializer = UserUpdateSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="난이도가 정확하지 않습니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_invalid_profile_number_verification(self):
+        data = {"workout_location": "더클라임 양재", "workout_level": "파란색", "profile_number": "100"}
+
+        serializer = UserUpdateSerializer(data=data)
+        with pytest.raises(InvalidFieldException, match="프로필 번호가 정확하지 않습니다."):
+            serializer.is_valid(raise_exception=True)
+
+    def test_validate_success(self):
+        data = {"workout_location": "더클라임 양재", "workout_level": "파란색", "profile_number": "5"}
+
+        serializer = UserUpdateSerializer(data=data)
+        assert serializer.is_valid()
