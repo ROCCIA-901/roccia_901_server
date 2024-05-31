@@ -14,13 +14,13 @@ USER_REGISTRATION_REQUEST_EXAMPLE = [
         summary="User Registration API Request body Example",
         description="회원가입 Request body 예시입니다.",
         value={
-            "email": "test@gamil.com",
+            "email": "test@gmail.com",
             "password": "Asdf1234!",
             "password_confirmation": "Asdf1234!",
             "username": "홍길동",
             "generation": "8기",
             "role": "운영진",
-            "workout_location": "양재",
+            "workout_location": "더클라임 양재",
             "workout_level": "파란색",
             "profile_number": 1,
             "introduction": "안녕하세요",
@@ -35,14 +35,14 @@ USER_REGISTRATION_RESPONSE_EXAMPLE = [
         summary="User Registration Response Example",
         description="회원가입 응답 예시입니다.",
         value={
-            "detail": "회원가입에 성공했습니다.",
+            "detail": "회원가입에 성공했습니다. 관리자에게 승인 문의 바랍니다.",
             "data": {
                 "user": {
-                    "email": "test@gamil.com",
+                    "email": "test@gmail.com",
                     "username": "김동욱",
                     "generation": "8기",
                     "role": "운영진",
-                    "workout_location": "양재",
+                    "workout_location": "더클라임 양재",
                     "workout_level": "파란색",
                     "profile_number": 1,
                     "introduction": "안녕하세요",

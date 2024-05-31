@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from rest_framework.test import APIClient
 
 from tests.test_account.factories import UserFactory
 
@@ -68,3 +69,8 @@ def mock_user_model():
 def mock_token_refresh_serializer_validate(mock_user_model):
     with patch("rest_framework_simplejwt.serializers.TokenRefreshSerializer.validate") as mock:
         yield mock
+
+
+@pytest.fixture
+def api_client():
+    return APIClient()
