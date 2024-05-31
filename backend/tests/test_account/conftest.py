@@ -1,8 +1,10 @@
 from unittest.mock import patch
 
 import pytest
+from model_bakery import baker
 from rest_framework.test import APIClient
 
+from account.models import User
 from tests.test_account.factories import UserFactory
 
 
@@ -74,3 +76,12 @@ def mock_token_refresh_serializer_validate(mock_user_model):
 @pytest.fixture
 def api_client():
     return APIClient()
+
+
+@pytest.fixture
+def default_user():
+    instance = baker.make(User, id=1, email="defaultuser@example.com", username="defaultuser")
+    instance.set_password("Password1!")
+    instance.is_active = True
+    instance.save()
+    return instance

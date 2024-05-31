@@ -31,3 +31,14 @@ class TestAccountEndpoints:
         assert "user" in response.data["data"]
         assert response.data["data"]["user"]["email"] == "test@gmail.com"
         assert response.data["data"]["user"]["username"] == "홍길동"
+
+    def test_user_login(self, default_user, api_client):
+        response = api_client.post(
+            "/api/accounts/login/",
+            data={"email": "defaultuser@example.com", "password": "Password1!"},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["detail"] == "로그인에 성공했습니다."
+        assert "access" in response.data["data"]["token"]
+        assert "refresh" in response.data["data"]["token"]
