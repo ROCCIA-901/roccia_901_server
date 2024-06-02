@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
 import pytest
+from django.conf import settings
+from django.core.cache import cache
 from model_bakery import baker
 from rest_framework.test import APIClient
 
@@ -85,3 +87,31 @@ def default_user():
     instance.is_active = True
     instance.save()
     return instance
+
+
+@pytest.fixture
+def mock_randint():
+    with patch("random.randint") as mock:
+        yield mock
+
+
+@pytest.fixture(scope="session", autouse=True)
+def configure_settings():
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "",
+        }
+    }
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    yield
+    cache.clear()
+
+
+@pytest.fixture
+def mock_send_mail_task():
+    with patch("account.tasks.send_auth_code_to_email.delay") as mock:
+        yield mock

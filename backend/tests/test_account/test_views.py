@@ -1,4 +1,5 @@
 import pytest
+from django.core.cache import cache
 from rest_framework import status
 
 
@@ -42,3 +43,20 @@ class TestAccountEndpoints:
         assert response.data["detail"] == "로그인에 성공했습니다."
         assert "access" in response.data["data"]["token"]
         assert "refresh" in response.data["data"]["token"]
+
+    def test_user_register_auth_code_request(self, api_client, mock_randint, mock_send_mail_task):
+        mock_randint.return_value = 12345
+        test_email = "testuser@example.com"
+        response = api_client.post(
+            "/api/accounts/user-register-auth-code-request/",
+            data={"email": test_email},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["detail"] == "회원가입을 위한 인증번호가 전송됐습니다."
+
+        assert cache.get(f"{test_email}:register:code") == 12345
+        assert cache.get(f"{test_email}:register:status") == "uncertified"
+
+        mock_send_mail_task.assert_called_once_with("회원가입", test_email, 12345)
