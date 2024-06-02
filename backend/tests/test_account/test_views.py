@@ -60,3 +60,21 @@ class TestAccountEndpoints:
         assert cache.get(f"{test_email}:register:status") == "uncertified"
 
         mock_send_mail_task.assert_called_once_with("회원가입", test_email, 12345)
+
+    def test_user_register_auth_code_verify(self, api_client):
+        test_email = "testuser@example.com"
+        auth_code = 12345
+
+        cache.set(f"{test_email}:register:code", auth_code)
+        cache.set(f"{test_email}:register:status", "uncertified")
+
+        response = api_client.post(
+            "/api/accounts/user-register-auth-code-verify/",
+            data={"email": test_email, "code": auth_code},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["detail"] == "회원가입을 위한 인증번호 확인에 성공했습니다. 인증은 1시간 동안 유효합니다."
+
+        assert cache.get(f"{test_email}:register:status") == "certified"
