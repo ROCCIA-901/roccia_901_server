@@ -82,7 +82,7 @@ def api_client():
 
 @pytest.fixture
 def default_user():
-    instance = baker.make(User, id=1, email="defaultuser@example.com", username="defaultuser")
+    instance = baker.make(User, id=1, email="defaultuser@example.com", password="Password!1", username="defaultuser")
     instance.set_password("Password1!")
     instance.is_active = True
     instance.save()

@@ -98,3 +98,18 @@ class TestAccountEndpoints:
         assert response.status_code == status.HTTP_200_OK
         assert response.data["detail"] == "액세스 토큰 발급을 성공했습니다."
         assert "access" in response.data["data"]["token"]
+
+    def test_password_update(self, api_client, default_user, mock_cache):
+        mock_cache.return_value = "certified"
+        response = api_client.patch(
+            "/api/accounts/password-update/",
+            data={
+                "email": "defaultuser@example.com",
+                "new_password": "Zsxcv1234!",
+                "new_password_confirmation": "Zsxcv1234!",
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["detail"] == "비밀번호 변경에 성공했습니다."
