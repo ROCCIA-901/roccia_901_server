@@ -78,3 +78,23 @@ class TestAccountEndpoints:
         assert response.data["detail"] == "회원가입을 위한 인증번호 확인에 성공했습니다. 인증은 1시간 동안 유효합니다."
 
         assert cache.get(f"{test_email}:register:status") == "certified"
+
+    def test_token_refresh(self, api_client, default_user):
+        login_response = api_client.post(
+            "/api/accounts/login/",
+            data={"email": "defaultuser@example.com", "password": "Password1!"},
+            format="json",
+        )
+
+        assert login_response.status_code == status.HTTP_200_OK
+        refresh_token = login_response.data["data"]["token"]["refresh"]
+
+        response = api_client.post(
+            "/api/accounts/token-refresh/",
+            data={"refresh": refresh_token},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["detail"] == "액세스 토큰 발급을 성공했습니다."
+        assert "access" in response.data["data"]["token"]
