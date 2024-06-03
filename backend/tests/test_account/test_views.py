@@ -136,6 +136,25 @@ class TestAccountEndpoints:
         assert response.data["detail"] == "액세스 토큰 발급을 성공했습니다."
         assert "access" in response.data["data"]["token"]
 
+    def test_logout(self, api_client, default_user):
+        login_res = api_client.post(
+            "/api/accounts/login/",
+            data={"email": "defaultuser@example.com", "password": "Password1!"},
+            format="json",
+        )
+        assert login_res.status_code == status.HTTP_200_OK, login_res.data
+        access_token = login_res.data["data"]["token"]["access"]
+        refresh_token = login_res.data["data"]["token"]["refresh"]
+
+        logout_res = api_client.post(
+            "/api/accounts/logout/",
+            headers={"Authorization": f"Bearer {access_token}"},
+            data={"refresh": refresh_token},
+            format="json",
+        )
+        assert logout_res.status_code == status.HTTP_200_OK
+        assert logout_res.data["detail"] == "로그아웃에 성공했습니다."
+
     def test_password_update(self, api_client, default_user, mock_cache):
         mock_cache.return_value = "certified"
         response = api_client.patch(
