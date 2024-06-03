@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
 import pytest
+from django.conf import settings
+from django.core.cache import cache
 
 from tests.test_account.factories import UserFactory
 
@@ -67,4 +69,32 @@ def mock_user_model():
 @pytest.fixture
 def mock_token_refresh_serializer_validate(mock_user_model):
     with patch("rest_framework_simplejwt.serializers.TokenRefreshSerializer.validate") as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_randint():
+    with patch("random.randint") as mock:
+        yield mock
+
+
+@pytest.fixture(scope="session", autouse=True)
+def configure_settings():
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "",
+        }
+    }
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    yield
+    cache.clear()
+
+
+@pytest.fixture
+def mock_send_mail_task():
+    with patch("account.tasks.send_auth_code_to_email.delay") as mock:
         yield mock
