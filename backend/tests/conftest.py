@@ -17,7 +17,7 @@ def default_user(mock_records):
         username="defaultuser",
         generation="8기",
         role="운영진",
-        workout_location="양재",
+        workout_location="더클라임 양재",
         workout_level=4,
         profile_number=1,
         introduction="안녕하세요",
