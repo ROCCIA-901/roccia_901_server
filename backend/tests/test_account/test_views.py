@@ -79,6 +79,23 @@ class TestAccountEndpoints:
 
         assert cache.get(f"{test_email}:register:status") == "certified"
 
+    def test_password_update_auth_code_request(self, api_client, default_user, mock_randint, mock_send_mail_task):
+        mock_randint.return_value = 12345
+        test_email = default_user.email
+        response = api_client.post(
+            "/api/accounts/password-update-auth-code-request/",
+            data={"email": test_email},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["detail"] == "비밀번호 변경을 위한 인증 번호가 전송됐습니다."
+
+        assert cache.get(f"{test_email}:password:code") == 12345
+        assert cache.get(f"{test_email}:password:status") == "uncertified"
+
+        mock_send_mail_task.assert_called_once_with("비밀번호 변경", test_email, 12345)
+
     def test_token_refresh(self, api_client, default_user):
         login_response = api_client.post(
             "/api/accounts/login/",
