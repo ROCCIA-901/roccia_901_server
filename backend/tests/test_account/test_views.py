@@ -96,6 +96,26 @@ class TestAccountEndpoints:
 
         mock_send_mail_task.assert_called_once_with("비밀번호 변경", test_email, 12345)
 
+    def test_password_update_auth_code_verify(self, api_client, default_user):
+        test_email = default_user.email
+        auth_code = 12345
+
+        cache.set(f"{test_email}:password:code", auth_code)
+        cache.set(f"{test_email}:password:status", "uncertified")
+
+        response = api_client.post(
+            "/api/accounts/password-update-auth-code-verify/",
+            data={"email": test_email, "code": auth_code},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert (
+            response.data["detail"] == "비밀번호 변경을 위한 인증번호 확인에 성공했습니다. 인증은 10분 동안 유효합니다."
+        )
+
+        assert cache.get(f"{test_email}:password:status") == "certified"
+
     def test_token_refresh(self, api_client, default_user):
         login_response = api_client.post(
             "/api/accounts/login/",
