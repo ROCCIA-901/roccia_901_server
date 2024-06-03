@@ -3,10 +3,7 @@ from unittest.mock import patch
 import pytest
 from django.conf import settings
 from django.core.cache import cache
-from model_bakery import baker
-from rest_framework.test import APIClient
 
-from account.models import User
 from tests.test_account.factories import UserFactory
 
 
@@ -73,20 +70,6 @@ def mock_user_model():
 def mock_token_refresh_serializer_validate(mock_user_model):
     with patch("rest_framework_simplejwt.serializers.TokenRefreshSerializer.validate") as mock:
         yield mock
-
-
-@pytest.fixture
-def api_client():
-    return APIClient()
-
-
-@pytest.fixture
-def default_user():
-    instance = baker.make(User, id=1, email="defaultuser@example.com", password="Password!1", username="defaultuser")
-    instance.set_password("Password1!")
-    instance.is_active = True
-    instance.save()
-    return instance
 
 
 @pytest.fixture
