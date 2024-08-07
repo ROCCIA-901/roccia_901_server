@@ -47,24 +47,6 @@ class Attendance(models.Model):
         ordering = ["-request_time"]
 
 
-class UnavailableDate(models.Model):
-    WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
-        ("더클라임 일산", "더클라임 일산"),
-        ("더클라임 연남", "더클라임 연남"),
-        ("더클라임 양재", "더클라임 양재"),
-        ("더클라임 신림", "더클라임 신림"),
-    )
-
-    workout_location = models.CharField(
-        max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점"
-    )  # type: ignore
-    start_date = models.DateField()  # type: ignore
-    end_date = models.DateField()  # type: ignore
-
-    class Meta:
-        db_table = "unavailable_date"
-
-
 class AttendanceStats(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="attendance_stats")  # type: ignore
     attendance = models.IntegerField(default=0, help_text="출석 횟수")  # type: ignore
@@ -75,3 +57,19 @@ class AttendanceStats(models.Model):
 
     class Meta:
         db_table = "attendance_stats"
+
+
+class ActivityDates(models.Model):
+    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    start_date = models.DateField(help_text="기수 시작 날짜")  # type: ignore
+    end_date = models.DateField(help_text="기수 종료 날짜")  # type: ignore
+
+    class Meta:
+        db_table = "activity_dates"
+
+
+class UnavailableDates(models.Model):
+    date = models.DateField(help_text="휴일")  # type: ignore
+
+    class Meta:
+        db_table = "unavailable_dates"
