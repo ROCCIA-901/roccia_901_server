@@ -4,13 +4,6 @@ from account.models import User
 
 
 class Attendance(models.Model):
-    WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
-        ("더클라임 일산", "더클라임 일산"),
-        ("더클라임 연남", "더클라임 연남"),
-        ("더클라임 양재", "더클라임 양재"),
-        ("더클라임 신림", "더클라임 신림"),
-    )
-
     REQUEST_STATUS_CHOICES: tuple[tuple[str, str], ...] = (
         ("승인", "승인"),
         ("거절", "거절"),
@@ -27,7 +20,7 @@ class Attendance(models.Model):
         User, on_delete=models.CASCADE, related_name="attendances", help_text="사용자 ID"
     )  # type: ignore
     workout_location = models.CharField(
-        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
+        max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
     week = models.IntegerField(null=True, help_text="주차")  # type: ignore
     request_time = models.DateTimeField(null=True, help_text="출석 요청 시간")  # type: ignore
@@ -73,3 +66,23 @@ class UnavailableDates(models.Model):
 
     class Meta:
         db_table = "unavailable_dates"
+
+
+class WeeklyStaffInfo(models.Model):
+    DAY_OF_WEEK_CHOICES: tuple[tuple[str, str], ...] = (
+        ("월요일", "월요일"),
+        ("화요일", "화요일"),
+        ("수요일", "수요일"),
+        ("목요일", "목요일"),
+        ("금요일", "금요일"),
+    )
+
+    generation = models.CharField(choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    staff = models.ForeignKey(User, on_delete=models.CASCADE, help_text="운영진")  # type: ignore
+    day_of_week = models.CharField(choices=DAY_OF_WEEK_CHOICES, help_text="요일")  # type: ignore
+    workout_location = models.CharField(
+        max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
+    )  # type: ignore
+
+    class Meta:
+        db_table = "weekly_staff_info"
