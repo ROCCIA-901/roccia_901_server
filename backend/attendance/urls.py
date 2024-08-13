@@ -1,6 +1,6 @@
 # mypy: ignore-errors
 
-# from django.urls import include, path
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from attendance.views import (
@@ -15,5 +15,5 @@ router.register(r'requests', AttendanceRequestViewSet, basename='attendance-requ
 router.register(r'', AttendanceViewSet, basename='attendance')
 
 urlpatterns = [
-    # path("", include((router.urls, "attendance"), namespace="attendance")),
+    path("", include((router.urls, "attendance"), namespace="attendance")),
 ]

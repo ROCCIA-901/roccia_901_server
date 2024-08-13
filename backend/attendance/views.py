@@ -10,13 +10,21 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from account.models import User
-from attendance.models import Attendance, AttendanceStats
+from attendance.models import (
+    Attendance,
+    AttendanceStats,
+    UnavailableDates,
+    WeeklyStaffInfo,
+)
 from attendance.serializers import (
     AttendanceDetailSerializer,
     AttendanceSerializer,
     UserListSerializer,
 )
+from attendance.services import get_activity_date, get_weeks_since_start
 from config.exceptions import (
+    AttendancePeriodException,
+    DuplicateAttendanceException,
     InternalServerException,
     InvalidFieldException,
     InvalidFieldStateException,
@@ -36,16 +44,36 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
-        # 해당 일에 아직 처리되지 않은 출석 요청이 존재하고, 현재 들어온 요청보다 먼저 요청 됐으면 예외 처리
-        # 출석 누른 시간과 날짜 등을 검증하는 로직
-        # 해당 날짜를 기반으로 운동 지점과 주차를 계산하여 필드에 넣어주는 로직 추후에 작성 필요
+
+        current_date = timezone.now().date()
+        activity_date = get_activity_date()
+        if not activity_date or not (activity_date.start_date <= current_date <= activity_date.end_date):
+            raise AttendancePeriodException()
+
+        current_generation = activity_date.generation
+        week = get_weeks_since_start(activity_date.start_date)
+
+        weekday_number = current_date.weekday()
+        days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+        workout_location = WeeklyStaffInfo.objects.get(
+            generation=current_generation, day_of_week=days[weekday_number]
+        ).workout_location
+
+        if Attendance.objects.filter(
+            user=user, generation=current_generation, week=week, request_processed_status__in=["대기", "승인"]
+        ).exists():
+            raise DuplicateAttendanceException()
+
+        if UnavailableDates.objects.filter(date=current_date).exists():
+            raise AttendancePeriodException()
 
         # fmt: off
         request_data: dict[str, Any] = {
-            "user": user,  # type: ignore
+            "user": user,
+            "generation": current_generation,
             "request_time": timezone.now(),
-            "workout_location": None,
-            "week": None,
+            "workout_location": workout_location,
+            "week": week,
         }
         # fmt: on
         serializer: AttendanceSerializer = AttendanceSerializer(data=request_data)
@@ -64,7 +92,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         try:
             queryset = Attendance.objects.select_related("user").filter(
-                request_processed_status=None, attendance_status=None
+                request_processed_status="대기", attendance_status=None
             )
             serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
 

@@ -65,7 +65,7 @@ class RecordSerializer(serializers.ModelSerializer):
         )
 
     def validate_workout_location(self, value: str) -> str:
-        workout_location = [choice[0] for choice in Record.WORKOUT_LOCATION_CHOICES]
+        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
@@ -130,7 +130,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_workout_location(self, value: str) -> str:
-        workout_location = [choice[0] for choice in Record.WORKOUT_LOCATION_CHOICES]
+        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value

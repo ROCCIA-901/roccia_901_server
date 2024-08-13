@@ -49,6 +49,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("더클라임 양재", "더클라임 양재"),
         ("더클라임 신림", "더클라임 신림"),
         ("더클라임 마곡", "더클라임 마곡"),
+        ("더클라임 홍대", "더클라임 홍대"),
+        ("더클라임 서울대", "더클라임 서울대"),
+        ("더클라임 강남", "더클라임 강남"),
+        ("더클라임 사당", "더클라임 사당"),
+        ("더클라임 신사", "더클라임 신사"),
+        ("더클라임 논현", "더클라임 논현"),
     )
 
     WORKOUT_LEVELS: tuple[tuple[int, str], ...] = (
@@ -76,6 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("9기", "9기"),
         ("10기", "10기"),
         ("11기", "11기"),
+        ("12기", "12기"),
     )
 
     email = models.EmailField(max_length=320, unique=True, null=False, blank=False, help_text="이메일")  # type: ignore
