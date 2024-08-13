@@ -48,7 +48,7 @@ services:
             - "6379:6379"
 
     worker:
-        container_name: celery_worker
+        container_name: celery
         build: ./backend
         image: docker-server/backend
         env_file:
@@ -56,6 +56,6 @@ services:
         environment:
             - TZ=Asia/Seoul
         restart: always
-        command: celery -A config worker --loglevel=info
+        command: sh -c "celery -A config worker --loglevel=info & celery -A config beat --loglevel=info & wait"
         depends_on:
             - cache

@@ -7,6 +7,7 @@ class Attendance(models.Model):
     REQUEST_STATUS_CHOICES: tuple[tuple[str, str], ...] = (
         ("승인", "승인"),
         ("거절", "거절"),
+        ("대기", "대기"),
     )
 
     ATTENDANCE_STATUS_CHOICES: tuple[tuple[str, str], ...] = (
@@ -14,18 +15,18 @@ class Attendance(models.Model):
         ("지각", "지각"),
         ("결석", "결석"),
         ("대체 출석", "대체 출석"),
+        ("휴일", "휴일"),
     )
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="attendances", help_text="사용자 ID"
-    )  # type: ignore
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="attendance")  # type: ignore
+    generation = models.CharField(choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     workout_location = models.CharField(
         max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
     week = models.IntegerField(null=True, help_text="주차")  # type: ignore
     request_time = models.DateTimeField(null=True, help_text="출석 요청 시간")  # type: ignore
     request_processed_status = models.CharField(
-        max_length=20, choices=REQUEST_STATUS_CHOICES, null=True, help_text="요청 상태"
+        max_length=20, choices=REQUEST_STATUS_CHOICES, default="대기", null=True, help_text="요청 상태"
     )  # type: ignore
     request_processed_time = models.DateTimeField(null=True, help_text="요청 처리 시간")  # type: ignore
     request_processed_user = models.ForeignKey(
@@ -41,7 +42,8 @@ class Attendance(models.Model):
 
 
 class AttendanceStats(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="attendance_stats")  # type: ignore
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendance_stats")  # type: ignore
+    generation = models.CharField(choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     attendance = models.IntegerField(default=0, help_text="출석 횟수")  # type: ignore
     late = models.IntegerField(default=0, help_text="지각 횟수")  # type: ignore
     absence = models.IntegerField(default=0, help_text="결석 횟수")  # type: ignore
