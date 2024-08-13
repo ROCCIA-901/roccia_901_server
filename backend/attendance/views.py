@@ -92,7 +92,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         try:
             queryset = Attendance.objects.select_related("user").filter(
-                request_processed_status=None, attendance_status=None
+                request_processed_status="대기", attendance_status=None
             )
             serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
 
