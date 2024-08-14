@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
-from django.db.models import Q
+from django.db import transaction
+from django.db.models import F, Q
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -21,7 +22,13 @@ from attendance.serializers import (
     AttendanceSerializer,
     UserListSerializer,
 )
-from attendance.services import get_activity_date, get_weeks_since_start
+from attendance.services import (
+    check_alternate_attendance,
+    get_activity_date,
+    get_attendance_status,
+    get_day_of_week,
+    get_weeks_since_start,
+)
 from config.exceptions import (
     AttendancePeriodException,
     DuplicateAttendanceException,
@@ -53,10 +60,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         current_generation = activity_date.generation
         week = get_weeks_since_start(activity_date.start_date)
 
-        weekday_number = current_date.weekday()
-        days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+        day_of_week = get_day_of_week(current_date)
         workout_location = WeeklyStaffInfo.objects.get(
-            generation=current_generation, day_of_week=days[weekday_number]
+            generation=current_generation, day_of_week=day_of_week
         ).workout_location
 
         if Attendance.objects.filter(
@@ -116,27 +122,46 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["patch"])
     def accept(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
-        attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
+        with transaction.atomic():
+            current_user = request.user
+            attendance_object: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=pk).first()
 
-        if not attendance_object:
-            raise NotExistException()
+            if not attendance_object:
+                raise NotExistException()
 
-        if attendance_object.request_processed_status is not None:
-            raise InvalidFieldStateException("이미 처리된 요청입니다.")
+            if attendance_object.request_processed_status != "대기":
+                raise InvalidFieldStateException("이미 처리된 요청입니다.")
 
-        attendance_object.request_processed_status = "승인"
-        attendance_object.request_processed_time = timezone.now()
-        attendance_object.request_processed_user = request.user
-        # attendance_object.attendance_status = check_attendance_status()
-        attendance_object.save()
+            # 출석 승인 처리 로직
+            attendance_status = get_attendance_status()
+
+            attendance_object.request_processed_status = "승인"
+            attendance_object.request_processed_time = timezone.now()
+            attendance_object.request_processed_user = current_user
+            attendance_object.attendance_status = attendance_status
+
+            if check_alternate_attendance(current_user.workout_location):
+                attendance_object.is_alternate = True
+
+            attendance_object.save()
+
+            # AttendanceStats 업데이트 로직
+            attendance_stats, created = AttendanceStats.objects.select_for_update().get_or_create(
+                user=current_user, generation=attendance_object.generation, defaults={"attendance_rate": 0.0}
+            )
+
+            if attendance_status == "출석":
+                attendance_stats.attendance = F("attendance") + 1
+            elif attendance_status == "지각":
+                attendance_stats.late = F("late") + 1
+
+            attendance_stats.save()
 
         return Response(
-            # fmt: off
             data={
                 "detail": "요청 승인이 성공적으로 완료되었습니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=True, methods=["patch"])
@@ -146,7 +171,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         if not attendance_object:
             raise NotExistException()
 
-        if attendance_object.request_processed_status is not None:
+        if attendance_object.request_processed_status != "대기":
             raise InvalidFieldStateException("이미 처리된 요청입니다.")
 
         attendance_object.request_processed_status = "거절"
@@ -188,7 +213,7 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
             data={
                 "detail": "사용자 출석률 조회를 성공했습니다.",
                 "data": {
-                    "attendance_rate": attendance_stats_object.attendance_rate
+                    "attendance_rate": None
                 }
             },
             status=status.HTTP_200_OK
@@ -229,7 +254,7 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
             "attendance": attendance_stats_obj.attendance,
             "late": attendance_stats_obj.late,
             "absence": attendance_stats_obj.absence,
-            "substitute": attendance_stats_obj.substitute,
+            # "substitute": attendance_stats_obj.substitute,
         }
 
         attendance_obj = Attendance.objects.filter(user_id=pk).order_by("week")

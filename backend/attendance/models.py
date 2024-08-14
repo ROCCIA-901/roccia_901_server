@@ -14,7 +14,6 @@ class Attendance(models.Model):
         ("출석", "출석"),
         ("지각", "지각"),
         ("결석", "결석"),
-        ("대체 출석", "대체 출석"),
         ("휴일", "휴일"),
     )
 
@@ -35,6 +34,7 @@ class Attendance(models.Model):
     attendance_status = models.CharField(
         max_length=20, choices=ATTENDANCE_STATUS_CHOICES, null=True, help_text="출석 상태"
     )  # type: ignore
+    is_alternate = models.BooleanField(default=False, help_text="대체 출석 여부")  # type: ignore
 
     class Meta:
         db_table = "attendance"
@@ -47,8 +47,6 @@ class AttendanceStats(models.Model):
     attendance = models.IntegerField(default=0, help_text="출석 횟수")  # type: ignore
     late = models.IntegerField(default=0, help_text="지각 횟수")  # type: ignore
     absence = models.IntegerField(default=0, help_text="결석 횟수")  # type: ignore
-    substitute = models.IntegerField(default=0, help_text="대체 출석 횟수")  # type: ignore
-    attendance_rate = models.FloatField(help_text="출석률")  # type: ignore
 
     class Meta:
         db_table = "attendance_stats"
