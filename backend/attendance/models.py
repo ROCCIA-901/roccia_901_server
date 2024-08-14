@@ -85,6 +85,7 @@ class WeeklyStaffInfo(models.Model):
     workout_location = models.CharField(
         max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
+    start_time = models.TimeField(help_text="운동 시작 시간")  # type: ignore
 
     class Meta:
         db_table = "weekly_staff_info"
