@@ -18,7 +18,7 @@ class Attendance(models.Model):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="attendance")  # type: ignore
-    generation = models.CharField(choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     workout_location = models.CharField(
         max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
@@ -43,7 +43,7 @@ class Attendance(models.Model):
 
 class AttendanceStats(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendance_stats")  # type: ignore
-    generation = models.CharField(choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     attendance = models.IntegerField(default=0, help_text="출석 횟수")  # type: ignore
     late = models.IntegerField(default=0, help_text="지각 횟수")  # type: ignore
     absence = models.IntegerField(default=0, help_text="결석 횟수")  # type: ignore
@@ -79,7 +79,7 @@ class WeeklyStaffInfo(models.Model):
 
     generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     staff = models.ForeignKey(User, on_delete=models.CASCADE, help_text="운영진")  # type: ignore
-    day_of_week = models.CharField(choices=DAY_OF_WEEK_CHOICES, help_text="요일")  # type: ignore
+    day_of_week = models.CharField(max_length=10, choices=DAY_OF_WEEK_CHOICES, help_text="요일")  # type: ignore
     workout_location = models.CharField(
         max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
