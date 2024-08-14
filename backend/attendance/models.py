@@ -77,7 +77,7 @@ class WeeklyStaffInfo(models.Model):
         ("금요일", "금요일"),
     )
 
-    generation = models.CharField(choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     staff = models.ForeignKey(User, on_delete=models.CASCADE, help_text="운영진")  # type: ignore
     day_of_week = models.CharField(choices=DAY_OF_WEEK_CHOICES, help_text="요일")  # type: ignore
     workout_location = models.CharField(
