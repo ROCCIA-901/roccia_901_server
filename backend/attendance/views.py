@@ -193,8 +193,9 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=["patch"])
+    @transaction.atomic
     def reject(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
-        attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
+        attendance_object: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=pk).first()
 
         if not attendance_object:
             raise NotExistException()
@@ -208,12 +209,10 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         attendance_object.save()
 
         return Response(
-            # fmt: off
             data={
                 "detail": "요청 거절이 성공적으로 완료되었습니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
