@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.utils import timezone
 
-from attendance.models import ActivityDates, WeeklyStaffInfo
+from attendance.models import ActivityDates, AttendanceStats, WeeklyStaffInfo
 from config.exceptions import NotExistException
 
 
@@ -74,3 +74,28 @@ def check_alternate_attendance(workout_location):
         return False
     else:
         return True
+
+
+def calculate_attendance_rate(
+    attendance_stats: AttendanceStats, current_gen_number: int, user_gen_number: int
+) -> float:
+
+    if current_gen_number - user_gen_number < 2:
+        late_as_absence = attendance_stats.late // 2
+        late_as_attendance = attendance_stats.late % 2
+
+        total_possible_attendance = (
+            attendance_stats.attendance + attendance_stats.absence + late_as_attendance + late_as_absence
+        )
+        effective_attendance = attendance_stats.attendance + late_as_attendance
+        if total_possible_attendance > 0:
+            attendance_rate = (effective_attendance / total_possible_attendance) * 100
+        else:
+            attendance_rate = 0.0
+    else:
+        if attendance_stats.attendance > 0:
+            attendance_rate = 100
+        else:
+            attendance_rate = 0.0
+
+    return attendance_rate

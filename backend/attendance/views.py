@@ -23,6 +23,7 @@ from attendance.serializers import (
     UserListSerializer,
 )
 from attendance.services import (
+    calculate_attendance_rate,
     check_alternate_attendance,
     get_activity_date,
     get_attendance_status,
@@ -117,6 +118,30 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise InternalServerException()
 
+    @action(detail=False, methods=["get"])
+    def rate(self, request: Request) -> Response:
+        current_user = request.user
+
+        current_generation = get_current_generation()
+        attendance_stats = AttendanceStats.objects.filter(user=current_user, generation=current_generation).first()
+
+        if not attendance_stats:
+            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
+
+        current_gen_number = int(current_generation[:-1])
+        user_gen_number = int(current_user.generation[:-1])
+        attendance_rate = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
+
+        return Response(
+            data={
+                "detail": "사용자 출석률 조회를 성공했습니다.",
+                "data": {
+                    "attendance_rate": round(attendance_rate, 2),
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class AttendanceRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsManager]
@@ -149,7 +174,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
             attendance_object.save()
 
             # AttendanceStats 업데이트 로직
-            attendance_stats, created = AttendanceStats.objects.select_for_update().get_or_create(
+            attendance_stats, _ = AttendanceStats.objects.select_for_update().get_or_create(
                 user=current_user, generation=attendance_object.generation, defaults={"attendance_rate": 0.0}
             )
 
@@ -200,28 +225,6 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
             Q(user_id=id) & Q(attendance_status=status)
         ).values_list("request_processed_time", flat=True)
         return [date.strftime("%Y-%m-%d") for date in dates]  # type: ignore
-
-    @action(detail=True, methods=["get"])
-    def rate(self, request: Request, pk: Optional[int] = None) -> Response:
-        attendance_stats_object: Optional[AttendanceStats] = AttendanceStats.objects.filter(user_id=pk).first()
-
-        if not User.objects.filter(id=pk).exists():
-            raise NotExistException("존재하지 않는 사용자입니다.")
-
-        if not attendance_stats_object:
-            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
-
-        return Response(
-            # fmt: off
-            data={
-                "detail": "사용자 출석률 조회를 성공했습니다.",
-                "data": {
-                    "attendance_rate": None
-                }
-            },
-            status=status.HTTP_200_OK
-            # fmt: on
-        )
 
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         pk: Optional[int] = kwargs.get("pk")
