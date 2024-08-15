@@ -149,41 +149,42 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     serializer_class = AttendanceSerializer
 
     @action(detail=True, methods=["patch"])
+    @transaction.atomic
     def accept(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
-        with transaction.atomic():
-            current_user = request.user
-            attendance_object: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=pk).first()
+        current_user = request.user
+        attendance_object: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=pk).first()
 
-            if not attendance_object:
-                raise NotExistException()
+        if not attendance_object:
+            raise NotExistException()
 
-            if attendance_object.request_processed_status != "대기":
-                raise InvalidFieldStateException("이미 처리된 요청입니다.")
+        if attendance_object.request_processed_status != "대기":
+            raise InvalidFieldStateException("이미 처리된 요청입니다.")
 
-            # 출석 승인 처리 로직
-            attendance_status = get_attendance_status()
+        # 출석 승인 처리 로직
+        attendance_status = get_attendance_status()
 
-            attendance_object.request_processed_status = "승인"
-            attendance_object.request_processed_time = timezone.now()
-            attendance_object.request_processed_user = current_user
-            attendance_object.attendance_status = attendance_status
+        attendance_object.request_processed_status = "승인"
+        attendance_object.request_processed_time = timezone.now()
+        attendance_object.request_processed_user = current_user
+        attendance_object.attendance_status = attendance_status
 
-            if check_alternate_attendance(current_user.workout_location):
-                attendance_object.is_alternate = True
+        if check_alternate_attendance(current_user.workout_location):
+            attendance_object.is_alternate = True
 
-            attendance_object.save()
+        attendance_object.save()
 
-            # AttendanceStats 업데이트 로직
-            attendance_stats, _ = AttendanceStats.objects.select_for_update().get_or_create(
-                user=current_user, generation=attendance_object.generation, defaults={"attendance_rate": 0.0}
-            )
+        # AttendanceStats 업데이트 로직
+        attendance_stats, created = AttendanceStats.objects.get_or_create(
+            user=current_user, generation=attendance_object.generation, defaults={"attendance_rate": 0.0}
+        )
+        attendance_stats = AttendanceStats.objects.select_for_update().get(id=attendance_stats.pk)
 
-            if attendance_status == "출석":
-                attendance_stats.attendance = F("attendance") + 1
-            elif attendance_status == "지각":
-                attendance_stats.late = F("late") + 1
+        if attendance_status == "출석":
+            attendance_stats.attendance = F("attendance") + 1
+        elif attendance_status == "지각":
+            attendance_stats.late = F("late") + 1
 
-            attendance_stats.save()
+        attendance_stats.save()
 
         return Response(
             data={
@@ -193,8 +194,9 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=["patch"])
+    @transaction.atomic
     def reject(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
-        attendance_object: Optional[Attendance] = Attendance.objects.filter(id=pk).first()
+        attendance_object: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=pk).first()
 
         if not attendance_object:
             raise NotExistException()
@@ -208,12 +210,10 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         attendance_object.save()
 
         return Response(
-            # fmt: off
             data={
                 "detail": "요청 거절이 성공적으로 완료되었습니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
