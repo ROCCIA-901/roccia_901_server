@@ -14,6 +14,15 @@ def get_activity_date():
         return None
 
 
+def get_current_generation():
+    today = timezone.now().date()
+    try:
+        activity_date = ActivityDates.objects.get(start_date__lte=today, end_date__gte=today)
+        return activity_date.generation
+    except ActivityDates.DoesNotExist:
+        return None
+
+
 def get_weeks_since_start(start_date):
     today = timezone.now().date()
     delta = today - start_date

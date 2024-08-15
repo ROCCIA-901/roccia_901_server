@@ -26,6 +26,7 @@ from attendance.services import (
     check_alternate_attendance,
     get_activity_date,
     get_attendance_status,
+    get_current_generation,
     get_day_of_week,
     get_weeks_since_start,
 )
@@ -51,15 +52,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
-
         current_date = timezone.now().date()
+
         activity_date = get_activity_date()
-        if not activity_date or not (activity_date.start_date <= current_date <= activity_date.end_date):
+        if not activity_date:
             raise AttendancePeriodException()
 
-        current_generation = activity_date.generation
-        week = get_weeks_since_start(activity_date.start_date)
+        current_generation = get_current_generation()
+        if current_generation is None:
+            raise AttendancePeriodException()
 
+        week = get_weeks_since_start(activity_date.start_date)
         day_of_week = get_day_of_week(current_date)
         workout_location = WeeklyStaffInfo.objects.get(
             generation=current_generation, day_of_week=day_of_week
