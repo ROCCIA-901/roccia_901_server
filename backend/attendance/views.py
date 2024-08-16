@@ -99,25 +99,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             # fmt: on
         )
 
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        try:
-            queryset = Attendance.objects.select_related("user").filter(
-                request_processed_status="대기", attendance_status=None
-            )
-            serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
-
-            return Response(
-                # fmt: off
-                data={
-                    "detail": "출석 요청 목록 조회를 성공했습니다.",
-                    "data": serializer.data
-                },
-                status=status.HTTP_200_OK
-                # fmt: on
-            )
-        except Exception as e:
-            raise InternalServerException()
-
     @action(detail=False, methods=["get"])
     def rate(self, request: Request) -> Response:
         current_user = request.user
@@ -147,6 +128,20 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsManager]
     queryset = Attendance.objects.filter(request_processed_status=None)
     serializer_class = AttendanceSerializer
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        try:
+            queryset = Attendance.objects.select_related("user").filter(
+                request_processed_status="대기", attendance_status=None
+            )
+            serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
+
+            return Response(
+                data={"detail": "출석 요청 목록 조회를 성공했습니다.", "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            raise InternalServerException()
 
     @action(detail=True, methods=["patch"])
     @transaction.atomic
