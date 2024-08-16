@@ -38,6 +38,12 @@ class AttendancePeriodException(APIException):
     default_code = "attendance_period_invalid"
 
 
+class MissingWeeklyStaffInfoException(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "주간 운영진 정보가 없습니다."
+    default_code = "missing_weekly_staff_info"
+
+
 class InvalidAccountException(APIException):
     status_code = status.HTTP_401_UNAUTHORIZED
     default_detail = "유효하지 않은 계정입니다."

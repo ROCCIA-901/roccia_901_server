@@ -2,7 +2,6 @@ from typing import Any, Optional
 
 from django.db import transaction
 from django.db.models import F, Q
-from django.db.models.query import QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -35,8 +34,8 @@ from config.exceptions import (
     AttendancePeriodException,
     DuplicateAttendanceException,
     InternalServerException,
-    InvalidFieldException,
     InvalidFieldStateException,
+    MissingWeeklyStaffInfoException,
     NotExistException,
 )
 from config.utils import IsManager, IsMember
@@ -50,6 +49,31 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsManager]
         return [permission() for permission in permission_classes]
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        current_user = request.user
+
+        attendance_dates = Attendance.objects.filter(
+            Q(user=current_user) & Q(attendance_status__in=["출석", "대체 출석"])
+        ).values_list("request_time", flat=True)
+
+        late_dates = Attendance.objects.filter(Q(user=current_user) & Q(attendance_status="지각")).values_list(
+            "request_time", flat=True
+        )
+
+        attendance_list = [date.strftime("%Y-%m-%d") for date in attendance_dates]
+        late_list = [date.strftime("%Y-%m-%d") for date in late_dates]
+
+        return Response(
+            data={
+                "detail": "출석 현황 조회를 성공했습니다.",
+                "data": {
+                    "attendance": attendance_list,
+                    "late": late_list,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
@@ -65,9 +89,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         week = get_weeks_since_start(activity_date.start_date)
         day_of_week = get_day_of_week(current_date)
-        workout_location = WeeklyStaffInfo.objects.get(
+
+        weekly_staff_info = WeeklyStaffInfo.objects.filter(
             generation=current_generation, day_of_week=day_of_week
-        ).workout_location
+        ).first()
+        if weekly_staff_info is None:
+            raise MissingWeeklyStaffInfoException()
+
+        workout_location = weekly_staff_info.workout_location
 
         if Attendance.objects.filter(
             user=user, generation=current_generation, week=week, request_processed_status__in=["대기", "승인"]
@@ -99,25 +128,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             # fmt: on
         )
 
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        try:
-            queryset = Attendance.objects.select_related("user").filter(
-                request_processed_status="대기", attendance_status=None
-            )
-            serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
-
-            return Response(
-                # fmt: off
-                data={
-                    "detail": "출석 요청 목록 조회를 성공했습니다.",
-                    "data": serializer.data
-                },
-                status=status.HTTP_200_OK
-                # fmt: on
-            )
-        except Exception as e:
-            raise InternalServerException()
-
     @action(detail=False, methods=["get"])
     def rate(self, request: Request) -> Response:
         current_user = request.user
@@ -148,6 +158,20 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.filter(request_processed_status=None)
     serializer_class = AttendanceSerializer
 
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        try:
+            queryset = Attendance.objects.select_related("user").filter(
+                request_processed_status="대기", attendance_status=None
+            )
+            serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
+
+            return Response(
+                data={"detail": "출석 요청 목록 조회를 성공했습니다.", "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            raise InternalServerException()
+
     @action(detail=True, methods=["patch"])
     @transaction.atomic
     def accept(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
@@ -175,7 +199,8 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
         # AttendanceStats 업데이트 로직
         attendance_stats, created = AttendanceStats.objects.get_or_create(
-            user=current_user, generation=attendance_object.generation, defaults={"attendance_rate": 0.0}
+            user=current_user,
+            generation=attendance_object.generation,
         )
         attendance_stats = AttendanceStats.objects.select_for_update().get(id=attendance_stats.pk)
 
@@ -219,36 +244,6 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-
-    def get_formatted_dates(self, id: int, status: str):
-        dates: QuerySet[Attendance] = Attendance.objects.filter(
-            Q(user_id=id) & Q(attendance_status=status)
-        ).values_list("request_processed_time", flat=True)
-        return [date.strftime("%Y-%m-%d") for date in dates]  # type: ignore
-
-    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        pk: Optional[int] = kwargs.get("pk")
-        if pk is None:
-            raise InvalidFieldException()
-
-        if not User.objects.filter(id=pk).exists():
-            raise NotExistException("존재하지 않는 사용자입니다.")
-
-        attendance_list: list = self.get_formatted_dates(pk, "출석") + self.get_formatted_dates(pk, "대체 출석")
-        late_list: list = self.get_formatted_dates(pk, "지각")
-
-        return Response(
-            # fmt: off
-            data={
-                "detail": "출석 현황 조회를 성공했습니다.",
-                "data": {
-                    "attendance": attendance_list,
-                    "late": late_list
-                }
-            },
-            status=status.HTTP_200_OK
-            # fmt: on
-        )
 
     @action(detail=True, methods=["get"], url_path="details")
     def details(self, request: Request, pk: Optional[int] = None) -> Response:
