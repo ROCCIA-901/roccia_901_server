@@ -17,7 +17,7 @@ class Attendance(models.Model):
         ("휴일", "휴일"),
     )
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="attendance")  # type: ignore
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendances")  # type: ignore
     generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
     workout_location = models.CharField(
         max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
