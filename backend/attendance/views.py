@@ -2,7 +2,6 @@ from typing import Any, Optional
 
 from django.db import transaction
 from django.db.models import F, Q
-from django.db.models.query import QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -35,7 +34,6 @@ from config.exceptions import (
     AttendancePeriodException,
     DuplicateAttendanceException,
     InternalServerException,
-    InvalidFieldException,
     InvalidFieldStateException,
     MissingWeeklyStaffInfoException,
     NotExistException,
@@ -51,6 +49,31 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsManager]
         return [permission() for permission in permission_classes]
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        current_user = request.user
+
+        attendance_dates = Attendance.objects.filter(
+            Q(user=current_user) & Q(attendance_status__in=["출석", "대체 출석"])
+        ).values_list("request_time", flat=True)
+
+        late_dates = Attendance.objects.filter(Q(user=current_user) & Q(attendance_status="지각")).values_list(
+            "request_time", flat=True
+        )
+
+        attendance_list = [date.strftime("%Y-%m-%d") for date in attendance_dates]
+        late_list = [date.strftime("%Y-%m-%d") for date in late_dates]
+
+        return Response(
+            data={
+                "detail": "출석 현황 조회를 성공했습니다.",
+                "data": {
+                    "attendance": attendance_list,
+                    "late": late_list,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
@@ -221,36 +244,6 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-
-    def get_formatted_dates(self, id: int, status: str):
-        dates: QuerySet[Attendance] = Attendance.objects.filter(
-            Q(user_id=id) & Q(attendance_status=status)
-        ).values_list("request_processed_time", flat=True)
-        return [date.strftime("%Y-%m-%d") for date in dates]  # type: ignore
-
-    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        pk: Optional[int] = kwargs.get("pk")
-        if pk is None:
-            raise InvalidFieldException()
-
-        if not User.objects.filter(id=pk).exists():
-            raise NotExistException("존재하지 않는 사용자입니다.")
-
-        attendance_list: list = self.get_formatted_dates(pk, "출석") + self.get_formatted_dates(pk, "대체 출석")
-        late_list: list = self.get_formatted_dates(pk, "지각")
-
-        return Response(
-            # fmt: off
-            data={
-                "detail": "출석 현황 조회를 성공했습니다.",
-                "data": {
-                    "attendance": attendance_list,
-                    "late": late_list
-                }
-            },
-            status=status.HTTP_200_OK
-            # fmt: on
-        )
 
     @action(detail=True, methods=["get"], url_path="details")
     def details(self, request: Request, pk: Optional[int] = None) -> Response:
