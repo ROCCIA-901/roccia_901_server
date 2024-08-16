@@ -176,7 +176,8 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
         # AttendanceStats 업데이트 로직
         attendance_stats, created = AttendanceStats.objects.get_or_create(
-            user=current_user, generation=attendance_object.generation, defaults={"attendance_rate": 0.0}
+            user=current_user,
+            generation=attendance_object.generation,
         )
         attendance_stats = AttendanceStats.objects.select_for_update().get(id=attendance_stats.pk)
 
