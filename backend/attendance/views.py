@@ -37,6 +37,7 @@ from config.exceptions import (
     InternalServerException,
     InvalidFieldException,
     InvalidFieldStateException,
+    MissingWeeklyStaffInfoException,
     NotExistException,
 )
 from config.utils import IsManager, IsMember
@@ -65,9 +66,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         week = get_weeks_since_start(activity_date.start_date)
         day_of_week = get_day_of_week(current_date)
-        workout_location = WeeklyStaffInfo.objects.get(
+
+        weekly_staff_info = WeeklyStaffInfo.objects.filter(
             generation=current_generation, day_of_week=day_of_week
-        ).workout_location
+        ).first()
+        if weekly_staff_info is None:
+            raise MissingWeeklyStaffInfoException()
+
+        workout_location = weekly_staff_info.workout_location
 
         if Attendance.objects.filter(
             user=user, generation=current_generation, week=week, request_processed_status__in=["대기", "승인"]
