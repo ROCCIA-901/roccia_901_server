@@ -133,6 +133,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         current_user = request.user
 
         current_generation = get_current_generation()
+        if current_generation is None:
+            raise AttendancePeriodException()
         attendance_stats = AttendanceStats.objects.filter(user=current_user, generation=current_generation).first()
 
         if not attendance_stats:
@@ -246,32 +248,41 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=["get"], url_path="details")
-    def details(self, request: Request, pk: Optional[int] = None) -> Response:
-        attendance_stats_obj: Optional[AttendanceStats] = AttendanceStats.objects.filter(user_id=pk).first()
-        if not attendance_stats_obj:
+    def details(self, request: Request, pk: int) -> Response:
+
+        if not User.objects.filter(id=pk).exists():
             raise NotExistException("존재하지 않는 사용자입니다.")
 
+        current_generation = get_current_generation()
+        if current_generation is None:
+            raise AttendancePeriodException()
+
+        attendance_stats_obj: Optional[AttendanceStats] = AttendanceStats.objects.filter(
+            user_id=pk, generation=current_generation
+        ).first()
+
+        attendance_obj = Attendance.objects.filter(user_id=pk, generation=current_generation).order_by("week")
+
+        alternative_count = attendance_obj.filter(is_alternate=True).count()
+
         attendance_stats_dict: dict[str, int] = {
-            "attendance": attendance_stats_obj.attendance,
-            "late": attendance_stats_obj.late,
-            "absence": attendance_stats_obj.absence,
-            # "substitute": attendance_stats_obj.substitute,
+            "attendance": attendance_stats_obj.attendance if attendance_stats_obj else 0,
+            "late": attendance_stats_obj.late if attendance_stats_obj else 0,
+            "absence": attendance_stats_obj.absence if attendance_stats_obj else 0,
+            "alternative": 2 - alternative_count,
         }
 
-        attendance_obj = Attendance.objects.filter(user_id=pk).order_by("week")
         attendance_detail_serializer = AttendanceDetailSerializer(attendance_obj, many=True)
 
         return Response(
-            # fmt: off
             data={
-                "detail": "출석 현황 조회를 성공했습니다.",
+                "detail": "출석 내역 조회를 성공했습니다.",
                 "data": {
                     "count": attendance_stats_dict,
-                    "detail": attendance_detail_serializer.data
-                }
+                    "detail": attendance_detail_serializer.data,
+                },
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
