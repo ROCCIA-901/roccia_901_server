@@ -286,15 +286,10 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
         )
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        queryset = User.objects.all().prefetch_related("attendance_stats")
+        queryset = User.objects.filter(is_active=True).all()
         serializer = UserListSerializer(queryset, many=True)
 
         return Response(
-            # fmt: off
-            data={
-                "detail": "부원 목록 조회를 성공했습니다.",
-                "data": serializer.data
-            },
-            status=status.HTTP_200_OK
-            # fmt: on
+            data={"detail": "부원 목록 조회를 성공했습니다.", "data": serializer.data},
+            status=status.HTTP_200_OK,
         )
