@@ -290,11 +290,5 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
         serializer = UserListSerializer(queryset, many=True)
 
         return Response(
-            # fmt: off
-            data={
-                "detail": "부원 목록 조회를 성공했습니다.",
-                "data": serializer.data
-            },
-            status=status.HTTP_200_OK
-            # fmt: on
+            data={"detail": "부원 목록 조회를 성공했습니다.", "data": serializer.data}, status=status.HTTP_200_OK
         )
