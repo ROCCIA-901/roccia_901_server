@@ -43,14 +43,9 @@ from config.utils import IsManager, IsMember
 
 class AttendanceViewSet(viewsets.ModelViewSet):
 
-    def get_permissions(self):
-        if self.action == "create":
-            permission_classes = [IsMember]
-        else:
-            permission_classes = [IsManager]
-        return [permission() for permission in permission_classes]
-
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        self.permission_classes = [IsAuthenticated]
+
         current_user = request.user
 
         attendance_dates = Attendance.objects.filter(
@@ -76,6 +71,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         )
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        self.permission_classes = [IsMember]
+
         user: User = request.user
         current_date = timezone.now().date()
 
@@ -128,7 +125,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             # fmt: on
         )
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get"], permission_classes=[IsMember])
     def rate(self, request: Request) -> Response:
         current_user = request.user
 
@@ -154,6 +151,30 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=False, methods=["get"], url_path="locations", permission_classes=[IsAuthenticated])
+    def get_today_locations(self, request: Request) -> Response:
+        day_of_week = get_day_of_week(timezone.now())
+        current_generation = get_current_generation()
+
+        weekly_staff_info = WeeklyStaffInfo.objects.filter(
+            generation=current_generation, day_of_week=day_of_week
+        ).first()
+
+        if not weekly_staff_info:
+            raise MissingWeeklyStaffInfoException()
+
+        workout_location = weekly_staff_info.workout_location
+
+        return Response(
+            data={
+                "detail": "금일 운동 지점 조회를 성공했습니다.",
+                "data": {
+                    "workout_location": workout_location,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class AttendanceRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsManager]
@@ -168,7 +189,10 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
             serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
 
             return Response(
-                data={"detail": "출석 요청 목록 조회를 성공했습니다.", "data": serializer.data},
+                data={
+                    "detail": "출석 요청 목록 조회를 성공했습니다.",
+                    "data": serializer.data,
+                },
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
@@ -290,6 +314,9 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
         serializer = UserListSerializer(queryset, many=True)
 
         return Response(
-            data={"detail": "부원 목록 조회를 성공했습니다.", "data": serializer.data},
+            data={
+                "detail": "부원 목록 조회를 성공했습니다.",
+                "data": serializer.data,
+            },
             status=status.HTTP_200_OK,
         )
