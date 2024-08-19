@@ -39,18 +39,16 @@ class MypageAPIView(APIView):
         parameters=[
             OpenApiParameter(name="user_id", description="조회할 유저의 ID", required=False, type=str),
         ],
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=MypageSerializer,
-                examples=[MYPAGE_RESPONSE_EXAMPLE, USER_PROFILE_RESPONSE_EXAMPLE]
+                examples=[MYPAGE_RESPONSE_EXAMPLE, USER_PROFILE_RESPONSE_EXAMPLE],
             ),
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=[USER_NOT_EXIST_FAILURE_EXAMPLE]
+                examples=[USER_NOT_EXIST_FAILURE_EXAMPLE],
             ),
         },
-        # fmt: on
     )
     def get(self, request: Request) -> Response:
         user_id = request.query_params.get("user_id")
@@ -66,35 +64,31 @@ class MypageAPIView(APIView):
             serializer = MypageSerializer(user)
 
         return Response(
-            # fmt: off
             data={
                 "detail": "마이페이지 조회를 성공했습니다.",
                 "data": serializer.data,
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
     @extend_schema(
         tags=["마이페이지"],
         summary="사용자 정보 수정",
         request=UserUpdateSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=UserUpdateSerializer,
-                examples=USER_UPDATE_SUCCESS_EXAMPLE
+                examples=USER_UPDATE_SUCCESS_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=USER_UPDATE_400_FAILURE_EXAMPLE
+                examples=USER_UPDATE_400_FAILURE_EXAMPLE,
             ),
             status.HTTP_404_NOT_FOUND: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=USER_UPDATE_404_FAILURE_EXAMPLE
+                examples=USER_UPDATE_404_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def patch(self, request: Request) -> Response:
         user = request.user
@@ -106,10 +100,8 @@ class MypageAPIView(APIView):
         serializer.save()
 
         return Response(
-            # fmt: off
             data={
                 "detail": "사용자 정보 수정을 성공했습니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
