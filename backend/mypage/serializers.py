@@ -3,6 +3,8 @@ from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from account.models import User
+from attendance.models import AttendanceStats
+from attendance.services import get_current_generation
 from config.exceptions import InvalidFieldException
 from mypage.schemas import USER_UPDATE_REQUEST_EXAMPLE
 from record.models import BoulderProblem, Record
@@ -30,14 +32,22 @@ class LevelCountSerializer(serializers.Serializer):
     total_count = serializers.IntegerField()
 
 
+class AttendanceStatsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AttendanceStats
+        fields = ["attendance", "late", "absence"]
+
+
 class MypageSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(source="*")
     records = serializers.SerializerMethodField()
     total_workout_time = serializers.SerializerMethodField()
+    attendance_stats = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["profile", "total_workout_time", "records"]
+        fields = ["profile", "total_workout_time", "records", "attendance_stats"]
 
     def get_records(self, obj):
         level_counts = (
@@ -61,6 +71,11 @@ class MypageSerializer(serializers.ModelSerializer):
         total_seconds = dict_result.total_seconds()
         total_minutes = int(total_seconds // 60)
         return total_minutes
+
+    def get_attendance_stats(self, obj):
+        current_generation = get_current_generation()
+        attendance_stats = AttendanceStats.objects.filter(user=obj, generation=current_generation).first()
+        return AttendanceStatsSerializer(attendance_stats).data
 
 
 @extend_schema_serializer(examples=USER_UPDATE_REQUEST_EXAMPLE)
