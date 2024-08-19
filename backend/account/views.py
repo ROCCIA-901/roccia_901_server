@@ -62,18 +62,16 @@ class UserRegistrationAPIView(APIView):
         tags=["사용자 인증"],
         summary="회원가입",
         request=UserRegistrationSerializer,
-        # fmt: off
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
                 response=UserRegistrationSerializer,
-                examples=USER_REGISTRATION_RESPONSE_EXAMPLE
+                examples=USER_REGISTRATION_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
                 examples=USER_REGISTRATION_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     @transaction.atomic
     def post(self, request: Request) -> Response:
@@ -82,15 +80,13 @@ class UserRegistrationAPIView(APIView):
         serializer.save()
 
         return Response(
-            # fmt: off
             data={
                 "detail": "회원가입에 성공했습니다. 관리자에게 승인 문의 바랍니다.",
                 "data": {
                     "user": serializer.data,
-                }
+                },
             },
-            status=status.HTTP_201_CREATED
-            # fmt: on
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -101,25 +97,24 @@ class UserLoginAPIView(APIView):
         tags=["사용자 인증"],
         summary="로그인",
         request=UserLoginSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=UserLoginSerializer,
-                examples=USER_LOGIN_RESPONSE_EXAMPLE),
+                examples=USER_LOGIN_RESPONSE_EXAMPLE,
+            ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=LOGIN_400_FAILURE_EXAMPLE
+                examples=LOGIN_400_FAILURE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=LOGIN_401_FAILURE_EXAMPLE
+                examples=LOGIN_401_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=LOGIN_500_FAILURE_EXAMPLE
+                examples=LOGIN_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def post(self, request: Request) -> Response:
         serializer = UserLoginSerializer(data=request.data)
@@ -128,24 +123,23 @@ class UserLoginAPIView(APIView):
         try:
             user: User = serializer.validated_data["user"]
             token = TokenObtainPairSerializer.get_token(user)
+            token["role"] = user.role
             access_token: str = str(token.access_token)
             refresh_token: str = str(token)
         except TokenError:
             raise TokenIssuanceException("토큰 발급 중에 문제가 발생했습니다.")
 
         return Response(
-            # fmt: off
             data={
                 "detail": "로그인에 성공했습니다.",
                 "data": {
                     "token": {
                         "access": access_token,
-                        "refresh": refresh_token
-                    }
-                }
+                        "refresh": refresh_token,
+                    },
+                },
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
@@ -156,22 +150,20 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
         tags=["사용자 인증"],
         summary="회원가입 인증 번호 요청",
         request=UserRegisterEmailVerificationSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=UserRegisterEmailVerificationSerializer,
-                examples=USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
+                examples=USER_REGISTER_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     @transaction.atomic
     def post(self, request: Request) -> Response:
@@ -187,12 +179,10 @@ class UserRegisterRequestAuthCodeAPIView(APIView):
         send_auth_code_to_email.delay("회원가입", receiver, code)
 
         return Response(
-            # fmt: off
             data={
                 "detail": "회원가입을 위한 인증번호가 전송됐습니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
@@ -203,18 +193,16 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         tags=["사용자 인증"],
         summary="회원가입 인증 번호 확인",
         request=UserRegisterAuthCodeVerificationSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=UserRegisterAuthCodeVerificationSerializer,
-                examples=USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE
+                examples=USER_REGISTER_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE
+                examples=USER_REGISTER_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def post(self, request: Request) -> Response:
         serializer = UserRegisterAuthCodeVerificationSerializer(data=request.data)
@@ -224,12 +212,10 @@ class UserRegisterAuthCodeValidationAPIView(APIView):
         cache.set(f"{receiver}:register:status", "certified", timeout=3600)
 
         return Response(
-            # fmt: off
             data={
                 "detail": "회원가입을 위한 인증번호 확인에 성공했습니다. 인증은 1시간 동안 유효합니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
@@ -240,22 +226,20 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
         tags=["사용자 인증"],
         summary="비밀번호 변경 인증 번호 요청",
         request=PasswordUpdateEmailVerificationSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=PasswordUpdateEmailVerificationSerializer,
-                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_400_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE
+                examples=PASSWORD_UPDATE_REQUEST_AUTH_CODE_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     @transaction.atomic
     def post(self, request: Request) -> Response:
@@ -271,12 +255,10 @@ class PasswordUpdateRequestAuthCodeAPIView(APIView):
         send_auth_code_to_email.delay("비밀번호 변경", receiver, code)
 
         return Response(
-            # fmt: off
             data={
                 "detail": "비밀번호 변경을 위한 인증 번호가 전송됐습니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
@@ -287,18 +269,16 @@ class PasswordUpdateAuthCodeValidationAPIView(APIView):
         tags=["사용자 인증"],
         summary="비밀번호 변경 인증 번호 확인",
         request=PasswordUpdateAuthCodeVerificationSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=PasswordUpdateAuthCodeVerificationSerializer,
-                examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE
+                examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE
+                examples=PASSWORD_UPDATE_AUTH_CODE_VALIDATION_400_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def post(self, request: Request) -> Response:
         serializer = PasswordUpdateAuthCodeVerificationSerializer(data=request.data)
@@ -308,12 +288,10 @@ class PasswordUpdateAuthCodeValidationAPIView(APIView):
         cache.set(f"{receiver}:password:status", "certified", timeout=600)
 
         return Response(
-            # fmt: off
             data={
                 "detail": "비밀번호 변경을 위한 인증번호 확인에 성공했습니다. 인증은 10분 동안 유효합니다.",
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )
 
 
@@ -324,35 +302,31 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
         tags=["사용자 인증"],
         summary="토큰 재발급",
         request=CustomTokenRefreshSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=CustomTokenRefreshSerializer,
-                examples=CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE
+                examples=CUSTOM_TOKEN_REFRESH_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE
+                examples=CUSTOM_TOKEN_REFRESH_400_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def post(self, request, *args, **kwargs):
         serializer = CustomTokenRefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         return Response(
-            # fmt: off
             status=status.HTTP_200_OK,
             data={
                 "detail": "액세스 토큰 발급을 성공했습니다.",
                 "data": {
                     "token": {
-                        "access": serializer.validated_data["access"]
-                    }
+                        "access": serializer.validated_data["access"],
+                    },
                 },
             },
-            # fmt: on
         )
 
 
@@ -362,22 +336,20 @@ class UserLogoutAPIView(APIView):
         tags=["사용자 인증"],
         summary="로그아웃",
         request=LogoutSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=LogoutSerializer,
-                examples=LOGOUT_RESPONSE_EXAMPLE
+                examples=LOGOUT_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=LOGOUT_400_FAILURE_EXAMPLE
+                examples=LOGOUT_400_FAILURE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=LOGOUT_401_FAILURE_EXAMPLE
+                examples=LOGOUT_401_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def post(self, request: Request) -> Response:
         serializer = LogoutSerializer(data=request.data)
@@ -390,12 +362,10 @@ class UserLogoutAPIView(APIView):
             raise InvalidRefreshToken()
 
         return Response(
-            # fmt: off
             status=status.HTTP_200_OK,
             data={
                 "detail": "로그아웃에 성공했습니다.",
             },
-            # fmt: on
         )
 
 
@@ -406,18 +376,16 @@ class UserPasswordUpdateAPIView(APIView):
         tags=["사용자 인증"],
         summary="비밀번호 변경",
         request=PasswordUpdateSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=PasswordUpdateSerializer,
-                examples=PASSWORD_UPDATE_RESPONSE_EXAMPLE
+                examples=PASSWORD_UPDATE_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=PASSWORD_UPDATE_400_FAILURE_EXAMPLE
+                examples=PASSWORD_UPDATE_400_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def patch(self, request: Request) -> Response:
         serializer = PasswordUpdateSerializer(data=request.data)
@@ -425,10 +393,8 @@ class UserPasswordUpdateAPIView(APIView):
         serializer.save()
 
         return Response(
-            # fmt: off
             status=status.HTTP_200_OK,
             data={
                 "detail": "비밀번호 변경에 성공했습니다.",
             },
-            # fmt: on
         )
