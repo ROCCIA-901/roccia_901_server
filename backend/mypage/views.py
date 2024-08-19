@@ -22,14 +22,6 @@ from mypage.serializers import (
 )
 
 
-def get_user(user_id):
-    try:
-        user = User.objects.get(id=user_id)
-        return user
-    except Exception:
-        raise UserNotExistException()
-
-
 class MypageAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -54,7 +46,11 @@ class MypageAPIView(APIView):
         user_id = request.query_params.get("user_id")
 
         if user_id:
-            user = get_user(user_id)
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                raise UserNotExistException()
+
             serializer = UserProfileSerializer(user)
         else:
             user = request.user
