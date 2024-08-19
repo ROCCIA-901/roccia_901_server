@@ -47,30 +47,28 @@ class RecordViewSet(viewsets.ModelViewSet):
         tags=["운동 기록"],
         summary="운동 기록 생성",
         request=RecordCreateSerializer,
-        # fmt: off
         responses={
             status.HTTP_201_CREATED: OpenApiResponse(
                 response=RecordCreateSerializer,
-                examples=RECORD_CREATE_RESPONSE_EXAMPLE
+                examples=RECORD_CREATE_RESPONSE_EXAMPLE,
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_CREATE_400_FAILURE_EXAMPLE
+                examples=RECORD_CREATE_400_FAILURE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_401_FAILURE_EXAMPLE
+                examples=RECORD_401_FAILURE_EXAMPLE,
             ),
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_403_FAILURE_EXAMPLE
+                examples=RECORD_403_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_500_FAILURE_EXAMPLE
+                examples=RECORD_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -94,26 +92,24 @@ class RecordViewSet(viewsets.ModelViewSet):
             ),
         ],
         request=RecordSerializer,
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=RecordSerializer,
-                examples=RECORD_UPDATE_RESPONSE_EXAMPLE
+                examples=RECORD_UPDATE_RESPONSE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_401_FAILURE_EXAMPLE
+                examples=RECORD_401_FAILURE_EXAMPLE,
             ),
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_403_FAILURE_EXAMPLE
+                examples=RECORD_403_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_500_FAILURE_EXAMPLE
+                examples=RECORD_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
         examples=RECORD_UPDATE_REQUEST_EXAMPLE,
     )
     def update(self, request, *args, **kwargs):
@@ -135,26 +131,24 @@ class RecordViewSet(viewsets.ModelViewSet):
     @extend_schema(
         tags=["운동 기록"],
         summary="운동 기록 전체 조회",
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=RecordSerializer,
-                examples=RECORD_LIST_RESPONSE_EXAMPLE
+                examples=RECORD_LIST_RESPONSE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_401_FAILURE_EXAMPLE
+                examples=RECORD_401_FAILURE_EXAMPLE,
             ),
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_403_FAILURE_EXAMPLE
+                examples=RECORD_403_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_500_FAILURE_EXAMPLE
+                examples=RECORD_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def list(self, request, *args, **kwargs):
         data = Record.objects.filter(user=request.user)  # type: ignore
@@ -177,26 +171,24 @@ class RecordViewSet(viewsets.ModelViewSet):
                 name="id", location=OpenApiParameter.PATH, description="삭제할 기록의 ID", required=True, type=int
             ),
         ],
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=RecordSerializer,
-                examples=RECORD_DESTROY_RESPONSE_EXAMPLE
+                examples=RECORD_DESTROY_RESPONSE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_401_FAILURE_EXAMPLE
+                examples=RECORD_401_FAILURE_EXAMPLE,
             ),
             status.HTTP_403_FORBIDDEN: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_403_FAILURE_EXAMPLE
+                examples=RECORD_403_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_500_FAILURE_EXAMPLE
+                examples=RECORD_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     def destroy(self, request, *args, **kwargs):
         if self.request.user != self.get_object().user:
@@ -213,22 +205,20 @@ class RecordViewSet(viewsets.ModelViewSet):
     @extend_schema(
         tags=["운동 기록"],
         summary="운동 기록 날짜 조회",
-        # fmt: off
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_DATES_RESPONSE_EXAMPLE
+                examples=RECORD_DATES_RESPONSE_EXAMPLE,
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_401_FAILURE_EXAMPLE
+                examples=RECORD_401_FAILURE_EXAMPLE,
             ),
             status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
                 response=ErrorResponseSerializer,
-                examples=RECORD_500_FAILURE_EXAMPLE
+                examples=RECORD_500_FAILURE_EXAMPLE,
             ),
         },
-        # fmt: on
     )
     @action(detail=False, methods=["get"], url_path="dates")
     def dates(self, request: Request) -> Response:
@@ -241,13 +231,11 @@ class RecordViewSet(viewsets.ModelViewSet):
         )
 
         return Response(
-            # fmt: off
             data={
                 "detail": "운동 기록 날짜 목록 조회를 성공했습니다.",
                 "data": {
                     "dates": dates,
                 },
             },
-            status=status.HTTP_200_OK
-            # fmt: on
+            status=status.HTTP_200_OK,
         )

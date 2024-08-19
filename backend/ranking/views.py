@@ -21,22 +21,20 @@ from ranking.serializers import RankingSerializer
 @extend_schema(
     tags=["랭킹"],
     summary="주차별 랭킹 조회",
-    # fmt: off
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=RankingSerializer,
-            examples=RANKING_WEEKS_RESPONSE_EXAMPLE
+            examples=RANKING_WEEKS_RESPONSE_EXAMPLE,
         ),
         status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
             response=ErrorResponseSerializer,
-            examples=RANKING_401_FAILURE_EXAMPLE
+            examples=RANKING_401_FAILURE_EXAMPLE,
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
             response=ErrorResponseSerializer,
-            examples=RANKING_500_FAILURE_EXAMPLE
+            examples=RANKING_500_FAILURE_EXAMPLE,
         ),
     },
-    # fmt: on
 )
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
@@ -78,22 +76,20 @@ def get_weekly_rankings(request: Request) -> Response:
 @extend_schema(
     tags=["랭킹"],
     summary="기수별 랭킹 조회",
-    # fmt: off
     responses={
         status.HTTP_200_OK: OpenApiResponse(
             response=RankingSerializer,
-            examples=RANKING_GENERATIONS_RESPONSE_EXAMPLE
+            examples=RANKING_GENERATIONS_RESPONSE_EXAMPLE,
         ),
         status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
             response=ErrorResponseSerializer,
-            examples=RANKING_401_FAILURE_EXAMPLE
+            examples=RANKING_401_FAILURE_EXAMPLE,
         ),
         status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
             response=ErrorResponseSerializer,
-            examples=RANKING_500_FAILURE_EXAMPLE
+            examples=RANKING_500_FAILURE_EXAMPLE,
         ),
     },
-    # fmt: on
 )
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
@@ -115,7 +111,6 @@ def get_generation_rankings(request: Request) -> Response:
 
     generations = list(set([generation_ranking["generation"] for generation_ranking in generation_rankings]))
     return Response(
-        # fmt: off
         data={
             "detail": "기수별 랭킹 조회를 성공했습니다.",
             "data": {
@@ -123,13 +118,12 @@ def get_generation_rankings(request: Request) -> Response:
                     {
                         "generation": f"{generation}기",
                         "ranking": RankingSerializer(
-                            generation_rankings.filter(generation=generation) .order_by("-score"),
-                            many=True
-                        ).data
-                    } for generation in generations
+                            generation_rankings.filter(generation=generation).order_by("-score"), many=True
+                        ).data,
+                    }
+                    for generation in generations
                 ],
             },
         },
-        status=status.HTTP_200_OK
-        # fmt: on
+        status=status.HTTP_200_OK,
     )
