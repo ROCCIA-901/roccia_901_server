@@ -8,7 +8,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
-from account.models import User
+from account.models import Generation, User
 from account.schemas import (
     CUSTOM_TOKEN_REFRESH_REQUEST_EXAMPLE,
     LOGOUT_REQUEST_EXAMPLE,
@@ -47,11 +47,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             "blank": "이름은 비워 둘 수 없습니다.",
         },
     )
-    generation = serializers.CharField(
+    generation = serializers.PrimaryKeyRelatedField(
+        queryset=Generation.objects.all(),
         required=True,
         error_messages={
             "required": "기수는 필수 입력 항목입니다.",
             "blank": "기수는 비워 둘 수 없습니다.",
+            "does_not_exist": "해당 기수가 존재하지 않습니다.",
+            "incorrect_type": "올바른 형식의 기수를 입력해 주세요.",
         },
     )
     role = serializers.CharField(
@@ -129,12 +132,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def validate_username(self, value: str) -> str:
         if not self.username_pattern.match(value):
             raise InvalidFieldException("이름이 정확하지 않습니다.")
-        return value
-
-    def validate_generation(self, value: str) -> str:
-        # possible_generation =
-        # if value not in possible_generation:
-        #     raise InvalidFieldException("기수가 정확하지 않습니다.")
         return value
 
     def validate_role(self, value: str) -> str:
