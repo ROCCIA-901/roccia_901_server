@@ -11,16 +11,16 @@ def get_activity_date():
     try:
         return Generation.objects.get(start_date__lte=today, end_date__gte=today)
     except Generation.DoesNotExist:
-        return None
+        raise NotExistException("동아리 운영 기간이 아닙니다.")
 
 
 def get_current_generation():
     today = timezone.now().date()
     try:
-        activity_date = Generation.objects.get(start_date__lte=today, end_date__gte=today)
-        return activity_date.generation
+        generation = Generation.objects.get(start_date__lte=today, end_date__gte=today)
+        return generation.name
     except Generation.DoesNotExist:
-        return None
+        raise NotExistException("동아리 운영 기간이 아닙니다.")
 
 
 def get_weeks_since_start(start_date):

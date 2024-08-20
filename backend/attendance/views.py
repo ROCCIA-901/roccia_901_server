@@ -103,7 +103,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if UnavailableDates.objects.filter(date=current_date).exists():
             raise AttendancePeriodException()
 
-        # fmt: off
         request_data: dict[str, Any] = {
             "user": user,
             "generation": current_generation,
@@ -111,18 +110,15 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             "workout_location": workout_location,
             "week": week,
         }
-        # fmt: on
         serializer: AttendanceSerializer = AttendanceSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         serializer.save(user=user)
 
         return Response(
-            # fmt: off
             data={
                 "detail": "출석 요청이 정상적으로 처리됐습니다.",
             },
-            status=status.HTTP_201_CREATED
-            # fmt: on
+            status=status.HTTP_201_CREATED,
         )
 
     @action(detail=False, methods=["get"], permission_classes=[IsMember])
