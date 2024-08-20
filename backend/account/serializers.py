@@ -20,6 +20,7 @@ from account.schemas import (
     USER_REGISTER_REQUEST_AUTH_CODE_REQUEST_EXAMPLE,
     USER_REGISTRATION_REQUEST_EXAMPLE,
 )
+from common.choices import ROLE_CHOICES, WORKOUT_LEVELS, WORKOUT_LOCATION_CHOICES
 from config.exceptions import (
     EmptyFieldException,
     InvalidAccountException,
@@ -68,7 +69,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         },
     )
     workout_level = WorkoutLevelChoiceField(
-        User.WORKOUT_LEVELS,
+        WORKOUT_LEVELS,
         required=True,
         error_messages={
             "required": "운동 난이도는 필수 입력 항목입니다.",
@@ -131,25 +132,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return value
 
     def validate_generation(self, value: str) -> str:
-        generation = [choice[0] for choice in User.GENERATION_CHOICES]
-        if value not in generation:
-            raise InvalidFieldException("기수가 정확하지 않습니다.")
+        # possible_generation =
+        # if value not in possible_generation:
+        #     raise InvalidFieldException("기수가 정확하지 않습니다.")
         return value
 
     def validate_role(self, value: str) -> str:
-        role = [choice[0] for choice in User.ROLE_CHOICES]
+        role = [choice[0] for choice in ROLE_CHOICES]
         if value not in role:
             raise InvalidFieldException("역할이 정확하지 않습니다.")
         return value
 
     def validate_workout_location(self, value: str) -> str:
-        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
+        workout_location = [choice[0] for choice in WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
 
     def validate_workout_level(self, value: int) -> int:
-        workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
+        workout_level = [choice[0] for choice in WORKOUT_LEVELS]
         if value not in workout_level:
             raise InvalidFieldException("난이도가 정확하지 않습니다.")
         return value

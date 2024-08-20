@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 
+from common.choices import ROLE_CHOICES, WORKOUT_LEVELS, WORKOUT_LOCATION_CHOICES
 from config.exceptions import InvalidFieldException
 
 
@@ -36,58 +37,21 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+class Generation(models.Model):
+    name = models.CharField(max_length=10, unique=True, primary_key=True, help_text="기수 이름")  # type: ignore
+    start_date = models.DateField(null=True, help_text="기수 시작 날짜")  # type: ignore
+    end_date = models.DateField(null=True, help_text="기수 종료 날짜")  # type: ignore
+
+    class Meta:
+        db_table = "generation"
+
+
 class User(AbstractBaseUser, PermissionsMixin):
-    ROLE_CHOICES: tuple[tuple[str, str], ...] = (
-        ("운영진", "운영진"),
-        ("부원", "부원"),
-        ("관리자", "관리자"),
-    )
-
-    WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
-        ("더클라임 일산", "더클라임 일산"),
-        ("더클라임 연남", "더클라임 연남"),
-        ("더클라임 양재", "더클라임 양재"),
-        ("더클라임 신림", "더클라임 신림"),
-        ("더클라임 마곡", "더클라임 마곡"),
-        ("더클라임 홍대", "더클라임 홍대"),
-        ("더클라임 서울대", "더클라임 서울대"),
-        ("더클라임 강남", "더클라임 강남"),
-        ("더클라임 사당", "더클라임 사당"),
-        ("더클라임 신사", "더클라임 신사"),
-        ("더클라임 논현", "더클라임 논현"),
-    )
-
-    WORKOUT_LEVELS: tuple[tuple[int, str], ...] = (
-        (1, "하얀색"),
-        (2, "노란색"),
-        (3, "주황색"),
-        (4, "초록색"),
-        (5, "파란색"),
-        (6, "빨간색"),
-        (7, "보라색"),
-        (8, "회색"),
-        (9, "갈색"),
-        (10, "검정색"),
-    )
-
-    GENERATION_CHOICES: tuple[tuple[str, str], ...] = (
-        ("1기", "1기"),
-        ("2기", "2기"),
-        ("3기", "3기"),
-        ("4기", "4기"),
-        ("5기", "5기"),
-        ("6기", "6기"),
-        ("7기", "7기"),
-        ("8기", "8기"),
-        ("9기", "9기"),
-        ("10기", "10기"),
-        ("11기", "11기"),
-        ("12기", "12기"),
-    )
-
     email = models.EmailField(max_length=320, unique=True, null=False, blank=False, help_text="이메일")  # type: ignore
     username = models.CharField(max_length=20, help_text="사용자 이름")  # type: ignore
-    generation = models.CharField(max_length=10, choices=GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.ForeignKey(
+        Generation, on_delete=models.SET_NULL, null=True, related_name="user", help_text="기수"
+    )  # type: ignore
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="부원", help_text="역할")  # type: ignore
     workout_location = models.CharField(
         max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점"

@@ -2,24 +2,24 @@ from datetime import datetime, timedelta
 
 from django.utils import timezone
 
-from attendance.models import ActivityDates, AttendanceStats, WeeklyStaffInfo
+from attendance.models import AttendanceStats, Generation, WeeklyStaffInfo
 from config.exceptions import NotExistException
 
 
 def get_activity_date():
     today = timezone.now().date()
     try:
-        return ActivityDates.objects.get(start_date__lte=today, end_date__gte=today)
-    except ActivityDates.DoesNotExist:
+        return Generation.objects.get(start_date__lte=today, end_date__gte=today)
+    except Generation.DoesNotExist:
         return None
 
 
 def get_current_generation():
     today = timezone.now().date()
     try:
-        activity_date = ActivityDates.objects.get(start_date__lte=today, end_date__gte=today)
+        activity_date = Generation.objects.get(start_date__lte=today, end_date__gte=today)
         return activity_date.generation
-    except ActivityDates.DoesNotExist:
+    except Generation.DoesNotExist:
         return None
 
 

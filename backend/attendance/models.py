@@ -1,6 +1,7 @@
 from django.db import models
 
-from account.models import User
+from account.models import Generation, User
+from common.choices import WORKOUT_LOCATION_CHOICES
 
 
 class Attendance(models.Model):
@@ -18,9 +19,11 @@ class Attendance(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendances")  # type: ignore
-    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.ForeignKey(
+        Generation, on_delete=models.SET_NULL, null=True, related_name="attendance", help_text="기수"
+    )  # type: ignore
     workout_location = models.CharField(
-        max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
+        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
     week = models.IntegerField(null=True, help_text="주차")  # type: ignore
     request_time = models.DateTimeField(null=True, help_text="출석 요청 시간")  # type: ignore
@@ -43,22 +46,15 @@ class Attendance(models.Model):
 
 class AttendanceStats(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendance_stats")  # type: ignore
-    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.ForeignKey(
+        Generation, on_delete=models.SET_NULL, null=True, related_name="attendance_stats", help_text="기수"
+    )  # type: ignore
     attendance = models.IntegerField(default=0, help_text="출석 횟수")  # type: ignore
     late = models.IntegerField(default=0, help_text="지각 횟수")  # type: ignore
     absence = models.IntegerField(default=0, help_text="결석 횟수")  # type: ignore
 
     class Meta:
         db_table = "attendance_stats"
-
-
-class ActivityDates(models.Model):
-    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
-    start_date = models.DateField(help_text="기수 시작 날짜")  # type: ignore
-    end_date = models.DateField(help_text="기수 종료 날짜")  # type: ignore
-
-    class Meta:
-        db_table = "activity_dates"
 
 
 class UnavailableDates(models.Model):
@@ -77,11 +73,13 @@ class WeeklyStaffInfo(models.Model):
         ("금요일", "금요일"),
     )
 
-    generation = models.CharField(max_length=10, choices=User.GENERATION_CHOICES, help_text="기수")  # type: ignore
+    generation = models.ForeignKey(
+        Generation, on_delete=models.SET_NULL, null=True, related_name="weekly_staff_info", help_text="기수"
+    )  # type: ignore
     staff = models.ForeignKey(User, on_delete=models.CASCADE, help_text="운영진")  # type: ignore
     day_of_week = models.CharField(max_length=10, choices=DAY_OF_WEEK_CHOICES, help_text="요일")  # type: ignore
     workout_location = models.CharField(
-        max_length=100, choices=User.WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
+        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, help_text="운동 지점"
     )  # type: ignore
     start_time = models.TimeField(help_text="운동 시작 시간")  # type: ignore
 

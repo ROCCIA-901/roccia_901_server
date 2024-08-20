@@ -6,7 +6,7 @@ from django.db.models.functions.datetime import TruncDate
 from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
-from account.models import User
+from common.choices import WORKOUT_LEVELS, WORKOUT_LOCATION_CHOICES
 from config.exceptions import InvalidFieldException
 from config.utils import WorkoutLevelChoiceField
 from record.models import BoulderProblem, Record
@@ -14,7 +14,7 @@ from record.schemas import RECORD_CREATE_REQUEST_EXAMPLE
 
 
 class BoulderProblemSerializer(serializers.ModelSerializer):
-    workout_level = WorkoutLevelChoiceField(choices=User.WORKOUT_LEVELS)
+    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS)
 
     class Meta:
         model = BoulderProblem
@@ -24,7 +24,7 @@ class BoulderProblemSerializer(serializers.ModelSerializer):
         )
 
     def validate_workout_level(self, value: int) -> int:
-        workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
+        workout_level = [choice[0] for choice in WORKOUT_LEVELS]
         if value not in workout_level:
             raise InvalidFieldException("난이도가 정확하지 않습니다.")
         return value
@@ -65,7 +65,7 @@ class RecordSerializer(serializers.ModelSerializer):
         )
 
     def validate_workout_location(self, value: str) -> str:
-        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
+        workout_location = [choice[0] for choice in WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
@@ -130,7 +130,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_workout_location(self, value: str) -> str:
-        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
+        workout_location = [choice[0] for choice in WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value

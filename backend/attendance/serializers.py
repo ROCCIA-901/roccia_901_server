@@ -6,12 +6,13 @@ from account.models import User
 from account.serializers import UserRetrieveSerializer
 from attendance.models import Attendance, AttendanceStats
 from attendance.services import calculate_attendance_rate, get_current_generation
+from common.choices import WORKOUT_LEVELS
 from config.utils import WorkoutLevelChoiceField
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
     user = UserRetrieveSerializer(read_only=True)
-    workout_level = WorkoutLevelChoiceField(choices=User.WORKOUT_LEVELS, source="user.workout_level")
+    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS, source="user.workout_level")
 
     class Meta:
         model = Attendance
@@ -50,7 +51,7 @@ class AttendanceDetailSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
-    workout_level = WorkoutLevelChoiceField(choices=User.WORKOUT_LEVELS)
+    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS)
     attendance_rate = serializers.SerializerMethodField()
 
     class Meta:
