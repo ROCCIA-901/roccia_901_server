@@ -74,6 +74,12 @@ class NotExistException(APIException):
     default_code = "not_exist"
 
 
+class ResourceLockedException(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = "해당 자원이 잠겨 있어 작업을 수행할 수 없습니다."
+    default_code = "resource_locked"
+
+
 class InternalServerException(APIException):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     default_detail = "서버 내부에서 발생한 오류입니다."

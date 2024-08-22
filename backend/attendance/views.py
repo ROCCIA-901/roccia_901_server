@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Any, Optional
 
-from django.db import transaction
+from django.db import OperationalError, transaction
 from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -38,6 +38,7 @@ from config.exceptions import (
     InvalidFieldStateException,
     MissingWeeklyStaffInfoException,
     NotExistException,
+    ResourceLockedException,
 )
 from config.utils import IsManager, IsMember
 
@@ -237,45 +238,50 @@ class AttendanceAcceptAPIView(APIView):
 
     @transaction.atomic
     def patch(self, request: Request, attendance_id: int) -> Response:
-        current_user: User = request.user
-        attendance: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=attendance_id).first()
+        try:
+            current_user: User = request.user
+            attendance: Optional[Attendance] = (
+                Attendance.objects.select_for_update(nowait=True).filter(id=attendance_id).first()
+            )
 
-        if not attendance:
-            raise NotExistException()
+            if not attendance:
+                raise NotExistException()
 
-        if attendance.request_processed_status != "대기":
-            raise InvalidFieldStateException("이미 처리된 요청입니다.")
+            if attendance.request_processed_status != "대기":
+                raise InvalidFieldStateException("이미 처리된 요청입니다.")
 
-        # 출석 승인 처리 로직
-        attendance_status: str = get_attendance_status(attendance.request_time)
+            # 출석 승인 처리 로직
+            attendance_status: str = get_attendance_status(attendance.request_time)
 
-        attendance.request_processed_status = "승인"
-        attendance.request_processed_time = timezone.now()
-        attendance.request_processed_user = current_user
-        attendance.attendance_status = attendance_status
-        attendance.is_alternate = check_alternate_attendance(current_user)
+            attendance.request_processed_status = "승인"
+            attendance.request_processed_time = timezone.now()
+            attendance.request_processed_user = current_user
+            attendance.attendance_status = attendance_status
+            attendance.is_alternate = check_alternate_attendance(current_user)
 
-        attendance.save()
+            attendance.save()
 
-        # AttendanceStats 업데이트 로직
-        attendance_stats, created = AttendanceStats.objects.select_for_update().get_or_create(
-            user=current_user,
-            generation=attendance.generation,
-        )
+            # AttendanceStats 업데이트 로직
+            attendance_stats, created = AttendanceStats.objects.select_for_update(nowait=True).get_or_create(
+                user=current_user,
+                generation=attendance.generation,
+            )
 
-        if attendance_status == "출석":
-            attendance_stats.attendance = F("attendance") + 1
-        elif attendance_status == "지각":
-            attendance_stats.late = F("late") + 1
+            if attendance_status == "출석":
+                attendance_stats.attendance = F("attendance") + 1
+            elif attendance_status == "지각":
+                attendance_stats.late = F("late") + 1
 
-        attendance_stats.save()
+            attendance_stats.save()
 
-        return Response(
-            data={
-                "detail": "요청 승인이 성공적으로 완료되었습니다.",
-            },
-            status=status.HTTP_200_OK,
-        )
+            return Response(
+                data={
+                    "detail": "요청 승인이 성공적으로 완료되었습니다.",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except OperationalError:
+            raise ResourceLockedException()
 
 
 class AttendanceRejectAPIView(APIView):
@@ -287,25 +293,30 @@ class AttendanceRejectAPIView(APIView):
 
     @transaction.atomic
     def patch(self, request: Request, attendance_id: int) -> Response:
-        attendance: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=attendance_id).first()
+        try:
+            attendance: Optional[Attendance] = (
+                Attendance.objects.select_for_update(nowait=True).filter(id=attendance_id).first()
+            )
 
-        if not attendance:
-            raise NotExistException()
+            if not attendance:
+                raise NotExistException()
 
-        if attendance.request_processed_status != "대기":
-            raise InvalidFieldStateException("이미 처리된 요청입니다.")
+            if attendance.request_processed_status != "대기":
+                raise InvalidFieldStateException("이미 처리된 요청입니다.")
 
-        attendance.request_processed_status = "거절"
-        attendance.request_processed_time = timezone.now()
-        attendance.request_processed_user = request.user
-        attendance.save()
+            attendance.request_processed_status = "거절"
+            attendance.request_processed_time = timezone.now()
+            attendance.request_processed_user = request.user
+            attendance.save()
 
-        return Response(
-            data={
-                "detail": "요청 거절이 성공적으로 완료되었습니다.",
-            },
-            status=status.HTTP_200_OK,
-        )
+            return Response(
+                data={
+                    "detail": "요청 거절이 성공적으로 완료되었습니다.",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except OperationalError:
+            raise ResourceLockedException()
 
 
 class AttendanceLocationAPIView(APIView):
