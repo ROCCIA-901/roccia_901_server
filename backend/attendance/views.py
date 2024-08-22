@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from account.models import User
 from attendance.models import (
@@ -142,30 +143,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 "detail": "사용자 출석률 조회를 성공했습니다.",
                 "data": {
                     "attendance_rate": round(attendance_rate, 2),
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    @action(detail=False, methods=["get"], url_path="locations", permission_classes=[IsAuthenticated])
-    def get_today_locations(self, request: Request) -> Response:
-        day_of_week = get_day_of_week(timezone.now())
-        current_generation = get_current_generation()
-
-        weekly_staff_info = WeeklyStaffInfo.objects.filter(
-            generation=current_generation, day_of_week=day_of_week
-        ).first()
-
-        if not weekly_staff_info:
-            raise MissingWeeklyStaffInfoException()
-
-        workout_location = weekly_staff_info.workout_location
-
-        return Response(
-            data={
-                "detail": "금일 운동 지점 조회를 성공했습니다.",
-                "data": {
-                    "workout_location": workout_location,
                 },
             },
             status=status.HTTP_200_OK,
@@ -313,6 +290,33 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
             data={
                 "detail": "부원 목록 조회를 성공했습니다.",
                 "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AttendanceLocationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        day_of_week = get_day_of_week(timezone.now())
+        current_generation = get_current_generation()
+
+        weekly_staff_info = WeeklyStaffInfo.objects.filter(
+            generation=current_generation, day_of_week=day_of_week
+        ).first()
+
+        if not weekly_staff_info:
+            raise MissingWeeklyStaffInfoException()
+
+        workout_location = weekly_staff_info.workout_location
+
+        return Response(
+            data={
+                "detail": "금일 운동 지점 조회를 성공했습니다.",
+                "data": {
+                    "workout_location": workout_location,
+                },
             },
             status=status.HTTP_200_OK,
         )

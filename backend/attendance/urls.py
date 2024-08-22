@@ -4,6 +4,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from attendance.views import (
+    AttendanceLocationAPIView,
     AttendanceRequestViewSet,
     AttendanceUserViewSet,
     AttendanceViewSet,
@@ -15,5 +16,7 @@ router.register(r'requests', AttendanceRequestViewSet, basename='attendance-requ
 router.register(r'', AttendanceViewSet, basename='attendance')
 
 urlpatterns = [
+    path("location/", AttendanceLocationAPIView.as_view(), name="location"),
+
     path("", include((router.urls, "attendance"), namespace="attendance")),
 ]
