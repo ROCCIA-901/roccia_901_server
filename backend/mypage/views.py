@@ -29,7 +29,12 @@ class MypageAPIView(APIView):
         tags=["마이페이지"],
         summary="마이페이지 조회",
         parameters=[
-            OpenApiParameter(name="user_id", description="조회할 유저의 ID", required=False, type=str),
+            OpenApiParameter(
+                name="user_id",
+                description="조회할 유저의 ID",
+                required=False,
+                type=str,
+            ),
         ],
         responses={
             status.HTTP_200_OK: OpenApiResponse(
@@ -46,17 +51,13 @@ class MypageAPIView(APIView):
         user_id = request.query_params.get("user_id")
 
         if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
+            user = User.objects.filter(id=user_id).first()
+            if not user:
                 raise UserNotExistException()
 
             serializer = UserProfileSerializer(user)
         else:
             user = request.user
-            if not user:
-                raise UserNotExistException()
-
             serializer = MypageSerializer(user)
 
         return Response(
