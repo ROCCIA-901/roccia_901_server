@@ -22,14 +22,6 @@ from mypage.serializers import (
 )
 
 
-def get_user(user_id):
-    try:
-        user = User.objects.get(id=user_id)
-        return user
-    except Exception:
-        raise UserNotExistException()
-
-
 class MypageAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -37,7 +29,12 @@ class MypageAPIView(APIView):
         tags=["마이페이지"],
         summary="마이페이지 조회",
         parameters=[
-            OpenApiParameter(name="user_id", description="조회할 유저의 ID", required=False, type=str),
+            OpenApiParameter(
+                name="user_id",
+                description="조회할 유저의 ID",
+                required=False,
+                type=str,
+            ),
         ],
         responses={
             status.HTTP_200_OK: OpenApiResponse(
@@ -54,13 +51,13 @@ class MypageAPIView(APIView):
         user_id = request.query_params.get("user_id")
 
         if user_id:
-            user = get_user(user_id)
-            serializer = UserProfileSerializer(user)
-        else:
-            user = request.user
+            user = User.objects.filter(id=user_id).first()
             if not user:
                 raise UserNotExistException()
 
+            serializer = UserProfileSerializer(user)
+        else:
+            user = request.user
             serializer = MypageSerializer(user)
 
         return Response(
@@ -92,8 +89,6 @@ class MypageAPIView(APIView):
     )
     def patch(self, request: Request) -> Response:
         user = request.user
-        if not user:
-            raise UserNotExistException()
 
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

@@ -1,10 +1,10 @@
-ROLE_CHOICES: tuple[tuple[str, str], ...] = (
+ROLE_CHOICES = (
     ("운영진", "운영진"),
     ("부원", "부원"),
     ("관리자", "관리자"),
 )
 
-WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
+WORKOUT_LOCATION_CHOICES = (
     ("더클라임 일산", "더클라임 일산"),
     ("더클라임 연남", "더클라임 연남"),
     ("더클라임 양재", "더클라임 양재"),
@@ -19,7 +19,7 @@ WORKOUT_LOCATION_CHOICES: tuple[tuple[str, str], ...] = (
     ("더클라임 문래", "더클라임 문래"),
 )
 
-WORKOUT_LEVELS: tuple[tuple[int, str], ...] = (
+WORKOUT_LEVELS = (
     (1, "하얀색"),
     (2, "노란색"),
     (3, "주황색"),
