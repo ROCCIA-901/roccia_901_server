@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
+from typing import Optional
 
 from django.utils import timezone
 
+from account.models import User
 from attendance.models import AttendanceStats, Generation, WeeklyStaffInfo
 from config.exceptions import NotExistException
 
@@ -27,39 +29,51 @@ def get_day_of_week(current_date):
     return days[weekday_number]
 
 
-def get_attendance_status():
-    current_time = timezone.now()
-    day_of_week = get_day_of_week(current_time.date())
-    current_generation = get_current_generation()
+def get_attendance_status(request_time: datetime) -> str:
+    """
+    출석을 요청한 시간을 바탕으로 출결 상태를 반환하는 메서드입니다.
+    """
 
-    weekly_staff_info = WeeklyStaffInfo.objects.filter(
+    day_of_week: str = get_day_of_week(request_time.date())
+    current_generation: Generation = get_current_generation()
+
+    weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.filter(
         generation=current_generation,
         day_of_week=day_of_week,
     ).first()
 
     if not weekly_staff_info:
-        raise NotExistException()
+        raise NotExistException("주간 운영진 정보가 존재하지 않습니다.")
 
-    start_time = weekly_staff_info.start_time
-    start_datetime = datetime.combine(current_time.date(), start_time)
+    start_time: time = weekly_staff_info.start_time
+    start_datetime = datetime.combine(request_time.date(), start_time)
     late_datetime = start_datetime + timedelta(minutes=30)
 
-    if current_time > late_datetime:
+    if request_time > late_datetime:
         return "지각"
     else:
         return "출석"
 
 
-def check_alternate_attendance(workout_location):
-    current_time = timezone.now()
-    day_of_week = get_day_of_week(current_time.date())
-    current_generation = get_current_generation()
+def check_alternate_attendance(current_user: User) -> bool:
+    """
+    대체 출석 여부를 판별하기 위한 메서드입니다.
+    """
 
-    today_workout_location = (
-        WeeklyStaffInfo.objects.filter(generation=current_generation, day_of_week=day_of_week).first().workout_location
+    if int(get_current_generation().name[:-1]) - int(current_user.generation.name[:-1]) > 1:
+        return False
+
+    current_time: datetime = timezone.now()
+    day_of_week: str = get_day_of_week(current_time.date())
+    current_generation: Generation = get_current_generation()
+
+    today_workout_location: str = (
+        WeeklyStaffInfo.objects.filter(generation=current_generation, day_of_week=day_of_week)
+        .first()
+        .workout_location  # type: ignore
     )
 
-    if workout_location == today_workout_location:
+    if current_user.workout_location == today_workout_location:
         return False
     else:
         return True
