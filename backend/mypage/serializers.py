@@ -111,27 +111,10 @@ class MypageSerializer(serializers.ModelSerializer):
 
 @extend_schema_serializer(examples=USER_UPDATE_REQUEST_EXAMPLE)
 class UserUpdateSerializer(serializers.ModelSerializer):
-    workout_location = serializers.CharField(
-        error_messages={
-            "blank": "운동 지점은 비워 둘 수 없습니다.",
-        },
-    )
-    workout_level = WorkoutLevelChoiceField(
-        WORKOUT_LEVELS,
-        error_messages={
-            "blank": "운동 난이도는 비워 둘 수 없습니다.",
-        },
-    )
-    profile_number = serializers.IntegerField(
-        error_messages={
-            "blank": "프로필 번호는 비워 둘 수 없습니다.",
-        },
-    )
 
     class Meta:
         model = User
         fields = ["workout_location", "workout_level", "profile_number", "introduction"]
-        extra_kwargs = {"introduction": {"required": False}}
 
     def validate_workout_location(self, value: str) -> str:
         workout_location = [choice[0] for choice in WORKOUT_LOCATION_CHOICES]

@@ -89,8 +89,6 @@ class MypageAPIView(APIView):
     )
     def patch(self, request: Request) -> Response:
         user = request.user
-        if not user:
-            raise UserNotExistException()
 
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
