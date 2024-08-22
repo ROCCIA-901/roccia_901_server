@@ -120,29 +120,6 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         except Exception as e:
             raise InternalServerException()
 
-    @action(detail=True, methods=["patch"])
-    @transaction.atomic
-    def reject(self, request: Request, pk: Optional[int] = None, *args: Any, **kwargs: Any) -> Response:
-        attendance_object: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=pk).first()
-
-        if not attendance_object:
-            raise NotExistException()
-
-        if attendance_object.request_processed_status != "대기":
-            raise InvalidFieldStateException("이미 처리된 요청입니다.")
-
-        attendance_object.request_processed_status = "거절"
-        attendance_object.request_processed_time = timezone.now()
-        attendance_object.request_processed_user = request.user
-        attendance_object.save()
-
-        return Response(
-            data={
-                "detail": "요청 거절이 성공적으로 완료되었습니다.",
-            },
-            status=status.HTTP_200_OK,
-        )
-
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -259,7 +236,7 @@ class AttendanceAcceptAPIView(APIView):
     permission_classes = [IsManager]
 
     @transaction.atomic
-    def patch(self, request: Request, attendance_id: int, *args: Any, **kwargs: Any) -> Response:
+    def patch(self, request: Request, attendance_id: int) -> Response:
         current_user: User = request.user
         attendance: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=attendance_id).first()
 
@@ -296,6 +273,36 @@ class AttendanceAcceptAPIView(APIView):
         return Response(
             data={
                 "detail": "요청 승인이 성공적으로 완료되었습니다.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AttendanceRejectAPIView(APIView):
+    """
+    출석 거절 처리를 위한 클래스입니다.
+    """
+
+    permission_classes = [IsManager]
+
+    @transaction.atomic
+    def patch(self, request: Request, attendance_id: int) -> Response:
+        attendance: Optional[Attendance] = Attendance.objects.select_for_update().filter(id=attendance_id).first()
+
+        if not attendance:
+            raise NotExistException()
+
+        if attendance.request_processed_status != "대기":
+            raise InvalidFieldStateException("이미 처리된 요청입니다.")
+
+        attendance.request_processed_status = "거절"
+        attendance.request_processed_time = timezone.now()
+        attendance.request_processed_user = request.user
+        attendance.save()
+
+        return Response(
+            data={
+                "detail": "요청 거절이 성공적으로 완료되었습니다.",
             },
             status=status.HTTP_200_OK,
         )
