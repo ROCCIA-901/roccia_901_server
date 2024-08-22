@@ -2,7 +2,7 @@ from datetime import date
 from typing import Any, Optional
 
 from django.db import OperationalError, transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -20,7 +20,8 @@ from attendance.models import (
 )
 from attendance.serializers import (
     AttendanceDetailSerializer,
-    AttendanceSerializer,
+    AttendanceRequestListSerializer,
+    AttendanceRequestSerializer,
     UserListSerializer,
 )
 from attendance.services import (
@@ -34,7 +35,6 @@ from attendance.services import (
 from config.exceptions import (
     AttendancePeriodException,
     DuplicateAttendanceException,
-    InternalServerException,
     InvalidFieldStateException,
     MissingWeeklyStaffInfoException,
     NotExistException,
@@ -71,29 +71,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
-
-
-class AttendanceRequestViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsManager]
-    queryset = Attendance.objects.filter(request_processed_status=None)
-    serializer_class = AttendanceSerializer
-
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        try:
-            queryset = Attendance.objects.select_related("user").filter(
-                request_processed_status="대기", attendance_status=None
-            )
-            serializer = AttendanceSerializer(queryset, many=True, context={"request_type": "attendance_request_list"})
-
-            return Response(
-                data={
-                    "detail": "출석 요청 목록 조회를 성공했습니다.",
-                    "data": serializer.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            raise InternalServerException()
 
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
@@ -152,7 +129,7 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
 
 class AttendanceAPIView(APIView):
     """
-    출석 요청과 목록 조회를 위한 클래스입니다.
+    출석 요청과 출석 현황 조회를 위한 클래스입니다.
     """
 
     def get_permissions(self):
@@ -191,7 +168,7 @@ class AttendanceAPIView(APIView):
             "workout_location": weekly_staff_info.workout_location,
             "week": week,
         }
-        serializer: AttendanceSerializer = AttendanceSerializer(data=request_data)
+        serializer: AttendanceRequestSerializer = AttendanceRequestSerializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -200,6 +177,28 @@ class AttendanceAPIView(APIView):
                 "detail": "출석 요청이 정상적으로 처리됐습니다.",
             },
             status=status.HTTP_201_CREATED,
+        )
+
+
+class AttendanceRequestListAPIView(APIView):
+    """
+    출석 요청 목록 조회를 위한 클래스입니다.
+    """
+
+    permission_classes = [IsManager]
+
+    def get(self, request: Request) -> Response:
+        attendance: QuerySet[Attendance] = Attendance.objects.select_related("user").filter(
+            request_processed_status="대기", attendance_status=None
+        )
+        serializer: AttendanceRequestListSerializer = AttendanceRequestListSerializer(attendance, many=True)
+
+        return Response(
+            data={
+                "detail": "출석 요청 목록 조회를 성공했습니다.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )
 
 

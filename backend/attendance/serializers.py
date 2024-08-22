@@ -10,7 +10,21 @@ from common.choices import WORKOUT_LEVELS
 from config.utils import WorkoutLevelChoiceField
 
 
-class AttendanceSerializer(serializers.ModelSerializer):
+class AttendanceRequestSerializer(serializers.ModelSerializer):
+    """
+    출석 요청을 처리하기 위한 시리얼라이저입니다.
+    """
+
+    class Meta:
+        model = Attendance
+        fields = "__all__"
+
+
+class AttendanceRequestListSerializer(serializers.ModelSerializer):
+    """
+    출석 요청 목록을 반환하기 위한 시리얼라이저입니다.
+    """
+
     user = UserRetrieveSerializer(read_only=True)
 
     class Meta:
@@ -21,22 +35,19 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        if self.context["request_type"] == "attendance_request_list":
-            date_str = representation["request_time"]
-            date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
-            representation["request_time"] = date_obj.strftime("%-m월 %d일 %H:%M")
+        date_str = representation["request_time"]
+        date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
+        representation["request_time"] = date_obj.strftime("%-m월 %d일 %H:%M")
 
-            return {
-                "id": representation["id"],
-                "request_time": representation["request_time"],
-                "user_id": representation["user"]["id"],
-                "username": representation["user"]["username"],
-                "generation": representation["user"]["generation"],
-                "profile_number": representation["user"]["profile_number"],
-                "workout_location": representation["user"]["workout_location"],
-            }
-
-        return representation
+        return {
+            "id": representation["id"],
+            "request_time": representation["request_time"],
+            "user_id": representation["user"]["id"],
+            "username": representation["user"]["username"],
+            "generation": representation["user"]["generation"],
+            "profile_number": representation["user"]["profile_number"],
+            "workout_location": representation["user"]["workout_location"],
+        }
 
 
 class AttendanceDetailSerializer(serializers.ModelSerializer):
