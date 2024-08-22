@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Optional
 
 from django.db import OperationalError, transaction
@@ -41,36 +41,6 @@ from config.exceptions import (
     ResourceLockedException,
 )
 from config.utils import IsManager, IsMember
-
-
-class AttendanceViewSet(viewsets.ModelViewSet):
-
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        self.permission_classes = [IsAuthenticated]
-
-        current_user = request.user
-
-        attendance_dates = Attendance.objects.filter(
-            Q(user=current_user) & Q(attendance_status__in=["출석", "대체 출석"])
-        ).values_list("request_time", flat=True)
-
-        late_dates = Attendance.objects.filter(Q(user=current_user) & Q(attendance_status="지각")).values_list(
-            "request_time", flat=True
-        )
-
-        attendance_list = [date.strftime("%Y-%m-%d") for date in attendance_dates]
-        late_list = [date.strftime("%Y-%m-%d") for date in late_dates]
-
-        return Response(
-            data={
-                "detail": "출석 현황 조회를 성공했습니다.",
-                "data": {
-                    "attendance": attendance_list,
-                    "late": late_list,
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
 
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
@@ -138,6 +108,35 @@ class AttendanceAPIView(APIView):
         elif self.request.method == "POST":
             return [IsMember()]
         return []
+
+    def get(self, request: Request) -> Response:
+        current_user: User = request.user
+
+        attendance_dates: list[datetime] = list(
+            Attendance.objects.filter(
+                Q(user=current_user) & Q(attendance_status__in=["출석", "대체 출석"])
+            ).values_list("request_time", flat=True)
+        )
+
+        late_dates: list[datetime] = list(
+            Attendance.objects.filter(Q(user=current_user) & Q(attendance_status="지각")).values_list(
+                "request_time", flat=True
+            )
+        )
+
+        attendance_list: list[str] = [date.strftime("%Y-%m-%d") for date in attendance_dates]
+        late_list: list[str] = [date.strftime("%Y-%m-%d") for date in late_dates]
+
+        return Response(
+            data={
+                "detail": "출석 현황 조회를 성공했습니다.",
+                "data": {
+                    "attendance": attendance_list,
+                    "late": late_list,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
     def post(self, request: Request) -> Response:
         user: User = request.user
