@@ -80,23 +80,28 @@ def check_alternate_attendance(current_user: User) -> bool:
 
 
 def calculate_attendance_rate(
-    attendance_stats: AttendanceStats, current_gen_number: int, user_gen_number: int
+    attendance_stats: AttendanceStats,
+    current_gen_number: int,
+    user_gen_number: int,
 ) -> float:
+    """
+    출석률을 계산하기 위한 메서드입니다.
+    """
 
     if current_gen_number - user_gen_number < 2:
-        late_as_absence = attendance_stats.late // 2
-        late_as_attendance = attendance_stats.late % 2
+        late_as_absence: int = attendance_stats.late // 2
+        late_as_attendance: int = attendance_stats.late % 2
 
-        total_possible_attendance = (
+        total_possible_attendance: int = (
             attendance_stats.attendance + attendance_stats.absence + late_as_attendance + late_as_absence
         )
-        effective_attendance = attendance_stats.attendance + late_as_attendance
+        effective_attendance: int = attendance_stats.attendance + late_as_attendance
         if total_possible_attendance > 0:
-            attendance_rate = (effective_attendance / total_possible_attendance) * 100
+            attendance_rate: float = (effective_attendance / total_possible_attendance) * 100
         else:
             attendance_rate = 0.0
     else:
-        if attendance_stats.attendance > 0:
+        if attendance_stats.attendance > 0 or attendance_stats.late > 0:
             attendance_rate = 100
         else:
             attendance_rate = 0.0

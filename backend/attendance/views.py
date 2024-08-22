@@ -72,32 +72,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @action(detail=False, methods=["get"], permission_classes=[IsMember])
-    def rate(self, request: Request) -> Response:
-        current_user = request.user
-
-        current_generation = get_current_generation()
-        if current_generation is None:
-            raise AttendancePeriodException()
-        attendance_stats = AttendanceStats.objects.filter(user=current_user, generation=current_generation).first()
-
-        if not attendance_stats:
-            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
-
-        current_gen_number = int(current_generation[:-1])
-        user_gen_number = int(current_user.generation[:-1])
-        attendance_rate = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
-
-        return Response(
-            data={
-                "detail": "사용자 출석률 조회를 성공했습니다.",
-                "data": {
-                    "attendance_rate": round(attendance_rate, 2),
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
-
 
 class AttendanceRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsManager]
@@ -317,6 +291,41 @@ class AttendanceRejectAPIView(APIView):
             )
         except OperationalError:
             raise ResourceLockedException()
+
+
+class AttendanceRateAPIView(APIView):
+    """
+    출석률 조회를 위한 클래스입니다.
+    """
+
+    permission_classes = [IsMember]
+
+    def get(self, request: Request) -> Response:
+        current_user: User = request.user
+
+        current_generation: Generation = get_current_generation()
+        if current_generation is None:
+            raise AttendancePeriodException()
+        attendance_stats: Optional[AttendanceStats] = AttendanceStats.objects.filter(
+            user=current_user, generation=current_generation
+        ).first()
+
+        if not attendance_stats:
+            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
+
+        current_gen_number: int = int(current_generation.name[:-1])
+        user_gen_number: int = int(current_user.generation.name[:-1])
+        attendance_rate: float = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
+
+        return Response(
+            data={
+                "detail": "사용자 출석률 조회를 성공했습니다.",
+                "data": {
+                    "attendance_rate": round(attendance_rate, 2),
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class AttendanceLocationAPIView(APIView):
