@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Optional
 
 from django.db import transaction
@@ -10,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from account.models import User
+from account.models import Generation, User
 from attendance.models import (
     Attendance,
     AttendanceStats,
@@ -25,7 +26,6 @@ from attendance.serializers import (
 from attendance.services import (
     calculate_attendance_rate,
     check_alternate_attendance,
-    get_activity_date,
     get_attendance_status,
     get_current_generation,
     get_day_of_week,
@@ -69,57 +69,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 },
             },
             status=status.HTTP_200_OK,
-        )
-
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        self.permission_classes = [IsMember]
-
-        user: User = request.user
-        current_date = timezone.now().date()
-
-        activity_date = get_activity_date()
-        if not activity_date:
-            raise AttendancePeriodException()
-
-        current_generation = get_current_generation()
-        if current_generation is None:
-            raise AttendancePeriodException()
-
-        week = get_weeks_since_start(activity_date.start_date)
-        day_of_week = get_day_of_week(current_date)
-
-        weekly_staff_info = WeeklyStaffInfo.objects.filter(
-            generation=current_generation, day_of_week=day_of_week
-        ).first()
-        if weekly_staff_info is None:
-            raise MissingWeeklyStaffInfoException()
-
-        workout_location = weekly_staff_info.workout_location
-
-        if Attendance.objects.filter(
-            user=user, generation=current_generation, week=week, request_processed_status__in=["대기", "승인"]
-        ).exists():
-            raise DuplicateAttendanceException()
-
-        if UnavailableDates.objects.filter(date=current_date).exists():
-            raise AttendancePeriodException()
-
-        request_data: dict[str, Any] = {
-            "user": user,
-            "generation": current_generation,
-            "request_time": timezone.now(),
-            "workout_location": workout_location,
-            "week": week,
-        }
-        serializer: AttendanceSerializer = AttendanceSerializer(data=request_data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=user)
-
-        return Response(
-            data={
-                "detail": "출석 요청이 정상적으로 처리됐습니다.",
-            },
-            status=status.HTTP_201_CREATED,
         )
 
     @action(detail=False, methods=["get"], permission_classes=[IsMember])
@@ -295,21 +244,72 @@ class AttendanceUserViewSet(viewsets.ModelViewSet):
         )
 
 
+class AttendanceAPIView(APIView):
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated()]
+        elif self.request.method == "POST":
+            return [IsMember()]
+        return []
+
+    def post(self, request: Request) -> Response:
+        user: User = request.user
+        print(user.role)
+        current_date: date = timezone.now().date()
+
+        current_generation: Generation = get_current_generation()
+        week: int = get_weeks_since_start(current_generation.start_date)
+        day_of_week: str = get_day_of_week(current_date)
+
+        weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.filter(
+            generation=current_generation, day_of_week=day_of_week
+        ).first()
+        if weekly_staff_info is None:
+            raise MissingWeeklyStaffInfoException()
+
+        if Attendance.objects.filter(
+            user=user, generation=current_generation, week=week, request_processed_status__in=["대기", "승인"]
+        ).exists():
+            raise DuplicateAttendanceException()
+
+        if UnavailableDates.objects.filter(date=current_date).exists():
+            raise AttendancePeriodException()
+
+        request_data: dict[str, Any] = {
+            "user": user.id,  # type: ignore
+            "generation": current_generation.name,
+            "request_time": timezone.now(),
+            "workout_location": weekly_staff_info.workout_location,
+            "week": week,
+        }
+        serializer: AttendanceSerializer = AttendanceSerializer(data=request_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            data={
+                "detail": "출석 요청이 정상적으로 처리됐습니다.",
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
 class AttendanceLocationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        day_of_week = get_day_of_week(timezone.now())
-        current_generation = get_current_generation()
+        day_of_week: str = get_day_of_week(timezone.now())
+        current_generation: Generation = get_current_generation()
 
-        weekly_staff_info = WeeklyStaffInfo.objects.filter(
+        weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.filter(
             generation=current_generation, day_of_week=day_of_week
         ).first()
 
         if not weekly_staff_info:
             raise MissingWeeklyStaffInfoException()
 
-        workout_location = weekly_staff_info.workout_location
+        workout_location: str = weekly_staff_info.workout_location
 
         return Response(
             data={

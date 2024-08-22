@@ -6,19 +6,10 @@ from attendance.models import AttendanceStats, Generation, WeeklyStaffInfo
 from config.exceptions import NotExistException
 
 
-def get_activity_date():
-    today = timezone.now().date()
-    try:
-        return Generation.objects.get(start_date__lte=today, end_date__gte=today)
-    except Generation.DoesNotExist:
-        raise NotExistException("기수 정보가 존재하지 않습니다.")
-
-
 def get_current_generation():
     today = timezone.now().date()
     try:
-        generation = Generation.objects.get(start_date__lte=today, end_date__gte=today)
-        return generation.name
+        return Generation.objects.get(start_date__lte=today, end_date__gte=today)
     except Generation.DoesNotExist:
         raise NotExistException("기수 정보가 존재하지 않습니다.")
 
@@ -39,8 +30,7 @@ def get_day_of_week(current_date):
 def get_attendance_status():
     current_time = timezone.now()
     day_of_week = get_day_of_week(current_time.date())
-    activity_date = get_activity_date()
-    current_generation = activity_date.generation
+    current_generation = get_current_generation()
 
     weekly_staff_info = WeeklyStaffInfo.objects.filter(
         generation=current_generation,
@@ -63,8 +53,7 @@ def get_attendance_status():
 def check_alternate_attendance(workout_location):
     current_time = timezone.now()
     day_of_week = get_day_of_week(current_time.date())
-    activity_date = get_activity_date()
-    current_generation = activity_date.generation
+    current_generation = get_current_generation()
 
     today_workout_location = (
         WeeklyStaffInfo.objects.filter(generation=current_generation, day_of_week=day_of_week).first().workout_location

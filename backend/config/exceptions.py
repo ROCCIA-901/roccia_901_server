@@ -28,7 +28,7 @@ class InvalidRefreshToken(APIException):
 
 class DuplicateAttendanceException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "이미 처리된 출석 요청이 있거나 대기 중입니다."
+    default_detail = "이미 처리된 출석 요청이 있거나 처리 대기 중입니다."
     default_code = "duplicate_attendance"
 
 

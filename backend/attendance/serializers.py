@@ -12,7 +12,6 @@ from config.utils import WorkoutLevelChoiceField
 
 class AttendanceSerializer(serializers.ModelSerializer):
     user = UserRetrieveSerializer(read_only=True)
-    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS, source="user.workout_level")
 
     class Meta:
         model = Attendance
@@ -35,7 +34,6 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 "generation": representation["user"]["generation"],
                 "profile_number": representation["user"]["profile_number"],
                 "workout_location": representation["user"]["workout_location"],
-                "workout_level": self.fields["workout_level"].to_representation(instance.user.workout_level),
             }
 
         return representation
