@@ -28,7 +28,7 @@ class InvalidRefreshToken(APIException):
 
 class DuplicateAttendanceException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = "이미 처리된 출석 요청이 있거나 대기 중입니다."
+    default_detail = "이미 처리된 출석 요청이 있거나 처리 대기 중입니다."
     default_code = "duplicate_attendance"
 
 
@@ -72,6 +72,12 @@ class NotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = "존재하지 않는 자원입니다."
     default_code = "not_exist"
+
+
+class ResourceLockedException(APIException):
+    status_code = status.HTTP_423_LOCKED
+    default_detail = "해당 자원이 잠겨 있어 작업을 수행할 수 없습니다."
+    default_code = "resource_locked"
 
 
 class InternalServerException(APIException):

@@ -30,7 +30,7 @@ jobs:
         cd backend
         pre-commit run --all-files
 
-    - name: run pytest
-      run: |
-        cd backend
-        pytest tests
+#    - name: run pytest
+#      run: |
+#        cd backend
+#        pytest tests

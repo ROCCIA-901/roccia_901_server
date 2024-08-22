@@ -5,6 +5,7 @@ from rest_framework import serializers
 from account.models import User
 from attendance.models import AttendanceStats
 from attendance.services import get_current_generation
+from common.choices import WORKOUT_LEVELS, WORKOUT_LOCATION_CHOICES
 from config.exceptions import InvalidFieldException
 from mypage.schemas import USER_UPDATE_REQUEST_EXAMPLE
 from record.models import BoulderProblem, Record
@@ -12,7 +13,7 @@ from record.serializers import WorkoutLevelChoiceField
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    workout_level = WorkoutLevelChoiceField(choices=User.WORKOUT_LEVELS)
+    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS)
 
     class Meta:
         model = User
@@ -28,7 +29,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class LevelCountSerializer(serializers.Serializer):
-    workout_level = WorkoutLevelChoiceField(choices=User.WORKOUT_LEVELS)
+    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS)
     total_count = serializers.IntegerField()
 
 
@@ -86,7 +87,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         },
     )
     workout_level = WorkoutLevelChoiceField(
-        User.WORKOUT_LEVELS,
+        WORKOUT_LEVELS,
         error_messages={
             "blank": "운동 난이도는 비워 둘 수 없습니다.",
         },
@@ -103,13 +104,13 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {"introduction": {"required": False}}
 
     def validate_workout_location(self, value: str) -> str:
-        workout_location = [choice[0] for choice in User.WORKOUT_LOCATION_CHOICES]
+        workout_location = [choice[0] for choice in WORKOUT_LOCATION_CHOICES]
         if value not in workout_location:
             raise InvalidFieldException("지점이 정확하지 않습니다.")
         return value
 
     def validate_workout_level(self, value: int) -> int:
-        workout_level = [choice[0] for choice in User.WORKOUT_LEVELS]
+        workout_level = [choice[0] for choice in WORKOUT_LEVELS]
         if value not in workout_level:
             raise InvalidFieldException("난이도가 정확하지 않습니다.")
         return value
