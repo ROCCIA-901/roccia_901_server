@@ -51,12 +51,16 @@ class AttendanceRequestListSerializer(serializers.ModelSerializer):
 
 
 class AttendanceDetailSerializer(serializers.ModelSerializer):
-    date = serializers.DateTimeField(source="request_time", format="%Y년 %m월 %d일")
-    time = serializers.DateTimeField(source="request_time", format="%-H시 %M분")
+    """
+    출석 내역 조회 위한 시리얼라이저입니다.
+    """
+
+    request_date = serializers.DateTimeField(source="request_time", format="%Y년 %m월 %d일")
+    request_time = serializers.DateTimeField(format="%-H시 %M분")
 
     class Meta:
         model = Attendance
-        fields = ["week", "workout_location", "attendance_status", "date", "time"]
+        fields = ["week", "workout_location", "attendance_status", "request_date", "request_time"]
 
 
 class UserListSerializer(serializers.ModelSerializer):

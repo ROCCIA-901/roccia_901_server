@@ -5,7 +5,6 @@ from django.db import OperationalError, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils import timezone
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -45,44 +44,6 @@ from config.utils import IsManager, IsMember
 
 class AttendanceUserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-
-    @action(detail=True, methods=["get"], url_path="details")
-    def details(self, request: Request, pk: int) -> Response:
-
-        if not User.objects.filter(id=pk).exists():
-            raise NotExistException("존재하지 않는 사용자입니다.")
-
-        current_generation = get_current_generation()
-        if current_generation is None:
-            raise AttendancePeriodException()
-
-        attendance_stats_obj: Optional[AttendanceStats] = AttendanceStats.objects.filter(
-            user_id=pk, generation=current_generation
-        ).first()
-
-        attendance_obj = Attendance.objects.filter(user_id=pk, generation=current_generation).order_by("week")
-
-        alternative_count = attendance_obj.filter(is_alternate=True).count()
-
-        attendance_stats_dict: dict[str, int] = {
-            "attendance": attendance_stats_obj.attendance if attendance_stats_obj else 0,
-            "late": attendance_stats_obj.late if attendance_stats_obj else 0,
-            "absence": attendance_stats_obj.absence if attendance_stats_obj else 0,
-            "alternative": 2 - alternative_count,
-        }
-
-        attendance_detail_serializer = AttendanceDetailSerializer(attendance_obj, many=True)
-
-        return Response(
-            data={
-                "detail": "출석 내역 조회를 성공했습니다.",
-                "data": {
-                    "count": attendance_stats_dict,
-                    "detail": attendance_detail_serializer.data,
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         queryset = User.objects.filter(is_active=True).all()
@@ -320,6 +281,54 @@ class AttendanceRateAPIView(APIView):
                 "detail": "사용자 출석률 조회를 성공했습니다.",
                 "data": {
                     "attendance_rate": round(attendance_rate, 2),
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AttendanceDetailAPIView(APIView):
+    """
+    출석 내역 조회를 위한 클래스입니다.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, user_id: int) -> Response:
+        if not User.objects.filter(id=user_id).exists():
+            raise NotExistException("존재하지 않는 사용자입니다.")
+
+        current_generation: Generation = get_current_generation()
+        if current_generation is None:
+            raise AttendancePeriodException()
+
+        attendance_stats: Optional[AttendanceStats] = AttendanceStats.objects.filter(
+            user_id=user_id, generation=current_generation
+        ).first()
+
+        attendance_queryset: QuerySet[Attendance] = Attendance.objects.filter(
+            user_id=user_id, generation=current_generation
+        ).order_by("week")
+
+        alternative_count: int = attendance_queryset.filter(is_alternate=True).count()
+
+        attendance_stats_dict: dict[str, int] = {
+            "attendance": attendance_stats.attendance if attendance_stats else 0,
+            "late": attendance_stats.late if attendance_stats else 0,
+            "absence": attendance_stats.absence if attendance_stats else 0,
+            "alternative": 2 - alternative_count,
+        }
+
+        attendance_detail_serializer: AttendanceDetailSerializer = AttendanceDetailSerializer(
+            attendance_queryset, many=True
+        )
+
+        return Response(
+            data={
+                "detail": "출석 내역 조회를 성공했습니다.",
+                "data": {
+                    "count": attendance_stats_dict,
+                    "detail": attendance_detail_serializer.data,
                 },
             },
             status=status.HTTP_200_OK,
