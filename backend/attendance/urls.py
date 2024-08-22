@@ -1,5 +1,3 @@
-# mypy: ignore-errors
-
 from django.urls import path
 
 from attendance.views import (
