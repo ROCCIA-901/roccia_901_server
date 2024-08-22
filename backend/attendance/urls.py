@@ -10,6 +10,7 @@ from attendance.views import (
     AttendanceRateAPIView,
     AttendanceRejectAPIView,
     AttendanceRequestListAPIView,
+    AttendanceUserListAPIView,
 )
 
 urlpatterns = [
@@ -19,5 +20,6 @@ urlpatterns = [
     path("requests/<int:attendance_id>/reject/", AttendanceRejectAPIView.as_view(), name="attendance-reject"),
     path("rate/", AttendanceRateAPIView.as_view(), name="attendance-rate"),
     path("users/<int:user_id>/details/", AttendanceDetailAPIView.as_view(), name="attendance-detail"),
-    path("location/", AttendanceLocationAPIView.as_view(), name="location"),
+    path("location/", AttendanceLocationAPIView.as_view(), name="attendance-location"),
+    path("users/", AttendanceUserListAPIView.as_view(), name="attendance-user-list"),
 ]

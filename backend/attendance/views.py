@@ -4,7 +4,7 @@ from typing import Any, Optional
 from django.db import OperationalError, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -40,22 +40,6 @@ from config.exceptions import (
     ResourceLockedException,
 )
 from config.utils import IsManager, IsMember
-
-
-class AttendanceUserViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        queryset = User.objects.filter(is_active=True).all()
-        serializer = UserListSerializer(queryset, many=True)
-
-        return Response(
-            data={
-                "detail": "부원 목록 조회를 성공했습니다.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
 
 
 class AttendanceAPIView(APIView):
@@ -361,6 +345,26 @@ class AttendanceLocationAPIView(APIView):
                 "data": {
                     "workout_location": workout_location,
                 },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AttendanceUserListAPIView(APIView):
+    """
+    부원 목록 조회를 위한 클래스입니다.
+    """
+
+    permission_classes = [IsManager]
+
+    def get(self, request: Request) -> Response:
+        queryset: QuerySet = User.objects.filter(is_active=True).all()
+        serializer: UserListSerializer = UserListSerializer(queryset, many=True)
+
+        return Response(
+            data={
+                "detail": "부원 목록 조회를 성공했습니다.",
+                "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )

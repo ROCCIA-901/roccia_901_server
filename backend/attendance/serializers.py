@@ -2,7 +2,7 @@ from datetime import datetime
 
 from rest_framework import serializers
 
-from account.models import User
+from account.models import Generation, User
 from account.serializers import UserRetrieveSerializer
 from attendance.models import Attendance, AttendanceStats
 from attendance.services import calculate_attendance_rate, get_current_generation
@@ -64,6 +64,10 @@ class AttendanceDetailSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
+    """
+    부원 목록 조회를 위한 시리얼라이저입니다.
+    """
+
     workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS)
     attendance_rate = serializers.SerializerMethodField()
 
@@ -80,10 +84,12 @@ class UserListSerializer(serializers.ModelSerializer):
         ]
 
     def get_attendance_rate(self, instance):
-        current_generation = get_current_generation()
-        current_gen_number = int(current_generation[:-1])
-        user_gen_number = int(instance.generation[:-1])
-        attendance_stats = AttendanceStats.objects.filter(user=instance, generation=current_generation).first()
+        current_generation: Generation = get_current_generation()
+        current_gen_number: int = int(current_generation.name[:-1])
+        user_gen_number: int = int(instance.generation.name[:-1])
+        attendance_stats: AttendanceStats = AttendanceStats.objects.filter(
+            user=instance, generation=current_generation
+        ).first()
 
         if not attendance_stats:
             return 0
@@ -93,7 +99,7 @@ class UserListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        data = {
+        return {
             "user_id": representation["id"],
             "username": representation["username"],
             "profile_number": representation["profile_number"],
@@ -102,5 +108,3 @@ class UserListSerializer(serializers.ModelSerializer):
             "generation": representation["generation"],
             "attendance_rate": self.get_attendance_rate(instance),
         }
-
-        return data
