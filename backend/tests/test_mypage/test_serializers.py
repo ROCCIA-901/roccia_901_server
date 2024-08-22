@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from account.models import User
+from common.choices import WORKOUT_LEVELS
 from config.exceptions import InvalidFieldException
 from mypage.serializers import (
     LevelCountSerializer,
@@ -20,7 +20,7 @@ class TestUserProfileSerializer:
             "generation": mock_user_model.generation,
             "role": mock_user_model.role,
             "workout_location": mock_user_model.workout_location,
-            "workout_level": dict(User.WORKOUT_LEVELS)[mock_user_model.workout_level],
+            "workout_level": dict(WORKOUT_LEVELS)[mock_user_model.workout_level],
             "profile_number": mock_user_model.profile_number,
             "introduction": mock_user_model.introduction,
         }
@@ -56,7 +56,7 @@ class TestMypageSerializer:
                 "generation": mock_user_model.generation,
                 "role": mock_user_model.role,
                 "workout_location": mock_user_model.workout_location,
-                "workout_level": dict(User.WORKOUT_LEVELS)[mock_user_model.workout_level],
+                "workout_level": dict(WORKOUT_LEVELS)[mock_user_model.workout_level],
                 "profile_number": mock_user_model.profile_number,
                 "introduction": mock_user_model.introduction,
             },

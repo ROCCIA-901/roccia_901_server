@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 import pytz
 from django.db.models import Case, F, FloatField, Sum, Value, When
 
+from attendance.services import get_current_generation
 from config.settings.base import TIME_ZONE
 from ranking.models import Ranking
 from record.models import BoulderProblem
@@ -64,12 +65,12 @@ def compile_rankings(target_date_utc: datetime = datetime.now(pytz.utc)) -> tupl
     year_week_day = tuple(monday_datetime.isocalendar())
 
     # remove previous rankings for the same week
-    delete_rankings(Ranking.CUR_GENERATION, year_week_day[1])
+    delete_rankings(int(get_current_generation()[:-1]), year_week_day[1])
     # add weekly_scores to Ranking model
     objs = [
         Ranking(
             user_id=weekly_score["record__user__id"],
-            generation=Ranking.CUR_GENERATION,
+            generation=int(get_current_generation()[:-1]),
             week=year_week_day[1],
             score=weekly_score["total_score"],
         )

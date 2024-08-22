@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import ReadOnlyField
 
-from account.models import User
+from common.choices import WORKOUT_LEVELS
 from ranking.models import Ranking
 
 
@@ -14,7 +14,7 @@ class RankingSerializer(serializers.ModelSerializer):
     user_workout_level = serializers.SerializerMethodField()
 
     def get_user_workout_level(self, obj) -> str:  # type: ignore
-        for key, val in User.WORKOUT_LEVELS:
+        for key, val in WORKOUT_LEVELS:
             if key == obj["user__workout_level"]:
                 return val
         return ""

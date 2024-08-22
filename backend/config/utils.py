@@ -29,13 +29,11 @@ def custom_exception_handler(exc, context) -> Response:
                 message = response.data.get("detail")
 
         detail: str = exc.detail if not message else message
-        # fmt: off
         custom_response_data: dict[str, Union[int, str]] = {
             "status_code": exc.status_code,
             "code": exc.default_code,
-            "detail": detail
+            "detail": detail,
         }
-        # fmt: on
         return Response(custom_response_data, status=exc.status_code)
 
 

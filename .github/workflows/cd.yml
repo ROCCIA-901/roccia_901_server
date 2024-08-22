@@ -17,36 +17,7 @@ jobs:
     - name: create env file
       run: |
         touch .env.prod
-
-        echo DJANGO_ENV=${{secrets.DJANGO_ENV}} >> .env.prod
-        echo DJANGO_SETTINGS_MODULE=${{secrets.DJANGO_SETTINGS_MODULE}} >> .env.prod
-
-        echo SECRET_KEY=${{secrets.SECRET_KEY}} >> .env.prod
-        echo ALLOWED_HOSTS=${{secrets.ALLOWED_HOSTS}} >> .env.prod
-        echo DEBUG=${{secrets.DEBUG}} >> .env.prod
-
-        echo DATABASE_HOST=${{secrets.DATABASE_HOST}} >> .env.prod
-        echo DATABASE_PORT=${{secrets.DATABASE_PORT}} >> .env.prod
-        echo DATABASE_NAME=${{secrets.DATABASE_NAME}} >> .env.prod
-        echo DATABASE_USER=${{secrets.DATABASE_USER}} >> .env.prod
-        echo DATABASE_PASSWORD=${{secrets.DATABASE_PASSWORD}} >> .env.prod
-
-        echo EMAIL_HOST_USER=${{secrets.EMAIL_HOST_USER}} >> .env.prod
-        echo EMAIL_HOST_PASSWORD=${{secrets.EMAIL_HOST_PASSWORD}} >> .env.prod
-        echo SERVER_EMAIL=${{secrets.SERVER_EMAIL}} >> .env.prod
-        echo DEFAULT_FROM_MAIL=${{secrets.DEFAULT_FROM_MAIL}} >> .env.prod
-
-        echo DJANGO_SUPERUSER_PASSWORD=${{secrets.DJANGO_SUPERUSER_PASSWORD}} >> .env.prod
-        echo DJANGO_SUPERUSER_EMAIL=${{secrets.DJANGO_SUPERUSER_EMAIL}} >> .env.prod
-        echo DJANGO_SUPERUSER_USERNAME=${{secrets.DJANGO_SUPERUSER_USERNAME}} >> .env.prod
-
-        echo REDIS_URI=${{secrets.REDIS_URI}} >> .env.prod
-
-        echo CELERY_BROKER_URL=${{secrets.CELERY_BROKER_URL}} >> .env.prod
-
-        echo CORS_ALLOWED_ORIGINS=${{secrets.CORS_ALLOWED_ORIGINS}} >> .env.prod
-
-        echo CSRF_TRUSTED_ORIGINS=${{secrets.CSRF_TRUSTED_ORIGINS}} >> .env.prod
+        echo "$PROD_ENV" >> .env.prod
 
     - name: create remote directory
       uses: appleboy/ssh-action@master
