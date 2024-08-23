@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Any
 
-import pytz
 from django.db.models.functions.datetime import TruncDate
 from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
+from account.models import Generation
 from common.choices import WORKOUT_LEVELS, WORKOUT_LOCATION_CHOICES
 from config.exceptions import InvalidFieldException
 from config.utils import WorkoutLevelChoiceField
@@ -99,15 +99,6 @@ class RecordSerializer(serializers.ModelSerializer):
         return instance
 
 
-class BoulderProblemCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BoulderProblem
-        fields: tuple = (
-            "workout_level",
-            "count",
-        )
-
-
 @extend_schema_serializer(examples=RECORD_CREATE_REQUEST_EXAMPLE)
 class RecordCreateSerializer(serializers.ModelSerializer):
     boulder_problems = BoulderProblemSerializer(many=True)
@@ -123,9 +114,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate_end_time(self, value: datetime) -> datetime:
-        korea_tz = pytz.timezone("Asia/Seoul")
-        current_time = datetime.now(korea_tz)
-        if current_time < value:
+        if datetime.now() < value:
             raise InvalidFieldException("운동 종료 후 기록할 수 있습니다.")
         return value
 
@@ -144,12 +133,23 @@ class RecordCreateSerializer(serializers.ModelSerializer):
         ):
             raise InvalidFieldException("해당일에 이미 기록이 존재합니다.")
 
+        if data.get("start_time").date() != data.get("end_time").date():  # type: ignore
+            raise InvalidFieldException("같은 날에 진행한 운동만 기록할 수 있습니다.")
+
         if data.get("start_time") >= data.get("end_time"):  # type: ignore
             raise InvalidFieldException("시작 시간이 종료 시간보다 같거나 늦을 수 없습니다.")
         return data
 
     def create(self, validated_data: dict[str, Any]):
         probs = validated_data.pop("boulder_problems")
+
+        record_date = validated_data.get("start_time").date()  # type: ignore
+        try:
+            current_generation = Generation.objects.get(start_date__lte=record_date, end_date__gte=record_date)
+        except Generation.DoesNotExist:
+            current_generation = None
+
+        validated_data["generation"] = current_generation
         record = Record.objects.create(**validated_data)
         for prob in probs:
             BoulderProblem.objects.create(record=record, **prob)
