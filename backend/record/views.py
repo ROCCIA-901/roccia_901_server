@@ -1,4 +1,5 @@
 from django.db.models.functions import TruncDate
+from django.http import Http404
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -10,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from config.exceptions import PermissionFailedException
+from config.exceptions import NotExistException, PermissionFailedException
 from record.models import Record
 from record.schemas import (
     RECORD_401_FAILURE_EXAMPLE,
@@ -113,13 +114,14 @@ class RecordViewSet(viewsets.ModelViewSet):
         examples=RECORD_UPDATE_REQUEST_EXAMPLE,
     )
     def update(self, request, *args, **kwargs):
-        if self.request.user != self.get_object().user:
-            return Response(
-                data={
-                    "detail": "운동 기록을 수정할 권한이 없습니다.",
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        try:
+            record = self.get_object()
+        except Http404:
+            raise NotExistException()
+
+        if request.user != record.user:
+            raise PermissionFailedException()
+
         super().update(request, *args, **kwargs)
         return Response(
             data={

@@ -73,20 +73,22 @@ class RecordSerializer(serializers.ModelSerializer):
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         if data.get("start_time") >= data.get("end_time"):  # type: ignore
             raise InvalidFieldException("시작 시간이 종료 시간보다 같거나 늦을 수 없습니다.")
+
         if data.get("start_time").date() != data.get("end_time").date():  # type: ignore
             raise InvalidFieldException("시작 날짜와 종료 날짜는 같아야 합니다.")
-        return data
 
-    def create(self, validated_data: dict[str, Any]):
-        probs = validated_data.pop("boulder_problems")
-        record = Record.objects.create(**validated_data)
-        for prob in probs:
-            BoulderProblem.objects.create(record=record, **prob)
-        return record
+        return data
 
     def update(self, instance, validated_data: dict[str, Any]) -> dict[str, Any]:
         probs_data = validated_data.pop("boulder_problems")
 
+        record_date = validated_data.get("start_time").date()  # type: ignore
+        try:
+            current_generation = Generation.objects.get(start_date__lte=record_date, end_date__gte=record_date)
+        except Generation.DoesNotExist:
+            current_generation = None
+
+        instance.generation = current_generation
         instance.workout_location = validated_data.get("workout_location", instance.workout_location)
         instance.start_time = validated_data.get("start_time", instance.start_time)
         instance.end_time = validated_data.get("end_time", instance.end_time)
@@ -134,7 +136,7 @@ class RecordCreateSerializer(serializers.ModelSerializer):
             raise InvalidFieldException("해당일에 이미 기록이 존재합니다.")
 
         if data.get("start_time").date() != data.get("end_time").date():  # type: ignore
-            raise InvalidFieldException("같은 날에 진행한 운동만 기록할 수 있습니다.")
+            raise InvalidFieldException("시작 날짜와 종료 날짜는 같아야 합니다.")
 
         if data.get("start_time") >= data.get("end_time"):  # type: ignore
             raise InvalidFieldException("시작 시간이 종료 시간보다 같거나 늦을 수 없습니다.")
