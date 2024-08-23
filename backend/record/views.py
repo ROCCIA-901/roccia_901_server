@@ -153,7 +153,7 @@ class RecordViewSet(viewsets.ModelViewSet):
         },
     )
     def list(self, request, *args, **kwargs):
-        data = Record.objects.filter(user=request.user)  # type: ignore
+        data = Record.objects.filter(user=request.user)
         data = self.get_serializer(data, many=True).data
         return Response(
             data={
@@ -193,8 +193,13 @@ class RecordViewSet(viewsets.ModelViewSet):
         },
     )
     def destroy(self, request, *args, **kwargs):
-        if self.request.user != self.get_object().user:
-            raise PermissionFailedException
+        try:
+            record = self.get_object()
+        except Http404:
+            raise NotExistException()
+
+        if request.user != record.user:
+            raise PermissionFailedException()
 
         super().destroy(request, *args, **kwargs)
         return Response(
