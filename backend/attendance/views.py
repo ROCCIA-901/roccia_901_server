@@ -360,7 +360,7 @@ class AttendanceUserListAPIView(APIView):
     permission_classes = [IsManager]
 
     def get(self, request: Request) -> Response:
-        queryset: QuerySet = User.objects.filter(is_active=True).all()
+        queryset: QuerySet = User.objects.filter(role="부원", is_active=True).all()
         serializer: UserListSerializer = UserListSerializer(queryset, many=True)
 
         return Response(
