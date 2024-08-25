@@ -174,13 +174,13 @@ class AttendanceAcceptAPIView(APIView):
             attendance.request_processed_time = timezone.now()
             attendance.request_processed_user = current_user
             attendance.attendance_status = attendance_status
-            attendance.is_alternate = check_alternate_attendance(current_user)
+            attendance.is_alternate = check_alternate_attendance(attendance.user)
 
             attendance.save()
 
             # AttendanceStats 업데이트 로직
             attendance_stats, created = AttendanceStats.objects.select_for_update(nowait=True).get_or_create(
-                user=current_user,
+                user=attendance.user,
                 generation=attendance.generation,
             )
 
@@ -253,12 +253,11 @@ class AttendanceRateAPIView(APIView):
             user=current_user, generation=current_generation
         ).first()
 
-        if not attendance_stats:
-            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
-
-        current_gen_number: int = int(current_generation.name[:-1])
-        user_gen_number: int = int(current_user.generation.name[:-1])
-        attendance_rate: float = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
+        attendance_rate: float = 0
+        if attendance_stats:
+            current_gen_number: int = int(current_generation.name[:-1])
+            user_gen_number: int = int(current_user.generation.name[:-1])
+            attendance_rate = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
 
         return Response(
             data={
@@ -303,8 +302,11 @@ class AttendanceDetailAPIView(APIView):
             "alternative": 2 - alternative_count,
         }
 
+        processed_attendance_queryset: QuerySet[Attendance] = attendance_queryset.filter(
+            attendance_status__isnull=False
+        )
         attendance_detail_serializer: AttendanceDetailSerializer = AttendanceDetailSerializer(
-            attendance_queryset, many=True
+            processed_attendance_queryset, many=True
         )
 
         return Response(
@@ -358,7 +360,7 @@ class AttendanceUserListAPIView(APIView):
     permission_classes = [IsManager]
 
     def get(self, request: Request) -> Response:
-        queryset: QuerySet = User.objects.filter(is_active=True).all()
+        queryset: QuerySet = User.objects.filter(role="부원", is_active=True).all()
         serializer: UserListSerializer = UserListSerializer(queryset, many=True)
 
         return Response(
