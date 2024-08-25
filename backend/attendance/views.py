@@ -302,8 +302,11 @@ class AttendanceDetailAPIView(APIView):
             "alternative": 2 - alternative_count,
         }
 
+        processed_attendance_queryset: QuerySet[Attendance] = attendance_queryset.filter(
+            attendance_status__isnull=False
+        )
         attendance_detail_serializer: AttendanceDetailSerializer = AttendanceDetailSerializer(
-            attendance_queryset, many=True
+            processed_attendance_queryset, many=True
         )
 
         return Response(
