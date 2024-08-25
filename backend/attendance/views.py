@@ -174,13 +174,13 @@ class AttendanceAcceptAPIView(APIView):
             attendance.request_processed_time = timezone.now()
             attendance.request_processed_user = current_user
             attendance.attendance_status = attendance_status
-            attendance.is_alternate = check_alternate_attendance(current_user)
+            attendance.is_alternate = check_alternate_attendance(attendance.user)
 
             attendance.save()
 
             # AttendanceStats 업데이트 로직
             attendance_stats, created = AttendanceStats.objects.select_for_update(nowait=True).get_or_create(
-                user=current_user,
+                user=attendance.user,
                 generation=attendance.generation,
             )
 
