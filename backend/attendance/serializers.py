@@ -26,6 +26,7 @@ class AttendanceRequestListSerializer(serializers.ModelSerializer):
     """
 
     user = UserRetrieveSerializer(read_only=True)
+    workout_level = WorkoutLevelChoiceField(choices=WORKOUT_LEVELS, source="user.workout_level")
 
     class Meta:
         model = Attendance
@@ -37,16 +38,17 @@ class AttendanceRequestListSerializer(serializers.ModelSerializer):
 
         date_str = representation["request_time"]
         date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f")
-        representation["request_time"] = date_obj.strftime("%-m월 %d일 %H:%M")
+        formatted_request_time = date_obj.strftime("%H:%M")
 
         return {
             "id": representation["id"],
-            "request_time": representation["request_time"],
             "user_id": representation["user"]["id"],
             "username": representation["user"]["username"],
             "generation": representation["user"]["generation"],
             "profile_number": representation["user"]["profile_number"],
             "workout_location": representation["user"]["workout_location"],
+            "workout_level": representation["workout_level"],
+            "request_time": formatted_request_time,
         }
 
 
