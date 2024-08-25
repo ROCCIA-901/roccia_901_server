@@ -253,12 +253,11 @@ class AttendanceRateAPIView(APIView):
             user=current_user, generation=current_generation
         ).first()
 
-        if not attendance_stats:
-            raise NotExistException("해당 사용자에 대한 통계가 존재하지 않습니다.")
-
-        current_gen_number: int = int(current_generation.name[:-1])
-        user_gen_number: int = int(current_user.generation.name[:-1])
-        attendance_rate: float = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
+        attendance_rate: float = 0
+        if attendance_stats:
+            current_gen_number: int = int(current_generation.name[:-1])
+            user_gen_number: int = int(current_user.generation.name[:-1])
+            attendance_rate = calculate_attendance_rate(attendance_stats, current_gen_number, user_gen_number)
 
         return Response(
             data={
