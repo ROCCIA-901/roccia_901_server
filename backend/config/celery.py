@@ -13,8 +13,22 @@ app.autodiscover_tasks()
 app.conf.timezone = "Asia/Seoul"
 
 app.conf.beat_schedule = {
-    "reject-pending-attendances-midnight": {
-        "task": "reject_pending_attendances",
-        "schedule": crontab(hour=0, minute=6),
+    "holiday_processing": {
+        "task": "holiday_processing",
+        "schedule": crontab(hour=23, minute=59),
     },
 }
+
+app.conf.beat_schedule = {
+    "reject_pending_attendances": {
+        "task": "reject_pending_attendances",
+        "schedule": crontab(hour=0, minute=0),
+    },
+}
+#
+# app.conf.beat_schedule = {
+#     "absence_processing": {
+#         "task": "absence_processing",
+#         "schedule": crontab(hour=0, minute=0, day_of_week=6),  # 토요일 오전 0시 0분에 실행
+#     },
+# }
