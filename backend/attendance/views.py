@@ -95,15 +95,15 @@ class AttendanceAPIView(APIView):
             generation=current_generation, day_of_week=day_of_week
         ).first()
         if weekly_staff_info is None:
-            raise MissingWeeklyStaffInfoException()
+            raise AttendancePeriodException()
+
+        if UnavailableDates.objects.filter(date=current_date).exists():
+            raise AttendancePeriodException()
 
         if Attendance.objects.filter(
             user=user, generation=current_generation, week=week, request_processed_status__in=["대기", "승인"]
         ).exists():
             raise DuplicateAttendanceException()
-
-        if UnavailableDates.objects.filter(date=current_date).exists():
-            raise AttendancePeriodException()
 
         request_data: dict[str, Any] = {
             "user": user.id,  # type: ignore
