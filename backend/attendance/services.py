@@ -9,6 +9,10 @@ from config.exceptions import NotExistException
 
 
 def get_current_generation():
+    """
+    현재의 기수를 반환하는 메서드입니다.
+    """
+
     today = timezone.now().date()
     try:
         return Generation.objects.get(start_date__lte=today, end_date__gte=today)
@@ -17,6 +21,10 @@ def get_current_generation():
 
 
 def get_weeks_since_start(start_date):
+    """
+    인자로 주어진 날짜가 몇 주차인지 반환하는 메서드입니다.
+    """
+
     today = timezone.now().date()
     delta = today - start_date
     week = delta.days // 7 + 1
@@ -24,6 +32,10 @@ def get_weeks_since_start(start_date):
 
 
 def get_day_of_week(current_date):
+    """
+    인자로 주어진 날짜의 요일을 반환하는 메서드입니다.
+    """
+
     weekday_number = current_date.weekday()
     days = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
     return days[weekday_number]
