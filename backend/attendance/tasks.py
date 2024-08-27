@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 from django.db import transaction
@@ -17,12 +17,12 @@ logger = logging.getLogger("django")
 def reject_pending_attendances():
     """
     처리되지 않은 '대기' 상태의 출석 요청을 거절 처리 하는 테스크입니다.
+    매일 23시 57분에 실행됩니다.
     """
 
-    current_date = timezone.now().date()
-    yesterday = current_date - timedelta(days=1)
-    if Generation.objects.filter(start_date__lte=yesterday, end_date__gte=yesterday).exists():
-        pending_attendances = Attendance.objects.filter(request_processed_status="대기", request_time__date=yesterday)
+    today = timezone.now().date()
+    if Generation.objects.filter(start_date__lte=today, end_date__gte=today).exists():
+        pending_attendances = Attendance.objects.filter(request_processed_status="대기", request_time__date=today)
         pending_attendances.update(request_processed_status="거절")
 
 
@@ -30,6 +30,7 @@ def reject_pending_attendances():
 def holiday_processing():
     """
     휴일 출석을 처리하는 테스크입니다.
+    매일 23시 58분에 실행됩니다.
     """
 
     current_date: datetime = timezone.now().date()
@@ -72,4 +73,49 @@ def holiday_processing():
                         request_time=current_date,
                         request_processed_status="승인",
                         attendance_status="휴일",
+                    )
+
+
+@app.task(name="absence_processing")
+def absence_processing():
+    """
+    당일의 출석 내역을 확인하고 결석을 처리하는 테스크입니다.
+    매일 23시 59분에 실행됩니다.
+    """
+
+    today: datetime = timezone.now().date()
+    current_generation_queryset = Generation.objects.filter(start_date__lte=today, end_date__gte=today)
+    if current_generation_queryset.exists():
+
+        current_generation: Generation = current_generation_queryset.first()
+        start_weekday = current_generation.start_date.weekday()
+
+        expected_run_day = (start_weekday - 1) % 7
+        if today.weekday() != expected_run_day:
+            return
+
+        week = get_weeks_since_start(current_generation.start_date)
+
+        current_generation_number = int(current_generation.name[:-1])
+        previous_generation_name = f"{current_generation_number - 1}기"
+
+        users = User.objects.filter(
+            generation__name__in=[previous_generation_name, current_generation.name],
+        )
+
+        with transaction.atomic():
+            for user in users:
+                if not Attendance.objects.filter(
+                    user=user,
+                    generation=current_generation,
+                    week=week,
+                    request_processed_status="승인",
+                ).exists():
+                    Attendance.objects.create(
+                        user=user,
+                        generation=current_generation,
+                        week=week,
+                        request_time=today,
+                        request_processed_status="승인",
+                        attendance_status="결석",
                     )
