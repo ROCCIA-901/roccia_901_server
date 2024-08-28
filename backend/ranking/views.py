@@ -115,10 +115,7 @@ def get_generation_rankings(request: Request) -> Response:
     )
 
     generations = list(set([generation_ranking["generation"] for generation_ranking in generation_rankings]))
-    return Response(
-        data={
-            "detail": "기수별 랭킹 조회를 성공했습니다.",
-            "data": {
+    data = {
                 "generation_rankings": [
                     {
                         "generation": generation,
@@ -128,7 +125,20 @@ def get_generation_rankings(request: Request) -> Response:
                     }
                     for generation in generations
                 ],
-            },
+            }
+    if len(data["generation_rankings"]) == 0:
+        data = {
+            "generation_rankings": [
+                {
+                    "generation": get_current_generation().name,
+                    "ranking": [],
+                }
+            ],
+        }
+    return Response(
+        data={
+            "detail": "기수별 랭킹 조회를 성공했습니다.",
+            "data": data,
         },
         status=status.HTTP_200_OK,
     )
