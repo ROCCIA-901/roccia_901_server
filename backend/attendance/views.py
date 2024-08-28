@@ -19,6 +19,7 @@ from attendance.models import (
     WeeklyStaffInfo,
 )
 from attendance.schemas import (
+    APPROVAL_SUCCESS_EXAMPLE,
     ATTENDANCE_PERIOD_INVALID_EXAMPLE,
     ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
@@ -26,7 +27,11 @@ from attendance.schemas import (
     DUPLICATE_ATTENDANCE_EXAMPLE,
     INTERNAL_SERVER_ERROR_EXAMPLE,
     INVALID_ACCOUNT_EXAMPLE,
+    INVALID_FIELD_STATE_EXAMPLE,
+    NOT_EXIST_EXAMPLE,
     PERMISSION_DENIED_EXAMPLE,
+    RESOURCE_LOCKED_EXAMPLE,
+    ApprovalResponseSerializer,
     AttendanceRequestListResponseSerializer,
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
@@ -243,6 +248,41 @@ class AttendanceAcceptAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청 승인",
+        description="특정 출석 요청을 승인 처리합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=ApprovalResponseSerializer,
+                examples=[APPROVAL_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_FIELD_STATE_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[NOT_EXIST_EXAMPLE],
+            ),
+            status.HTTP_423_LOCKED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[RESOURCE_LOCKED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     @transaction.atomic
     def patch(self, request: Request, attendance_id: int) -> Response:
         try:

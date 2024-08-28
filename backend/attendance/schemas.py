@@ -20,6 +20,57 @@ class AttendanceRequestListResponseSerializer(serializers.Serializer):
     data = AttendanceRequestListSerializer(many=True)
 
 
+class ApprovalResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+APPROVAL_SUCCESS_EXAMPLE = OpenApiExample(
+    "출석 요청 승인 성공 예시",
+    summary="Approval Success",
+    description="출석 요청이 성공적으로 승인 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "요청 승인이 성공적으로 완료되었습니다.",
+    },
+    response_only=True,
+)
+
+INVALID_FIELD_STATE_EXAMPLE = OpenApiExample(
+    "유효하지 않은 필드 상태 예시",
+    summary="Invalid Field State",
+    description="이미 처리된 요청이거나 유효하지 않은 필드 상태일 때의 응답 예시입니다.",
+    value={
+        "status_code": 400,
+        "code": "invalid_field_state",
+        "detail": "필드 상태가 유효하지 않습니다.",
+    },
+    response_only=True,
+)
+
+NOT_EXIST_EXAMPLE = OpenApiExample(
+    "존재하지 않는 자원 예시",
+    summary="Not Exist",
+    description="존재하지 않는 자원에 접근하려 할 때의 응답 예시입니다.",
+    value={
+        "status_code": 404,
+        "code": "not_exist",
+        "detail": "존재하지 않는 자원입니다.",
+    },
+    response_only=True,
+)
+
+RESOURCE_LOCKED_EXAMPLE = OpenApiExample(
+    "자원 잠김 예시",
+    summary="Resource Locked",
+    description="해당 자원이 잠겨 있어 작업을 수행할 수 없을 때의 응답 예시입니다.",
+    value={
+        "status_code": 423,
+        "code": "resource_locked",
+        "detail": "해당 자원이 잠겨 있어 작업을 수행할 수 없습니다.",
+    },
+    response_only=True,
+)
+
+
 ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE = OpenApiExample(
     "출석 요청 목록 조회 성공 예시",
     summary="Attendance Request List Success",
