@@ -4,6 +4,7 @@ from typing import Any, Optional
 from django.db import OperationalError, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -16,6 +17,34 @@ from attendance.models import (
     AttendanceStats,
     UnavailableDates,
     WeeklyStaffInfo,
+)
+from attendance.schemas import (
+    APPROVAL_SUCCESS_EXAMPLE,
+    ATTENDANCE_PERIOD_INVALID_EXAMPLE,
+    ATTENDANCE_RATE_SUCCESS_EXAMPLE,
+    ATTENDANCE_RECORD_SUCCESS_EXAMPLE,
+    ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE,
+    ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
+    ATTENDANCE_STATUS_SUCCESS_EXAMPLE,
+    DUPLICATE_ATTENDANCE_EXAMPLE,
+    INTERNAL_SERVER_ERROR_EXAMPLE,
+    INVALID_ACCOUNT_EXAMPLE,
+    INVALID_FIELD_STATE_EXAMPLE,
+    NOT_EXIST_EXAMPLE,
+    PERMISSION_DENIED_EXAMPLE,
+    REJECTION_SUCCESS_EXAMPLE,
+    RESOURCE_LOCKED_EXAMPLE,
+    USER_LIST_SUCCESS_EXAMPLE,
+    WORKOUT_LOCATION_SUCCESS_EXAMPLE,
+    ApprovalResponseSerializer,
+    AttendanceRateResponseSerializer,
+    AttendanceRecordResponseSerializer,
+    AttendanceRequestListResponseSerializer,
+    AttendanceStatusResponseSerializer,
+    ErrorResponseSerializer,
+    RejectionResponseSerializer,
+    UserListResponseSerializer,
+    WorkoutLocationResponseSerializer,
 )
 from attendance.serializers import (
     AttendanceDetailSerializer,
@@ -35,7 +64,6 @@ from config.exceptions import (
     AttendancePeriodException,
     DuplicateAttendanceException,
     InvalidFieldStateException,
-    MissingWeeklyStaffInfoException,
     NotExistException,
     ResourceLockedException,
 )
@@ -54,6 +82,29 @@ class AttendanceAPIView(APIView):
             return [IsMember()]
         return []
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 현황 조회",
+        description="사용자의 출석 현황을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceStatusResponseSerializer,
+                examples=[ATTENDANCE_STATUS_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         current_user: User = request.user
 
@@ -83,6 +134,36 @@ class AttendanceAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청",
+        description="사용자의 출석 요청을 처리합니다.",
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=AttendanceRequestSerializer,
+                examples=[ATTENDANCE_REQUEST_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[
+                    ATTENDANCE_PERIOD_INVALID_EXAMPLE,
+                    DUPLICATE_ATTENDANCE_EXAMPLE,
+                ],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def post(self, request: Request) -> Response:
         user: User = request.user
         current_date: date = timezone.now().date()
@@ -131,6 +212,29 @@ class AttendanceRequestListAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청 목록 조회",
+        description="처리 대기 중인 출석 요청 목록을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceRequestListResponseSerializer,
+                examples=[ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         attendance: QuerySet[Attendance] = Attendance.objects.select_related("user").filter(
             request_processed_status="대기", attendance_status=None
@@ -153,6 +257,41 @@ class AttendanceAcceptAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청 승인",
+        description="특정 출석 요청을 승인 처리합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=ApprovalResponseSerializer,
+                examples=[APPROVAL_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_FIELD_STATE_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[NOT_EXIST_EXAMPLE],
+            ),
+            status.HTTP_423_LOCKED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[RESOURCE_LOCKED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     @transaction.atomic
     def patch(self, request: Request, attendance_id: int) -> Response:
         try:
@@ -208,6 +347,41 @@ class AttendanceRejectAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청 거절",
+        description="특정 출석 요청을 거절 처리합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=RejectionResponseSerializer,
+                examples=[REJECTION_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_FIELD_STATE_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[NOT_EXIST_EXAMPLE],
+            ),
+            status.HTTP_423_LOCKED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[RESOURCE_LOCKED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     @transaction.atomic
     def patch(self, request: Request, attendance_id: int) -> Response:
         try:
@@ -243,6 +417,33 @@ class AttendanceRateAPIView(APIView):
 
     permission_classes = [IsMember]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="사용자 출석률 조회",
+        description="현재 사용자의 출석률을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceRateResponseSerializer,
+                examples=[ATTENDANCE_RATE_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[ATTENDANCE_PERIOD_INVALID_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         current_user: User = request.user
 
@@ -277,6 +478,37 @@ class AttendanceDetailAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="사용자 출석 내역 조회",
+        description="특정 사용자의 현재 기수에 대한 출석 내역을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceRecordResponseSerializer,
+                examples=[ATTENDANCE_RECORD_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[ATTENDANCE_PERIOD_INVALID_EXAMPLE],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[NOT_EXIST_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request, user_id: int) -> Response:
         if not User.objects.filter(id=user_id).exists():
             raise NotExistException("존재하지 않는 사용자입니다.")
@@ -328,28 +560,53 @@ class AttendanceLocationAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="금일 운동 지점 조회",
+        description="현재 날짜의 운동 지점을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=WorkoutLocationResponseSerializer,
+                examples=[WORKOUT_LOCATION_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[ATTENDANCE_PERIOD_INVALID_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
-        day_of_week: str = get_day_of_week(timezone.now())
-        current_generation: Generation = get_current_generation()
+        try:
+            day_of_week: str = get_day_of_week(timezone.now())
+            current_generation: Generation = get_current_generation()
+            weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.get(
+                generation=current_generation, day_of_week=day_of_week
+            )
+            workout_location: str = weekly_staff_info.workout_location  # type: ignore
 
-        weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.filter(
-            generation=current_generation, day_of_week=day_of_week
-        ).first()
-
-        if not weekly_staff_info:
-            raise MissingWeeklyStaffInfoException()
-
-        workout_location: str = weekly_staff_info.workout_location
-
-        return Response(
-            data={
-                "detail": "금일 운동 지점 조회를 성공했습니다.",
-                "data": {
-                    "workout_location": workout_location,
+            return Response(
+                data={
+                    "detail": "금일 운동 지점 조회를 성공했습니다.",
+                    "data": {
+                        "workout_location": workout_location,
+                    },
                 },
-            },
-            status=status.HTTP_200_OK,
-        )
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            raise AttendancePeriodException()
 
 
 class AttendanceUserListAPIView(APIView):
@@ -359,6 +616,29 @@ class AttendanceUserListAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="부원 목록 조회",
+        description="현재 활성화된 부원들의 목록을 조회하며, 각 부원의 출석률과 운동 수준을 포함합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserListResponseSerializer,
+                examples=[USER_LIST_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         queryset: QuerySet = User.objects.filter(role="부원", is_active=True).all()
         serializer: UserListSerializer = UserListSerializer(queryset, many=True)
