@@ -8,6 +8,25 @@ class ErrorResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
 
 
+class AttendanceStatusResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    data = serializers.DictField()
+
+
+ATTENDANCE_STATUS_SUCCESS_EXAMPLE = OpenApiExample(
+    "출석 현황 조회 성공 예시",
+    summary="Attendance Status Success",
+    description="출석 현황 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "출석 현황 조회를 성공했습니다.",
+        "data": {
+            "attendance": ["2024-08-27", "2024-08-28"],
+            "late": ["2024-08-26"],
+        },
+    },
+    response_only=True,
+)
+
 INVALID_ACCOUNT_EXAMPLE = OpenApiExample(
     "유효하지 않은 계정 예시",
     summary="Invalid Account",
