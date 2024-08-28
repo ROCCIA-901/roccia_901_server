@@ -34,6 +34,7 @@ from attendance.schemas import (
     PERMISSION_DENIED_EXAMPLE,
     REJECTION_SUCCESS_EXAMPLE,
     RESOURCE_LOCKED_EXAMPLE,
+    USER_LIST_SUCCESS_EXAMPLE,
     WORKOUT_LOCATION_SUCCESS_EXAMPLE,
     ApprovalResponseSerializer,
     AttendanceRateResponseSerializer,
@@ -42,6 +43,7 @@ from attendance.schemas import (
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
     RejectionResponseSerializer,
+    UserListResponseSerializer,
     WorkoutLocationResponseSerializer,
 )
 from attendance.serializers import (
@@ -614,6 +616,29 @@ class AttendanceUserListAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="부원 목록 조회",
+        description="현재 활성화된 부원들의 목록을 조회하며, 각 부원의 출석률과 운동 수준을 포함합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=UserListResponseSerializer,
+                examples=[USER_LIST_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         queryset: QuerySet = User.objects.filter(role="부원", is_active=True).all()
         serializer: UserListSerializer = UserListSerializer(queryset, many=True)

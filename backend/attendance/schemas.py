@@ -1,7 +1,7 @@
 from drf_spectacular.utils import OpenApiExample
 from rest_framework import serializers
 
-from attendance.serializers import AttendanceRequestListSerializer
+from attendance.serializers import AttendanceRequestListSerializer, UserListSerializer
 
 
 class ErrorResponseSerializer(serializers.Serializer):
@@ -41,6 +41,42 @@ class AttendanceRecordResponseSerializer(serializers.Serializer):
 class WorkoutLocationResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
     data = serializers.DictField()
+
+
+class UserListResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    data = UserListSerializer(many=True)
+
+
+USER_LIST_SUCCESS_EXAMPLE = OpenApiExample(
+    "부원 목록 조회 성공 예시",
+    summary="User List Success",
+    description="현재 활성화된 부원들의 목록 조회가 성공적으로 처리되었을 때의 응답 예시입니다. 각 부원의 출석률과 운동 수준이 포함됩니다.",
+    value={
+        "detail": "부원 목록 조회를 성공했습니다.",
+        "data": [
+            {
+                "id": 1,
+                "username": "member1",
+                "profile_number": "1",
+                "workout_location": "더클라임 신림",
+                "workout_level": "빨간색",
+                "generation": "11기",
+                "attendance_rate": 85.75,
+            },
+            {
+                "id": 2,
+                "username": "member2",
+                "profile_number": "1",
+                "workout_location": "더클라임 신림",
+                "workout_level": "파란색",
+                "generation": "11기",
+                "attendance_rate": 90.25,
+            },
+        ],
+    },
+    response_only=True,
+)
 
 
 WORKOUT_LOCATION_SUCCESS_EXAMPLE = OpenApiExample(
