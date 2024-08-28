@@ -20,12 +20,14 @@ from attendance.models import (
 )
 from attendance.schemas import (
     ATTENDANCE_PERIOD_INVALID_EXAMPLE,
+    ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
     ATTENDANCE_STATUS_SUCCESS_EXAMPLE,
     DUPLICATE_ATTENDANCE_EXAMPLE,
     INTERNAL_SERVER_ERROR_EXAMPLE,
     INVALID_ACCOUNT_EXAMPLE,
     PERMISSION_DENIED_EXAMPLE,
+    AttendanceRequestListResponseSerializer,
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
 )
@@ -196,6 +198,29 @@ class AttendanceRequestListAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청 목록 조회",
+        description="처리 대기 중인 출석 요청 목록을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceRequestListResponseSerializer,
+                examples=[ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         attendance: QuerySet[Attendance] = Attendance.objects.select_related("user").filter(
             request_processed_status="대기", attendance_status=None

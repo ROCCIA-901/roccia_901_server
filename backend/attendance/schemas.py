@@ -1,6 +1,8 @@
 from drf_spectacular.utils import OpenApiExample
 from rest_framework import serializers
 
+from attendance.serializers import AttendanceRequestListSerializer
+
 
 class ErrorResponseSerializer(serializers.Serializer):
     status_code = serializers.IntegerField()
@@ -12,6 +14,37 @@ class AttendanceStatusResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
     data = serializers.DictField()
 
+
+class AttendanceRequestListResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    data = AttendanceRequestListSerializer(many=True)
+
+
+ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE = OpenApiExample(
+    "출석 요청 목록 조회 성공 예시",
+    summary="Attendance Request List Success",
+    description="출석 요청 목록 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "출석 요청 목록 조회를 성공했습니다.",
+        "data": [
+            {
+                "user": "username1",
+                "generation": "11기",
+                "request_time": "2024-08-28T14:30:00Z",
+                "workout_location": "더클라임 신림",
+                "week": 5,
+            },
+            {
+                "user": "username2",
+                "generation": "11기",
+                "request_time": "2024-08-27T10:00:00Z",
+                "workout_location": "더클라임 신림",
+                "week": 5,
+            },
+        ],
+    },
+    response_only=True,
+)
 
 ATTENDANCE_STATUS_SUCCESS_EXAMPLE = OpenApiExample(
     "출석 현황 조회 성공 예시",
