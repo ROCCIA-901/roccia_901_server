@@ -4,6 +4,7 @@ from typing import Any, Optional
 from django.db import OperationalError, transaction
 from django.db.models import F, Q, QuerySet
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -16,6 +17,15 @@ from attendance.models import (
     AttendanceStats,
     UnavailableDates,
     WeeklyStaffInfo,
+)
+from attendance.schemas import (
+    ATTENDANCE_PERIOD_INVALID_EXAMPLE,
+    ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
+    DUPLICATE_ATTENDANCE_EXAMPLE,
+    INTERNAL_SERVER_ERROR_EXAMPLE,
+    INVALID_ACCOUNT_EXAMPLE,
+    PERMISSION_DENIED_EXAMPLE,
+    ErrorResponseSerializer,
 )
 from attendance.serializers import (
     AttendanceDetailSerializer,
@@ -83,6 +93,36 @@ class AttendanceAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청",
+        description="사용자의 출석 요청을 처리합니다.",
+        responses={
+            status.HTTP_201_CREATED: OpenApiResponse(
+                response=AttendanceRequestSerializer,
+                examples=[ATTENDANCE_REQUEST_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[
+                    ATTENDANCE_PERIOD_INVALID_EXAMPLE,
+                    DUPLICATE_ATTENDANCE_EXAMPLE,
+                ],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def post(self, request: Request) -> Response:
         user: User = request.user
         current_date: date = timezone.now().date()
