@@ -10,7 +10,10 @@ from record.models import BoulderProblem
 def update_ranking_on_post_save(sender: BoulderProblem, instance: BoulderProblem, created: bool, raw: bool, using: str, **kwargs) -> None:
     # add the new score
     generation: Generation = instance.record.generation
-    week: int = get_weeks_in_generation(instance.record.start_time.date())
+    try:
+        week: int = get_weeks_in_generation(instance.record.start_time.date())
+    except Exception:
+        return
     ranking, _ = Ranking.objects.get_or_create(user=instance.record.user, generation=generation, week=week)
     ranking.score += get_problems_score(instance.record.user.workout_level, instance.workout_level, instance.count)
     ranking.save()
@@ -23,7 +26,10 @@ def update_ranking_on_pre_save(sender: BoulderProblem, instance: BoulderProblem,
     except BoulderProblem.DoesNotExist:
         return
     generation: Generation = old_instance.record.generation
-    week: int = get_weeks_in_generation(old_instance.record.start_time.date())
+    try:
+        week: int = get_weeks_in_generation(old_instance.record.start_time.date())
+    except Exception:
+        return
     ranking: Ranking = Ranking.objects.get(user=old_instance.record.user, generation=generation, week=week)
     ranking.score -= get_problems_score(old_instance.record.user.workout_level, old_instance.workout_level, old_instance.count)
     if ranking.score <= 0:
@@ -34,7 +40,10 @@ def update_ranking_on_pre_save(sender: BoulderProblem, instance: BoulderProblem,
 @receiver(pre_delete, sender=BoulderProblem)
 def update_ranking_on_delete(sender: BoulderProblem, instance: BoulderProblem, using: str, **kwargs) -> None:
     generation: Generation = instance.record.generation
-    week: int = get_weeks_in_generation(instance.record.start_time.date())
+    try:
+        week: int = get_weeks_in_generation(instance.record.start_time.date())
+    except Exception:
+        return
     try:
         ranking: Ranking = Ranking.objects.get(user=instance.record.user, generation=generation, week=week)
     except Ranking.DoesNotExist:

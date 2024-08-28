@@ -16,7 +16,7 @@ def get_weeks_in_generation(target_date: datetime.date) -> int:
    try:
         generation = Generation.objects.get(start_date__lte=target_date, end_date__gte=target_date)
    except Exception:
-       raise NotExistException("기수 정보가 존재하지 않습니다.")
+       raise Exception("기수 정보가 존재하지 않습니다.")
    delta = target_date - generation.start_date
    week = delta.days // 7 + 1
    return week
