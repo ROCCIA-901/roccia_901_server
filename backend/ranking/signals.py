@@ -32,6 +32,9 @@ def update_ranking_on_pre_save(sender: BoulderProblem, instance: BoulderProblem,
 def update_ranking_on_delete(sender: BoulderProblem, instance: BoulderProblem, using: str, **kwargs) -> None:
     generation: Generation = instance.record.generation
     week: int = get_weeks_since_start(instance.record.start_time)
-    ranking: Ranking = Ranking.objects.get(user=instance.record.user, generation=generation, week=week)
+    try:
+        ranking: Ranking = Ranking.objects.get(user=instance.record.user, generation=generation, week=week)
+    except Ranking.DoesNotExist:
+        return
     ranking.score -= get_problems_score(instance.record.user.workout_level, instance.workout_level, instance.count)
     ranking.save()
