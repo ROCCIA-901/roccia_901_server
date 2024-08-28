@@ -38,6 +38,25 @@ class AttendanceRecordResponseSerializer(serializers.Serializer):
     data = serializers.DictField()
 
 
+class WorkoutLocationResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    data = serializers.DictField()
+
+
+WORKOUT_LOCATION_SUCCESS_EXAMPLE = OpenApiExample(
+    "금일 운동 지점 조회 성공 예시",
+    summary="Workout Location Success",
+    description="현재 날짜의 운동 지점 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "금일 운동 지점 조회를 성공했습니다.",
+        "data": {
+            "workout_location": "더클라임 신림",
+        },
+    },
+    response_only=True,
+)
+
+
 ATTENDANCE_RECORD_SUCCESS_EXAMPLE = OpenApiExample(
     "출석 내역 조회 성공 예시",
     summary="Attendance Record Success",

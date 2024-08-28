@@ -34,6 +34,7 @@ from attendance.schemas import (
     PERMISSION_DENIED_EXAMPLE,
     REJECTION_SUCCESS_EXAMPLE,
     RESOURCE_LOCKED_EXAMPLE,
+    WORKOUT_LOCATION_SUCCESS_EXAMPLE,
     ApprovalResponseSerializer,
     AttendanceRateResponseSerializer,
     AttendanceRecordResponseSerializer,
@@ -41,6 +42,7 @@ from attendance.schemas import (
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
     RejectionResponseSerializer,
+    WorkoutLocationResponseSerializer,
 )
 from attendance.serializers import (
     AttendanceDetailSerializer,
@@ -60,7 +62,6 @@ from config.exceptions import (
     AttendancePeriodException,
     DuplicateAttendanceException,
     InvalidFieldStateException,
-    MissingWeeklyStaffInfoException,
     NotExistException,
     ResourceLockedException,
 )
@@ -557,28 +558,53 @@ class AttendanceLocationAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="금일 운동 지점 조회",
+        description="현재 날짜의 운동 지점을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=WorkoutLocationResponseSerializer,
+                examples=[WORKOUT_LOCATION_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[ATTENDANCE_PERIOD_INVALID_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
-        day_of_week: str = get_day_of_week(timezone.now())
-        current_generation: Generation = get_current_generation()
+        try:
+            day_of_week: str = get_day_of_week(timezone.now())
+            current_generation: Generation = get_current_generation()
+            weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.get(
+                generation=current_generation, day_of_week=day_of_week
+            )
+            workout_location: str = weekly_staff_info.workout_location  # type: ignore
 
-        weekly_staff_info: Optional[WeeklyStaffInfo] = WeeklyStaffInfo.objects.filter(
-            generation=current_generation, day_of_week=day_of_week
-        ).first()
-
-        if not weekly_staff_info:
-            raise MissingWeeklyStaffInfoException()
-
-        workout_location: str = weekly_staff_info.workout_location
-
-        return Response(
-            data={
-                "detail": "금일 운동 지점 조회를 성공했습니다.",
-                "data": {
-                    "workout_location": workout_location,
+            return Response(
+                data={
+                    "detail": "금일 운동 지점 조회를 성공했습니다.",
+                    "data": {
+                        "workout_location": workout_location,
+                    },
                 },
-            },
-            status=status.HTTP_200_OK,
-        )
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            raise AttendancePeriodException()
 
 
 class AttendanceUserListAPIView(APIView):
