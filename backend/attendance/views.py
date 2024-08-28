@@ -30,11 +30,13 @@ from attendance.schemas import (
     INVALID_FIELD_STATE_EXAMPLE,
     NOT_EXIST_EXAMPLE,
     PERMISSION_DENIED_EXAMPLE,
+    REJECTION_SUCCESS_EXAMPLE,
     RESOURCE_LOCKED_EXAMPLE,
     ApprovalResponseSerializer,
     AttendanceRequestListResponseSerializer,
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
+    RejectionResponseSerializer,
 )
 from attendance.serializers import (
     AttendanceDetailSerializer,
@@ -338,6 +340,41 @@ class AttendanceRejectAPIView(APIView):
 
     permission_classes = [IsManager]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="출석 요청 거절",
+        description="특정 출석 요청을 거절 처리합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=RejectionResponseSerializer,
+                examples=[REJECTION_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_FIELD_STATE_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[NOT_EXIST_EXAMPLE],
+            ),
+            status.HTTP_423_LOCKED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[RESOURCE_LOCKED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     @transaction.atomic
     def patch(self, request: Request, attendance_id: int) -> Response:
         try:

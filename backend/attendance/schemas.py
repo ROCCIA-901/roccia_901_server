@@ -24,6 +24,21 @@ class ApprovalResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
 
 
+class RejectionResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+REJECTION_SUCCESS_EXAMPLE = OpenApiExample(
+    "출석 요청 거절 성공 예시",
+    summary="Rejection Success",
+    description="출석 요청이 성공적으로 거절 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "요청 거절이 성공적으로 완료되었습니다.",
+    },
+    response_only=True,
+)
+
+
 APPROVAL_SUCCESS_EXAMPLE = OpenApiExample(
     "출석 요청 승인 성공 예시",
     summary="Approval Success",
