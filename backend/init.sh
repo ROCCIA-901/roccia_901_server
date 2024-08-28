@@ -9,10 +9,6 @@ celery -A config migrate
 # gunicorn 웹 서버 실행
 gunicorn --config gunicorn.conf.py config.wsgi:application &
 
-# APScheduler 실행
-#python manage.py runapscheduler &
-python manage.py runapscheduler --minutes=1 &
-
 # Celery 실행 -> 컨테이너 실행으로 변경
 #celery -A config worker --loglevel=info &
 
