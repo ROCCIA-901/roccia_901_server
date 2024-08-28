@@ -21,6 +21,7 @@ from attendance.models import (
 from attendance.schemas import (
     APPROVAL_SUCCESS_EXAMPLE,
     ATTENDANCE_PERIOD_INVALID_EXAMPLE,
+    ATTENDANCE_RATE_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
     ATTENDANCE_STATUS_SUCCESS_EXAMPLE,
@@ -33,6 +34,7 @@ from attendance.schemas import (
     REJECTION_SUCCESS_EXAMPLE,
     RESOURCE_LOCKED_EXAMPLE,
     ApprovalResponseSerializer,
+    AttendanceRateResponseSerializer,
     AttendanceRequestListResponseSerializer,
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
@@ -410,6 +412,33 @@ class AttendanceRateAPIView(APIView):
 
     permission_classes = [IsMember]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="사용자 출석률 조회",
+        description="현재 사용자의 출석률을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceRateResponseSerializer,
+                examples=[ATTENDANCE_RATE_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[ATTENDANCE_PERIOD_INVALID_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request) -> Response:
         current_user: User = request.user
 

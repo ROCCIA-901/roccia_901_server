@@ -28,6 +28,25 @@ class RejectionResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
 
 
+class AttendanceRateResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    data = serializers.DictField(child=serializers.FloatField())
+
+
+ATTENDANCE_RATE_SUCCESS_EXAMPLE = OpenApiExample(
+    "사용자 출석률 조회 성공 예시",
+    summary="Attendance Rate Success",
+    description="사용자의 출석률 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "사용자 출석률 조회를 성공했습니다.",
+        "data": {
+            "attendance_rate": 85.75,
+        },
+    },
+    response_only=True,
+)
+
+
 REJECTION_SUCCESS_EXAMPLE = OpenApiExample(
     "출석 요청 거절 성공 예시",
     summary="Rejection Success",
