@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List
 
 from django.db import models
@@ -7,6 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from attendance.services import get_current_generation
 from ranking.models import Ranking
 from ranking.schemas import (
     RANKING_401_FAILURE_EXAMPLE,
@@ -16,6 +18,7 @@ from ranking.schemas import (
     ErrorResponseSerializer,
 )
 from ranking.serializers import RankingSerializer
+from ranking.services import get_weeks_in_generation
 
 
 @extend_schema(
@@ -39,14 +42,15 @@ from ranking.serializers import RankingSerializer
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def get_weekly_rankings(request: Request) -> Response:
-    weeks: List[int] = list(set(Ranking.objects.values_list("week", flat=True)))
+    cur_generation: int = get_current_generation()
+    weeks: List[int] = list(set(Ranking.objects.filter(generation=cur_generation).values_list("week", flat=True)))
     weeks.sort()
     data: List[Dict] = []
     for week in weeks:
         weekly_ranking = {
             "week": week,
             "ranking": RankingSerializer(
-                Ranking.objects.filter(week=week)
+                Ranking.objects.filter(generation=cur_generation, week=week)
                 .values(
                     "week",
                     "user__id",
@@ -66,6 +70,7 @@ def get_weekly_rankings(request: Request) -> Response:
         data={
             "detail": "주차별 랭킹 목록 조회를 성공했습니다.",
             "data": {
+                "current_generation_week": get_weeks_in_generation(datetime.now().date()),
                 "weekly_rankings": data,
             },
         },
@@ -116,7 +121,7 @@ def get_generation_rankings(request: Request) -> Response:
             "data": {
                 "generation_rankings": [
                     {
-                        "generation": f"{generation}기",
+                        "generation": generation,
                         "ranking": RankingSerializer(
                             generation_rankings.filter(generation=generation).order_by("-score"), many=True
                         ).data,
