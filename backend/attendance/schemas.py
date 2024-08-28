@@ -33,6 +33,42 @@ class AttendanceRateResponseSerializer(serializers.Serializer):
     data = serializers.DictField(child=serializers.FloatField())
 
 
+class AttendanceRecordResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    data = serializers.DictField()
+
+
+ATTENDANCE_RECORD_SUCCESS_EXAMPLE = OpenApiExample(
+    "출석 내역 조회 성공 예시",
+    summary="Attendance Record Success",
+    description="특정 사용자의 출석 내역 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
+    value={
+        "detail": "출석 내역 조회를 성공했습니다.",
+        "data": {
+            "count": {
+                "attendance": 10,
+                "late": 2,
+                "absence": 1,
+                "alternative": 1,
+            },
+            "detail": [
+                {
+                    "week": 1,
+                    "status": "출석",
+                    "date": "2024-08-05",
+                },
+                {
+                    "week": 2,
+                    "status": "지각",
+                    "date": "2024-08-12",
+                },
+            ],
+        },
+    },
+    response_only=True,
+)
+
+
 ATTENDANCE_RATE_SUCCESS_EXAMPLE = OpenApiExample(
     "사용자 출석률 조회 성공 예시",
     summary="Attendance Rate Success",

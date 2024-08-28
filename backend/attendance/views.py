@@ -22,6 +22,7 @@ from attendance.schemas import (
     APPROVAL_SUCCESS_EXAMPLE,
     ATTENDANCE_PERIOD_INVALID_EXAMPLE,
     ATTENDANCE_RATE_SUCCESS_EXAMPLE,
+    ATTENDANCE_RECORD_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
     ATTENDANCE_STATUS_SUCCESS_EXAMPLE,
@@ -35,6 +36,7 @@ from attendance.schemas import (
     RESOURCE_LOCKED_EXAMPLE,
     ApprovalResponseSerializer,
     AttendanceRateResponseSerializer,
+    AttendanceRecordResponseSerializer,
     AttendanceRequestListResponseSerializer,
     AttendanceStatusResponseSerializer,
     ErrorResponseSerializer,
@@ -473,6 +475,37 @@ class AttendanceDetailAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=["출석"],
+        summary="사용자 출석 내역 조회",
+        description="특정 사용자의 현재 기수에 대한 출석 내역을 조회합니다.",
+        responses={
+            status.HTTP_200_OK: OpenApiResponse(
+                response=AttendanceRecordResponseSerializer,
+                examples=[ATTENDANCE_RECORD_SUCCESS_EXAMPLE],
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[ATTENDANCE_PERIOD_INVALID_EXAMPLE],
+            ),
+            status.HTTP_404_NOT_FOUND: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[NOT_EXIST_EXAMPLE],
+            ),
+            status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INVALID_ACCOUNT_EXAMPLE],
+            ),
+            status.HTTP_403_FORBIDDEN: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[PERMISSION_DENIED_EXAMPLE],
+            ),
+            status.HTTP_500_INTERNAL_SERVER_ERROR: OpenApiResponse(
+                response=ErrorResponseSerializer,
+                examples=[INTERNAL_SERVER_ERROR_EXAMPLE],
+            ),
+        },
+    )
     def get(self, request: Request, user_id: int) -> Response:
         if not User.objects.filter(id=user_id).exists():
             raise NotExistException("존재하지 않는 사용자입니다.")
