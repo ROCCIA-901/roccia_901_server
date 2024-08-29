@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from account.models import Generation
 from attendance.services import get_current_generation
 from ranking.models import Ranking
 from ranking.schemas import (
@@ -42,7 +43,7 @@ from ranking.services import get_weeks_in_generation
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def get_weekly_rankings(request: Request) -> Response:
-    cur_generation: int = get_current_generation()
+    cur_generation: Generation = get_current_generation()
     weeks: List[int] = list(set(Ranking.objects.filter(generation=cur_generation).values_list("week", flat=True)))
     weeks.sort()
     data: List[Dict] = []
