@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from django.db import models
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -43,40 +43,55 @@ from ranking.services import get_weeks_in_generation
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def get_weekly_rankings(request: Request) -> Response:
-    cur_generation: Generation = get_current_generation()
-    weeks: List[int] = list(set(Ranking.objects.filter(generation=cur_generation).values_list("week", flat=True)))
-    weeks.sort()
-    data: List[Dict] = []
-    for week in weeks:
-        weekly_ranking = {
-            "week": week,
-            "ranking": RankingSerializer(
-                Ranking.objects.filter(generation=cur_generation, week=week)
-                .values(
-                    "week",
-                    "user__id",
-                    "user__username",
-                    "user__generation",
-                    "user__workout_location",
-                    "user__workout_level",
-                    "user__profile_number",
-                    "score",
-                )
-                .order_by("-score"),
-                many=True,
-            ).data,
-        }
-        data.append(weekly_ranking)
-    return Response(
-        data={
-            "detail": "주차별 랭킹 목록 조회를 성공했습니다.",
-            "data": {
-                "current_generation_week": get_weeks_in_generation(datetime.now().date()),
-                "weekly_rankings": data,
+    today = datetime.now().date()
+    cur_generation: Optional[Generation] = Generation.objects.filter(start_date__lte=today, end_date__gte=today).first()
+
+    if cur_generation:
+        weeks = (
+            Ranking.objects.filter(generation=cur_generation).values_list("week", flat=True).distinct().order_by("week")
+        )
+        data: List[Dict] = []
+        for week in weeks:
+            weekly_ranking = {
+                "week": week,
+                "ranking": RankingSerializer(
+                    Ranking.objects.filter(generation=cur_generation, week=week)
+                    .values(
+                        "week",
+                        "user__id",
+                        "user__username",
+                        "user__generation",
+                        "user__workout_location",
+                        "user__workout_level",
+                        "user__profile_number",
+                        "score",
+                    )
+                    .order_by("-score"),
+                    many=True,
+                ).data,
+            }
+            data.append(weekly_ranking)
+        return Response(
+            data={
+                "detail": "주차별 랭킹 목록 조회를 성공했습니다.",
+                "data": {
+                    "current_generation_week": get_weeks_in_generation(datetime.now().date()),
+                    "weekly_rankings": data,
+                },
             },
-        },
-        status=status.HTTP_200_OK,
-    )
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            data={
+                "detail": "주차별 랭킹 목록 조회를 성공했습니다.",
+                "data": {
+                    "current_generation_week": None,
+                    "weekly_rankings": [],
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema(

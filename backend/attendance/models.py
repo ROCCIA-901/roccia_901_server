@@ -22,22 +22,32 @@ class Attendance(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendances", verbose_name="사용자")
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="attendance", verbose_name="운영 기수"
+        Generation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance",
+        verbose_name="운영 기수",
     )
     workout_location = models.CharField(
-        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, verbose_name="지점"
+        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, blank=True, verbose_name="지점"
     )
-    week = models.IntegerField(null=True, verbose_name="주차")
-    request_time = models.DateTimeField(null=True, verbose_name="출석 요청 시간")
+    week = models.IntegerField(null=True, blank=True, verbose_name="주차")
+    request_time = models.DateTimeField(null=True, blank=True, verbose_name="출석 요청 시간")
     request_processed_status = models.CharField(
-        max_length=20, choices=REQUEST_STATUS_CHOICES, default="대기", null=True, verbose_name="처리 상태"
+        max_length=20, choices=REQUEST_STATUS_CHOICES, default="대기", null=True, blank=True, verbose_name="처리 상태"
     )
-    request_processed_time = models.DateTimeField(null=True, verbose_name="처리 시간")
+    request_processed_time = models.DateTimeField(null=True, blank=True, verbose_name="처리 시간")
     request_processed_user = models.ForeignKey(
-        User, on_delete=models.PROTECT, null=True, related_name="processed_requests", verbose_name="처리한 사용자"
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="processed_requests",
+        verbose_name="처리한 사용자",
     )
     attendance_status = models.CharField(
-        max_length=20, choices=ATTENDANCE_STATUS_CHOICES, null=True, verbose_name="출석 상태"
+        max_length=20, choices=ATTENDANCE_STATUS_CHOICES, null=True, blank=True, verbose_name="출석 상태"
     )
     is_alternate = models.BooleanField(default=False, verbose_name="대체 출석 여부")
 
@@ -51,7 +61,12 @@ class Attendance(models.Model):
 class AttendanceStats(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="attendance_stats", verbose_name="사용자")
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="attendance_stats", verbose_name="운영 기수"
+        Generation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="attendance_stats",
+        verbose_name="운영 기수",
     )
     attendance = models.IntegerField(default=0, verbose_name="출석 횟수")
     late = models.IntegerField(default=0, verbose_name="지각 횟수")
@@ -82,12 +97,17 @@ class WeeklyStaffInfo(models.Model):
     )
 
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="weekly_staff_info", verbose_name="기수"
+        Generation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="weekly_staff_info",
+        verbose_name="기수",
     )
     staff = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="운영진")
     day_of_week = models.CharField(max_length=10, choices=DAY_OF_WEEK_CHOICES, verbose_name="요일")
     workout_location = models.CharField(
-        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, verbose_name="지점"
+        max_length=100, choices=WORKOUT_LOCATION_CHOICES, null=True, blank=True, verbose_name="지점"
     )
     start_time = models.TimeField(verbose_name="운동 시작 시간")
 

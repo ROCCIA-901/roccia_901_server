@@ -43,8 +43,8 @@ class UserManager(BaseUserManager):
 
 class Generation(models.Model):
     name = models.CharField(max_length=10, unique=True, primary_key=True, verbose_name="기수")
-    start_date = models.DateField(null=True, verbose_name="시작 날짜")
-    end_date = models.DateField(null=True, verbose_name="종료 날짜")
+    start_date = models.DateField(null=True, blank=True, verbose_name="시작 날짜")
+    end_date = models.DateField(null=True, blank=True, verbose_name="종료 날짜")
 
     class Meta:
         db_table = "generation"
@@ -56,7 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=320, unique=True, null=False, blank=False, verbose_name="이메일")
     username = models.CharField(max_length=20, verbose_name="사용자 이름")
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="user", verbose_name="가입 기수"
+        Generation, on_delete=models.SET_NULL, null=True, blank=True, related_name="user", verbose_name="가입 기수"
     )
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="부원", verbose_name="역할")
     workout_location = models.CharField(max_length=100, choices=WORKOUT_LOCATION_CHOICES, verbose_name="지점")
