@@ -42,30 +42,32 @@ class UserManager(BaseUserManager):
 
 
 class Generation(models.Model):
-    name = models.CharField(max_length=10, unique=True, primary_key=True, help_text="기수 이름")
-    start_date = models.DateField(null=True, help_text="기수 시작 날짜")
-    end_date = models.DateField(null=True, help_text="기수 종료 날짜")
+    name = models.CharField(max_length=10, unique=True, primary_key=True, verbose_name="기수")
+    start_date = models.DateField(null=True, verbose_name="시작 날짜")
+    end_date = models.DateField(null=True, verbose_name="종료 날짜")
 
     class Meta:
         db_table = "generation"
+        verbose_name = "기수"
+        verbose_name_plural = "기수"
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(max_length=320, unique=True, null=False, blank=False, help_text="이메일")
-    username = models.CharField(max_length=20, help_text="사용자 이름")
+    email = models.EmailField(max_length=320, unique=True, null=False, blank=False, verbose_name="이메일")
+    username = models.CharField(max_length=20, verbose_name="사용자 이름")
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="user", help_text="기수"
+        Generation, on_delete=models.SET_NULL, null=True, related_name="user", verbose_name="가입 기수"
     )
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="부원", help_text="역할")
-    workout_location = models.CharField(max_length=100, choices=WORKOUT_LOCATION_CHOICES, help_text="운동 지점")
-    workout_level = models.IntegerField(choices=WORKOUT_LEVELS, help_text="운동 난이도")
-    profile_number = models.IntegerField(help_text="프로필 번호")
-    introduction = models.TextField(max_length=500, help_text="소개글")
-    created_at = models.DateTimeField(auto_now_add=True, help_text="생성 일시")
-    updated_at = models.DateTimeField(auto_now=True, help_text="수정 일시")
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="부원", verbose_name="역할")
+    workout_location = models.CharField(max_length=100, choices=WORKOUT_LOCATION_CHOICES, verbose_name="지점")
+    workout_level = models.IntegerField(choices=WORKOUT_LEVELS, verbose_name="난이도")
+    profile_number = models.IntegerField(verbose_name="프로필 번호")
+    introduction = models.TextField(max_length=500, verbose_name="소개글")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성 일시")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="수정 일시")
 
-    is_active = models.BooleanField(default=False, help_text="활성 상태")
-    is_staff = models.BooleanField(default=False, help_text="스태프 상태")
+    is_active = models.BooleanField(default=False, verbose_name="활성 여부")
+    is_staff = models.BooleanField(default=False, verbose_name="스태프 여부")
 
     objects = UserManager()
 
@@ -76,3 +78,5 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = "user"
+        verbose_name = "부원"
+        verbose_name_plural = "부원"
