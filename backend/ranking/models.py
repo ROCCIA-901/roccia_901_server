@@ -9,7 +9,7 @@ from attendance.models import Generation
 class Ranking(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ranking", verbose_name="사용자")
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="ranking", verbose_name="운영 기수"
+        Generation, on_delete=models.SET_NULL, null=True, blank=True, related_name="ranking", verbose_name="운영 기수"
     )
     week = models.PositiveIntegerField(verbose_name="주차")
     score = models.FloatField(default=0.0, verbose_name="점수 합산")

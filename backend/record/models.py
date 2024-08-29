@@ -10,7 +10,7 @@ from common.choices import WORKOUT_LEVELS, WORKOUT_LOCATION_CHOICES
 class Record(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="records", verbose_name="사용자")
     generation = models.ForeignKey(
-        Generation, on_delete=models.SET_NULL, null=True, related_name="record", verbose_name="운영 기수"
+        Generation, on_delete=models.SET_NULL, null=True, blank=True, related_name="record", verbose_name="운영 기수"
     )
     workout_location = models.CharField(max_length=100, choices=WORKOUT_LOCATION_CHOICES, verbose_name="지점")
     start_time = models.DateTimeField(verbose_name="운동 시작 시간")
