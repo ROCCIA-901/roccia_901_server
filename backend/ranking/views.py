@@ -117,16 +117,16 @@ def get_generation_rankings(request: Request) -> Response:
 
     generations = list(set([generation_ranking["generation"] for generation_ranking in generation_rankings]))
     data = {
-                "generation_rankings": [
-                    {
-                        "generation": generation,
-                        "ranking": RankingSerializer(
-                            generation_rankings.filter(generation=generation).order_by("-score"), many=True
-                        ).data,
-                    }
-                    for generation in generations
-                ],
+        "generation_rankings": [
+            {
+                "generation": generation,
+                "ranking": RankingSerializer(
+                    generation_rankings.filter(generation=generation).order_by("-score"), many=True
+                ).data,
             }
+            for generation in generations
+        ],
+    }
     if len(data["generation_rankings"]) == 0:
         data = {
             "generation_rankings": [

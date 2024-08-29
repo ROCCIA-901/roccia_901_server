@@ -6,4 +6,4 @@ class RankingConfig(AppConfig):
     name = "ranking"
 
     def ready(self):
-        from . import signals
+        from . import signals  # noqa
