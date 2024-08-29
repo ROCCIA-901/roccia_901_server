@@ -1,10 +1,25 @@
+# mypy: ignore-errors
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
+from django_apscheduler.models import DjangoJob, DjangoJobExecution
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 
-from .models import User
+from .models import Generation, User
+
+admin.site.unregister(Group)
+admin.site.unregister(DjangoJob)
+admin.site.unregister(DjangoJobExecution)
+admin.site.unregister(BlacklistedToken)
+admin.site.unregister(OutstandingToken)
 
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
     # 사용자 목록에 표시할 필드
     list_display = ("email", "username", "role", "workout_location", "workout_level", "is_active", "is_staff")
@@ -43,5 +58,8 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("email",)
 
 
-# 위에서 정의한 CustomUserAdmin을 이용하여 User 모델을 등록합니다.
-admin.site.register(User, CustomUserAdmin)
+@admin.register(Generation)
+class GenerationAdmin(admin.ModelAdmin):
+    list_display = ("name", "start_date", "end_date")
+    search_fields = ("name",)
+    ordering = ("-start_date",)
