@@ -111,6 +111,13 @@ class MypageSerializer(serializers.ModelSerializer):
 
 @extend_schema_serializer(examples=USER_UPDATE_REQUEST_EXAMPLE)
 class UserUpdateSerializer(serializers.ModelSerializer):
+    workout_level = WorkoutLevelChoiceField(
+        WORKOUT_LEVELS,
+        required=False,
+        error_messages={
+            "blank": "운동 난이도는 비워 둘 수 없습니다.",
+        },
+    )
 
     class Meta:
         model = User
