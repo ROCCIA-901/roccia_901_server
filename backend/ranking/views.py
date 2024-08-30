@@ -9,7 +9,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from account.models import Generation
-from attendance.services import get_current_generation
 from ranking.models import Ranking
 from ranking.schemas import (
     RANKING_401_FAILURE_EXAMPLE,
@@ -142,15 +141,6 @@ def get_generation_rankings(request: Request) -> Response:
             for generation in generations
         ],
     }
-    if len(data["generation_rankings"]) == 0:
-        data = {
-            "generation_rankings": [
-                {
-                    "generation": get_current_generation().name,
-                    "ranking": [],
-                }
-            ],
-        }
     return Response(
         data={
             "detail": "기수별 랭킹 조회를 성공했습니다.",
