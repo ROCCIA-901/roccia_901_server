@@ -24,8 +24,22 @@ MYPAGE_RESPONSE_EXAMPLE = OpenApiExample(
                 "profile_number": 8,
                 "introduction": "안녕하십니까",
             },
-            "total_workout_time": 220,
-            "records": [{"workout_level": "파란색", "total_count": 6}],
+            "total_workout_time": 600,
+            "records": [
+                {
+                    "workout_level": "파란색",
+                    "total_count": 1,
+                },
+                {
+                    "workout_level": "빨간색",
+                    "total_count": 4,
+                },
+            ],
+            "attendance_stats": {
+                "attendance": 2,
+                "late": 1,
+                "absence": 0,
+            },
         },
     },
     response_only=True,
