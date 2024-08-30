@@ -106,7 +106,14 @@ class MypageSerializer(serializers.ModelSerializer):
             return {}
 
         attendance_stats = AttendanceStats.objects.filter(user=obj, generation=self.current_generation).first()
-        return AttendanceStatsSerializer(attendance_stats).data if attendance_stats else {}
+        if attendance_stats:
+            return AttendanceStatsSerializer(attendance_stats).data
+        else:
+            return {
+                "attendance": 0,
+                "late": 0,
+                "absence": 0,
+            }
 
 
 @extend_schema_serializer(examples=USER_UPDATE_REQUEST_EXAMPLE)
