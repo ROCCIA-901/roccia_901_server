@@ -25,6 +25,9 @@ DATABASES = {
         "NAME": env("DATABASE_NAME", default=""),
         "USER": env("DATABASE_USER", default=""),
         "PASSWORD": env("DATABASE_PASSWORD", default=""),
+        "OPTIONS": {
+            "options": "-c timezone=Asia/Seoul",
+        },
     }
 }
 
