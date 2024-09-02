@@ -302,12 +302,12 @@ DUPLICATE_ATTENDANCE_EXAMPLE = OpenApiExample(
     response_only=True,
 )
 
-CURRENT_GENERATION_SUCCESS_EXAMPLE = OpenApiExample(
-    "현재 기수 조회 성공 예시",
-    summary="Current Generation Success",
-    description="현재 기수 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
+LATEST_GENERATION_SUCCESS_EXAMPLE = OpenApiExample(
+    "최근 기수 조회 성공 예시",
+    summary="Latest Generation Success",
+    description="최근 기수 조회가 성공적으로 처리되었을 때의 응답 예시입니다.",
     value={
-        "detail": "현재 기수 조회를 성공했습니다.",
+        "detail": "최근 기수 조회를 성공했습니다.",
         "data": {
             "generation": 12,
         },

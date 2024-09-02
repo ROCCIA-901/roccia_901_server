@@ -3,8 +3,8 @@ from django.urls import path
 from attendance.views import (
     AttendanceAcceptAPIView,
     AttendanceAPIView,
-    AttendanceCurrentGenerationAPIView,
     AttendanceDetailAPIView,
+    AttendanceLatestGenerationAPIView,
     AttendanceLocationAPIView,
     AttendanceRateAPIView,
     AttendanceRejectAPIView,
@@ -21,5 +21,5 @@ urlpatterns = [
     path("users/<int:user_id>/details/", AttendanceDetailAPIView.as_view(), name="attendance-detail"),
     path("location/", AttendanceLocationAPIView.as_view(), name="attendance-location"),
     path("users/", AttendanceUserListAPIView.as_view(), name="attendance-user-list"),
-    path("current-generation/", AttendanceCurrentGenerationAPIView.as_view(), name="attendance-current-generation"),
+    path("latest-generation/", AttendanceLatestGenerationAPIView.as_view(), name="attendance-latest-generation"),
 ]

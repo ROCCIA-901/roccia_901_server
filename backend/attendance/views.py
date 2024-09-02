@@ -26,11 +26,11 @@ from attendance.schemas import (
     ATTENDANCE_REQUEST_LIST_SUCCESS_EXAMPLE,
     ATTENDANCE_REQUEST_SUCCESS_EXAMPLE,
     ATTENDANCE_STATUS_SUCCESS_EXAMPLE,
-    CURRENT_GENERATION_SUCCESS_EXAMPLE,
     DUPLICATE_ATTENDANCE_EXAMPLE,
     INTERNAL_SERVER_ERROR_EXAMPLE,
     INVALID_ACCOUNT_EXAMPLE,
     INVALID_FIELD_STATE_EXAMPLE,
+    LATEST_GENERATION_SUCCESS_EXAMPLE,
     NOT_EXIST_EXAMPLE,
     PERMISSION_DENIED_EXAMPLE,
     REJECTION_SUCCESS_EXAMPLE,
@@ -653,21 +653,21 @@ class AttendanceUserListAPIView(APIView):
         )
 
 
-class AttendanceCurrentGenerationAPIView(APIView):
+class AttendanceLatestGenerationAPIView(APIView):
     """
-    현재 기수 조회를 위한 클래스입니다.
+    최근 기수 조회를 위한 클래스입니다.
     """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["출석"],
-        summary="현재 기수 조회",
-        description="현재 기수를 조회합니다.",
+        summary="최근 기수 조회",
+        description="최근 기수를 조회합니다.",
         responses={
             status.HTTP_200_OK: OpenApiResponse(
                 response=UserListResponseSerializer,
-                examples=[CURRENT_GENERATION_SUCCESS_EXAMPLE],
+                examples=[LATEST_GENERATION_SUCCESS_EXAMPLE],
             ),
             status.HTTP_401_UNAUTHORIZED: OpenApiResponse(
                 response=ErrorResponseSerializer,
@@ -680,18 +680,17 @@ class AttendanceCurrentGenerationAPIView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
-        current_date: date = timezone.now().date()
-        generation_object = Generation.objects.filter(start_date__lte=current_date, end_date__gte=current_date).first()
+        generation_object = Generation.objects.filter(start_date__isnull=False).order_by("-start_date").first()
 
-        current_generation = None
+        latest_generation = None
         if generation_object:
-            current_generation = generation_object.name[:-1]
+            latest_generation = int(generation_object.name[:-1])
 
         return Response(
             data={
-                "detail": "현재 기수 조회를 성공했습니다.",
+                "detail": "최근 기수 조회를 성공했습니다.",
                 "data": {
-                    "generation": current_generation,
+                    "generation": latest_generation,
                 },
             },
             status=status.HTTP_200_OK,
