@@ -11,6 +11,7 @@ app = Celery("worker")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 app.conf.timezone = "Asia/Seoul"
+app.conf.broker_connection_retry_on_startup = True
 
 app.conf.beat_schedule = {
     "reject_pending_attendances": {
