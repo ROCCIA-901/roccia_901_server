@@ -56,7 +56,9 @@ class AttendanceAdmin(admin.ModelAdmin):
     get_user_name.short_description = "부원"
 
     def get_request_processed_user_name(self, obj):
-        return obj.request_processed_user.username
+        if obj.request_processed_user:
+            return obj.request_processed_user.username
+        return "-"
 
     get_request_processed_user_name.short_description = "처리한 운영진"
 
