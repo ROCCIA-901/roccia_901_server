@@ -35,7 +35,7 @@ class AttendanceAdmin(admin.ModelAdmin):
         "generation",
         "week",
         "attendance_status",
-        "workout_location",
+        "get_workout_location",
         "request_time",
         "request_processed_status",
         "request_processed_time",
@@ -61,6 +61,11 @@ class AttendanceAdmin(admin.ModelAdmin):
         return "-"
 
     get_request_processed_user_name.short_description = "처리한 운영진"
+
+    def get_workout_location(self, obj):
+        if obj.workout_location:
+            return obj.workout_location
+        return "-"
 
 
 @admin.register(AttendanceStats)
