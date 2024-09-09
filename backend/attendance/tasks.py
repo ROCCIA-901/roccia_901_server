@@ -101,6 +101,7 @@ def absence_processing():
 
         users = User.objects.filter(
             generation__name__in=[previous_generation_name, current_generation.name],
+            role="부원",
         )
 
         with transaction.atomic():
