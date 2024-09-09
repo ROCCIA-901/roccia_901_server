@@ -3,10 +3,16 @@ from datetime import datetime
 from typing import Optional
 
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
 from account.models import Generation, User
-from attendance.models import Attendance, UnavailableDates, WeeklyStaffInfo
+from attendance.models import (
+    Attendance,
+    AttendanceStats,
+    UnavailableDates,
+    WeeklyStaffInfo,
+)
 from attendance.services import get_day_of_week, get_weeks_since_start
 from config.celery import app
 
@@ -121,3 +127,10 @@ def absence_processing():
                         request_processed_status="승인",
                         attendance_status="결석",
                     )
+
+                    attendance_stats, created = AttendanceStats.objects.get_or_create(
+                        user=user,
+                        generation=current_generation,
+                    )
+                    attendance_stats.absence = F("absence") + 1
+                    attendance_stats.save()
